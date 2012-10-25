@@ -1,1 +1,5 @@
-This file was created by IntelliJ IDEA 11.1.3 for binding GitHub repository
+The SPREAD language adds three additional concepts to a standard Spreadheet:
+
+1) Instead of one single value, a cell can have more alternative values: a Set of values
+2) Next to Numbers, Strings, Dates, etc, there is an additional cell type: the 'Spreadsheet'
+3) A cell can be named or 'Labeled' with anything, Numbers, Strings, Dates ... and spreadsheets!
