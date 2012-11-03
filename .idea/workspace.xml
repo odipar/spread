@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="" />
-    <list id="305ae92b-4ea2-4bcc-ba91-15171749f744" name="New changelist" comment="New changelist">
+    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README" afterPath="$PROJECT_DIR$/README" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="$PROJECT_DIR$/.idea/workspace.xml" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1351870086519" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +64,7 @@
       <file leaf-file-name="README" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/README">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="96" selection-start="356" selection-end="356" vertical-scroll-proportion="0.16348773">
+            <state line="5" column="41" selection-start="210" selection-end="210" vertical-scroll-proportion="0.20435968">
               <folding />
             </state>
           </provider>
@@ -84,10 +83,10 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/README" />
         <option value="$PROJECT_DIR$/src/spread/scala.scala" />
         <option value="$PROJECT_DIR$/src/spread/types.scala" />
         <option value="$PROJECT_DIR$/src/spread/Types.scala" />
+        <option value="$PROJECT_DIR$/README" />
       </list>
     </option>
   </component>
@@ -370,7 +369,6 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="types" />
-      <changelist id="305ae92b-4ea2-4bcc-ba91-15171749f744" name="New changelist" comment="" />
       <created>1351125871725</created>
       <updated>1351125871725</updated>
     </task>
@@ -414,7 +412,11 @@
       <created>1351870053403</created>
       <updated>1351870053403</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="New changelist">
+      <created>1351969524222</created>
+      <updated>1351969524222</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -507,7 +509,7 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/README">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="96" selection-start="356" selection-end="356" vertical-scroll-proportion="0.16348773">
+        <state line="5" column="41" selection-start="210" selection-end="210" vertical-scroll-proportion="0.20435968">
           <folding />
         </state>
       </provider>

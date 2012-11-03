@@ -1,5 +1,6 @@
-The SPREAD language adds three additional concepts to a standard Spreadheet:
+The SPREAD language targets a purely functional higher-ordered spread(sheet).
+It is based on the spread data structure.
 
-1) Instead of one single value, a cell can have more alternative values: a Set of values
-2) Next to Numbers, Strings, Dates, etc, there is an additional cell type: the 'Spreadsheet'
-3) A cell can be named or 'Labeled' with anything, Numbers, Strings, Dates ... and spreadsheets!
+The spread data structure is a short name for:
+
+A uniquely named and represented confluenty persistent finite higher-ordered binary relation
