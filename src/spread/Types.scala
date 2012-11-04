@@ -1,9 +1,8 @@
 package spread
 
-import com.sun.org.apache.xpath.internal.operations.Variable
+// very abstract types that cover all use cases //
 
 object Types {
-  // very abstract types that cover all use cases //
 
   def main(args: Array[String]): Unit = {}
 
