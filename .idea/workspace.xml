@@ -73,7 +73,7 @@
       <file leaf-file-name="Types.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Types.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="79" selection-start="519" selection-end="519" vertical-scroll-proportion="0.46866485">
+            <state line="34" column="17" selection-start="949" selection-end="949" vertical-scroll-proportion="0.34604904">
               <folding />
             </state>
           </provider>
@@ -475,7 +475,11 @@
       <created>1351972975596</created>
       <updated>1351972975596</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="abstract types">
+      <created>1352011925450</created>
+      <updated>1352011925450</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -541,7 +545,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="start of implementation" />
+    <option name="LAST_COMMIT_MESSAGE" value="abstract types" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -559,6 +563,7 @@
     <MESSAGE value="New changelist" />
     <MESSAGE value="new wording" />
     <MESSAGE value="start of implementation" />
+    <MESSAGE value="abstract types" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -577,7 +582,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Types.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="79" selection-start="519" selection-end="519" vertical-scroll-proportion="0.46866485">
+        <state line="34" column="17" selection-start="949" selection-end="949" vertical-scroll-proportion="0.34604904">
           <folding />
         </state>
       </provider>
