@@ -16,14 +16,14 @@ object Test {
   }
 
   case class IAdd[B](first: IntExpr[B], second: IntExpr[B]) extends IntExpr[B] {
-    lazy val evaluate =  (first.evaluate,second.evaluate) match {
+    lazy val evaluate: IntExpr[B] =  (first.evaluate,second.evaluate) match {
       case (IExpr(i1),IExpr(i2)) => IExpr(i1+i2)
       case _ => this
     }
   }
 
   case class IMul[B](first: IntExpr[B], second: IntExpr[B]) extends IntExpr[B] {
-    lazy val evaluate =  (first.evaluate,second.evaluate) match {
+    lazy val evaluate: IntExpr[B] =  (first.evaluate,second.evaluate) match {
       case (IExpr(i1),IExpr(i2)) => IExpr(i1*i2)
       case _ => this
     }
