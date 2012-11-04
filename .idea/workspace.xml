@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Types.scala" afterPath="$PROJECT_DIR$/src/spread/Types.scala" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -578,7 +575,11 @@
       <created>1352056602382</created>
       <updated>1352056602382</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="clone from the oer framework">
+      <created>1352056614157</created>
+      <updated>1352056614157</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="ToolWindowManager">
