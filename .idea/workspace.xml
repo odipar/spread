@@ -73,7 +73,7 @@
       <file leaf-file-name="Types.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Types.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="57" selection-start="89" selection-end="89" vertical-scroll-proportion="0.16348773">
+            <state line="17" column="79" selection-start="519" selection-end="519" vertical-scroll-proportion="0.46866485">
               <folding />
             </state>
           </provider>
@@ -367,7 +367,7 @@
       </method>
     </configuration>
     <configuration default="false" name="Main" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="Types" />
+      <option name="MAIN_CLASS_NAME" value="spread.Types" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -471,7 +471,11 @@
       <created>1351970305260</created>
       <updated>1351970305260</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="start of implementation">
+      <created>1351972975596</created>
+      <updated>1351972975596</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -483,7 +487,7 @@
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32879046" sideWeight="0.49756494" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32879046" sideWeight="0.49756494" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32879046" sideWeight="0.49025974" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32879046" sideWeight="0.4707792" order="7" side_tool="false" content_ui="tabs" />
@@ -491,7 +495,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24918832" sideWeight="0.6712095" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24918832" sideWeight="0.6712095" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32879046" sideWeight="0.49675325" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -573,7 +577,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Types.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="57" selection-start="89" selection-end="89" vertical-scroll-proportion="0.16348773">
+        <state line="17" column="79" selection-start="519" selection-end="519" vertical-scroll-proportion="0.46866485">
           <folding />
         </state>
       </provider>
