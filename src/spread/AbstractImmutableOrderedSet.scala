@@ -1,5 +1,6 @@
 package spread
 
+
 object AbstractImmutableOrderedSet {
 
   // Abstract Immutable Ordered Set with a measurement.

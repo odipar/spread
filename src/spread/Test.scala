@@ -4,13 +4,27 @@ object Test {
   import Types._
   import OrderedSetImplementation._
   import OrderedTreapSet._
+  import Hashing._
 
   implicit def intToIExpr[B](i: Int): IntExpr[B] = IExpr[B](i)
 
-  /*type ST[X] = OrderedISetImpl[X, Any, STreap[X, Any], STreapContext[X, Any]]
+  case class BindingOrdering[A,B](label: Ordering[B]) extends Ordering[Binding[A,B]] {
+    def compare(m1: Binding[A,B], m2: Binding[A,B]): Int = label.compare(m1.label,m2.label)
+  }
 
-  trait SSetImpl[A] extends OrderedISetImpl[A,Any,ST[A],DefaultSTreapContext[A],SSetImpl[A]]
-    */
+  case class BindingHasher[A,B](labeled: PriorityHasher[A], label: PriorityHasher[B]) extends Ordering[Binding[A,B]] {
+    def hash(b: Binding[A,B]): Int = Hashing.jenkinsHash(labeled.hash(b.labeled) ^ label.hash(b.label))
+  }
+
+  implicit def mordering[A,B](implicit d: Ordering[B]): Ordering[Binding[A,B]] = BindingOrdering(d)
+  implicit def mhasher[A,B](implicit labeled: PriorityHasher[B], label: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(d)
+
+  type ST[X] = OrderedISetImpl[X, Any, STreap[X, Any], STreapContext[X, Any]]
+  type BIN[B] = Binding[Int,B]
+  type BST[B] = ST[BIN[B]]
+
+  val dtc: DefaultSTreapContext[BIN[String]] = DefaultSTreapContext[BIN[String]]()
+  //val e: BST[Any] = EmptyOrderedISet(dtc)
 
   // TODO: Memoization of bind
   // TODO: Memoization of evaluation

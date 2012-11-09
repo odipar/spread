@@ -1,9 +1,9 @@
 package spread
 
-// very abstract types that cover all use cases //
 
+
+// very abstract types that cover all use cases //
 object Types {
-  import OrderedSetImplementation._
 
   // immutable sorted set
   trait SortedSet[A,S <: SortedSet[A,S]] {
@@ -13,7 +13,7 @@ object Types {
     def get(a: A): Option[A]            // maximally log(size)
     def split(a: A): (S,Option[A],S)    // maximally log(size)
 
-    def union(o: S): S                  // if a < b - maximally log(min(a.size,b.size))
+    def union(b: S): S                  // if this < b - maximally log(min(a.size,b.size))
     def order(a1: A, a2: A): Int        // orders two elements a < b that are the SortedSet
   }
 
@@ -37,8 +37,8 @@ object Types {
   }
 
   trait Binding[A,B] extends Expr[A,B] {
-    def label: B
     def labeled: Expr[A,B]
+    def label: B
   }
 
   trait UnaryOperator[A,B] extends Expr[A,B] {
