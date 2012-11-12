@@ -4,44 +4,45 @@ object OrderedTreapSet {
   import AbstractImmutableOrderedSet._
 
   // See: http://www.cs.cmu.edu/~scandal/papers/treaps-spaa98.pdf
-  trait JoinTreapImpl[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends Treap[X,M,SS,CC] {
+  trait JoinTreapImpl[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
     def join(o: SS)(implicit c: CC): SS = { // returns the join of this with c
       if (isEmpty) o
       else if (o.isEmpty) this.asInstanceOf[SS]
-      else if (priority > o.priority) c.create(left,some,c.join(right,o))
+      else if (c.orderPriority(priority,o.priority) > 0) c.create(left,some,c.join(right,o))
       else c.create(c.join(this.asInstanceOf[SS],o.left),o.some,o.right)
     }
   }
 
-  trait Treap[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends SISet[X,M,SS,CC] {
-    def priority(implicit c: CC): Int // returns the Treap priority
+  trait Treap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends SISet[X,M,SS,CC] {
+    def priority(implicit c: CC): P // returns the Treap priority
   }
 
-  trait TreapContext[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends SISetContext[X,M,SS,CC] {
-    def priorityHash(x: X): Int // must return the deterministic priority hash of x
+  trait TreapContext[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends SISetContext[X,M,SS,CC] {
+    def priorityHash(x: Option[X]): P // must return the deterministic priority hash of x
+    def orderPriority(p1: P, p2: P): Int // returns the relative order of two priorities hashes
   }
 
-  trait TreapImpl[X,M, SS <: TreapImpl[X,M,SS,CC], CC <: TreapContextImpl[X,M,SS,CC]]
-    extends Treap[X,M,SS,CC] with SISetImpl[X,M,SS,CC]
+  trait TreapImpl[X,M,P,SS <: TreapImpl[X,M,P,SS,CC], CC <: TreapContextImpl[X,M,P,SS,CC]]
+    extends Treap[X,M,P,SS,CC] with SISetImpl[X,M,SS,CC]
 
-  trait TreapContextImpl[X,M, SS <: TreapImpl[X,M,SS,CC], CC <: TreapContextImpl[X,M,SS,CC]]
-    extends TreapContext[X,M,SS,CC] with SISetContextImpl[X,M,SS,CC]
+  trait TreapContextImpl[X,M,P,SS <: TreapImpl[X,M,P,SS,CC], CC <: TreapContextImpl[X,M,P,SS,CC]]
+    extends TreapContext[X,M,P,SS,CC] with SISetContextImpl[X,M,SS,CC]
 
-  trait STreap[X,M] extends TreapImpl[X,M,STreap[X,M],STreapContext[X,M]] {
+  trait STreap[X,M,P] extends TreapImpl[X,M,P,STreap[X,M,P],STreapContext[X,M,P]] {
     def self = this
-    type MM = STreap[X,M]
-    type CC = STreapContext[X,M]
+    type MM = STreap[X,M,P]
+    type CC = STreapContext[X,M,P]
   }
 
-  trait STreapContext[X,M] extends TreapContextImpl[X,M,STreap[X,M],STreapContext[X,M]]{
+  trait STreapContext[X,M,P] extends TreapContextImpl[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]{
     def self = this
-    type MM = STreap[X,M]
-    type CC = STreapContext[X,M]
+    type MM = STreap[X,M,P]
+    type CC = STreapContext[X,M,P]
   }
 
-  trait STreapImpl[X,M] extends STreap[X,M] with JoinTreapImpl[X,M,STreap[X,M],STreapContext[X,M]]
+  trait STreapImpl[X,M,P] extends STreap[X,M,P] with JoinTreapImpl[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
 
-  trait STreapContextImpl[X,M] extends STreapContext[X,M] {  // Default Set Treap constructors
+  trait STreapContextImpl[X,M,P] extends STreapContext[X,M,P] {  // Default Set Treap constructors
     val emptyC: MM = EmptySTreap()
     def empty = emptyC
     def create(x: X) = measure(None,Some(x),None) match {
@@ -57,18 +58,18 @@ object OrderedTreapSet {
     }
   }
 
-  trait EmptyMeasure[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends Treap[X,M,SS,CC] {
+  trait EmptyMeasure[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
     def measure(implicit c: CC) = None
   }
 
-  trait LeafMeasure[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends Treap[X,M,SS,CC] {
+  trait LeafMeasure[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
     def m: M
     def measure(implicit c: CC) = Some(m)
   }
 
-  trait EmptyTreap[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] {
+  trait EmptyTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] {
     override def hashCode = 0
-    def priority(implicit c: CC) = 0
+    def priority(implicit c: CC) = c.priorityHash(None)
     def isEmpty = true
     def some = None
     def left(implicit c: CC) = c.empty
@@ -76,20 +77,20 @@ object OrderedTreapSet {
     def measure(implicit c: CC) =  c.measure(None,None,None)
   }
 
-  trait NonEmptyTreap[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends Treap[X,M,SS,CC]  {
-    def priority(implicit c: CC): Int = c.priorityHash(x)
+  trait NonEmptyTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC]  {
+    def priority(implicit c: CC) = c.priorityHash(some)
     def x: X
     def isEmpty = false
     def some = Some(x)
   }
 
-  trait LeafTreap[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends NonEmptyTreap[X,M,SS,CC]  {
+  trait LeafTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends NonEmptyTreap[X,M,P,SS,CC]  {
     override def hashCode = Hashing.jenkinsHash(x.hashCode)
     def left(implicit c: CC) = c.empty
     def right(implicit c: CC) = c.empty
   }
 
-  trait BinTreap[X,M, SS <: Treap[X,M,SS,CC], CC <: TreapContext[X,M,SS,CC]] extends NonEmptyTreap[X,M,SS,CC]  {
+  trait BinTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends NonEmptyTreap[X,M,P,SS,CC]  {
     import Hashing.jenkinsHash // hashCode must be cached for efficient memoization
     override val hashCode = jenkinsHash(~l.hashCode + (jenkinsHash(x.hashCode) ^ jenkinsHash(r.hashCode) >>> 16) * 2057)
 
@@ -99,22 +100,23 @@ object OrderedTreapSet {
     def right(implicit c: CC) = r
   }
 
-  type EMS[X,M]= EmptyMeasure[X,M,STreap[X,M],STreapContext[X,M]]
-  type LMS[X,M]= LeafMeasure[X,M,STreap[X,M],STreapContext[X,M]]
+  type EMS[X,M,P]= EmptyMeasure[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  type LMS[X,M,P]= LeafMeasure[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
 
-  trait NonEmptySTreap[X,M] extends STreapImpl[X,M] with NonEmptyTreap[X,M,STreap[X,M],STreapContext[X,M]]
-  trait LeafSTreap[X,M] extends NonEmptySTreap[X,M] with LeafTreap[X,M,STreap[X,M],STreapContext[X,M]]
-  trait BinSTreap[X,M] extends NonEmptySTreap[X,M] with BinTreap[X,M,STreap[X,M],STreapContext[X,M]]
-  case class EmptySTreap[X,M]() extends STreapImpl[X,M] with EmptyTreap[X,M,STreap[X,M],STreapContext[X,M]]
-  case class VLeafSTreap[X,M](x: X) extends LeafSTreap[X,M] with EMS[X,M]
-  case class MLeafSTreap[X,M](x: X, m: M) extends LeafSTreap[X,M] with LMS[X,M]
-  case class VBinSTreap[X,M](l: STreap[X,M],x: X, r: STreap[X,M]) extends BinSTreap[X,M] with EMS[X,M]
-  case class MBinSTreap[X,M](l: STreap[X,M],x: X,m: M, r: STreap[X,M]) extends BinSTreap[X,M] with LMS[X,M]
+  trait NonEmptySTreap[X,M,P] extends STreapImpl[X,M,P] with NonEmptyTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  trait LeafSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with LeafTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  trait BinSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with BinTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  case class EmptySTreap[X,M,P]() extends STreapImpl[X,M,P] with EmptyTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  case class VLeafSTreap[X,M,P](x: X) extends LeafSTreap[X,M,P] with EMS[X,M,P]
+  case class MLeafSTreap[X,M,P](x: X, m: M) extends LeafSTreap[X,M,P] with LMS[X,M,P]
+  case class VBinSTreap[X,M,P](l: STreap[X,M,P],x: X, r: STreap[X,M,P]) extends BinSTreap[X,M,P] with EMS[X,M,P]
+  case class MBinSTreap[X,M,P](l: STreap[X,M,P],x: X,m: M, r: STreap[X,M,P]) extends BinSTreap[X,M,P] with LMS[X,M,P]
 
   import Hashing._
 
-  case class DefaultSTreapContext[X](implicit o: Ordering[X], h: PriorityHasher[X]) extends STreapContextImpl[X,Any] {
+  case class DefaultSTreapContext[X](implicit o: Ordering[X], h: PriorityHasher[X]) extends STreapContextImpl[X,Any,Int] {
     def compareOrder(x1: X, x2: X): Int = o.compare(x1,x2)
-    def priorityHash(x: X): Int = h.hash(x)
+    def priorityHash(x: Option[X]): Int = h.hash(x.get)
+    def orderPriority(p1: Int, p2: Int) = p1.compareTo(p2)
   }
 }
