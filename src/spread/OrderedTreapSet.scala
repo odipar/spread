@@ -5,11 +5,15 @@ object OrderedTreapSet {
 
   // See: http://www.cs.cmu.edu/~scandal/papers/treaps-spaa98.pdf
   trait JoinTreapImpl[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
-    def join(o: SS)(implicit c: CC): SS = { // returns the join of this with c
-      if (isEmpty) o
-      else if (o.isEmpty) this.asInstanceOf[SS]
-      else if (c.orderPriority(priority,o.priority) > 0) c.create(left,some,c.join(right,o))
-      else c.create(c.join(this.asInstanceOf[SS],o.left),o.some,o.right)
+    def join(o: SS)(implicit c: CC): (SS,CC) = { // returns the join of this with c
+      if (isEmpty) (o,c)
+      else if (o.isEmpty) (this.asInstanceOf[SS],c)
+      else if (c.orderPriority(priority,o.priority) > 0) {
+        val (r1,c1) = c.join(right,o) ; c1.create(left,some,r1)
+      }
+      else {
+        val (l1,c1) = c.join(this.asInstanceOf[SS],o.left) ; c1.create(l1,o.some,o.right)
+      }
     }
   }
 
@@ -44,16 +48,16 @@ object OrderedTreapSet {
 
   trait STreapContextImpl[X,M,P] extends STreapContext[X,M,P] {  // Default Set Treap constructors
     val emptyC: MM = EmptySTreap()
-    def empty = emptyC
+    def empty = (emptyC,this)
     def create(x: X) = measure(None,Some(x),None) match {
-      case None => VLeafSTreap(x)
-      case Some(m) => MLeafSTreap(x,m)
+      case None => (VLeafSTreap(x),this)
+      case Some(m) => (MLeafSTreap(x,m),this)
     }
     def create(l: MM, x: Option[X], r: MM) = x match {
       case None => empty
       case Some(xx) => measure(l.measure,x,r.measure) match {
-        case None => VBinSTreap(l,xx,r)
-        case Some(m) => MBinSTreap(l,xx,m,r)
+        case None => (VBinSTreap(l,xx,r),this)
+        case Some(m) => (MBinSTreap(l,xx,m,r),this)
       }
     }
   }
@@ -72,8 +76,8 @@ object OrderedTreapSet {
     def priority(implicit c: CC) = c.priorityHash(None)
     def isEmpty = true
     def some = None
-    def left(implicit c: CC) = c.empty
-    def right(implicit c: CC) = c.empty
+    def left(implicit c: CC) = c.empty._1
+    def right(implicit c: CC) = c.empty._1
     def measure(implicit c: CC) =  c.measure(None,None,None)
   }
 
@@ -86,8 +90,8 @@ object OrderedTreapSet {
 
   trait LeafTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends NonEmptyTreap[X,M,P,SS,CC]  {
     override def hashCode = Hashing.jenkinsHash(x.hashCode)
-    def left(implicit c: CC) = c.empty
-    def right(implicit c: CC) = c.empty
+    def left(implicit c: CC): SS = c.empty._1
+    def right(implicit c: CC): SS = c.empty._1
   }
 
   trait BinTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends NonEmptyTreap[X,M,P,SS,CC]  {

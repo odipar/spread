@@ -17,21 +17,21 @@ object AbstractImmutableOrderedSet {
     def some: Option[X] // returns the element between left and right  - must be O(1)
     def right(implicit c: CC): SS // returns all elements greater than some - must be O(1)
 
-    def join(s: SS)(implicit c: CC): SS // returns the union of this with another s, given last(this) < first(s)
+    def join(s: SS)(implicit c: CC): (SS,CC) // returns the union of this with another s, given last(this) < first(s)
   }
 
   // SISetContext drives the construction of new SISets with empty, construct and join (building).
   // It must provide a (partial) order on SISet elements with compareOrder (ordering).
   // The accompanying SISet may be optionally measured via the measure method. (measuring).
-
+  // A new immutable SISetContext can be created while constructing SISets (memoization)
   trait SISetContext[X,M, SS <: SISet[X,M,SS,CC], CC <: SISetContext[X,M,SS,CC]] {
     def self: CC
     implicit def c: CC = self
 
-    def empty: SS // returns the empty Set - must be O(1)
-    def create(x: X): SS // returns the Set with single x - must be O(1)
-    def create(l: SS, x: Option[X], r: SS): SS // returns the Set containing l,x and r - must be O(1)
-    def join(s1: SS, s2: SS): SS // returns the join of two disjoint Sets, must be O(max(log(size(this)),log(size(c))))
+    def empty: (SS,CC) // returns the empty Set - must be O(1)
+    def create(x: X): (SS,CC) // returns the Set with single x - must be O(1)
+    def create(l: SS, x: Option[X], r: SS): (SS,CC) // returns the Set containing l,x and r - must be O(1)
+    def join(s1: SS, s2: SS): (SS,CC) // returns the join of two disjoint Sets, must be O(max(log(size(this)),log(size(c))))
     def compareOrder(c: X, o: X): Int // compares two elements, to order them in the Set - must be O(1)
     def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] // returns measure on l,x and r - must be O(1)
   }
@@ -42,23 +42,29 @@ object AbstractImmutableOrderedSet {
     def first(implicit c: CC): Option[X] = if (left.isEmpty) some ; else c.first(left) // returns the first element
     def last(implicit c: CC): Option[X] = if (right.isEmpty) some ; else c.last(right) // returns the last element
 
-    def split(x: X)(implicit c: CC): (SS,Option[X],SS) = some match { // returns the split, given x -  O(log(size(s))
+    def split(x: X)(implicit c: CC): (SS,Option[X],SS,CC) = some match { // returns the split, given x -  O(log(size(s))
       case Some(e) => {
         val cc = c.compareOrder(e,x)
-        if (cc > 0) {
-          val (l,xx,r) = c.split(left,x)
-          (l,xx,c.join(c.join(r,c.create(e)),right))
+        if (cc > 0) {  // hardcoded monadic style, threading SIContext through the computation
+          val (l,xx,r,c1) = c.split(left,x)
+          val (el,c2) = c1.create(e)
+          val (r1,c3) = c2.join(r,el)
+          val (r2,c4) = c3.join(r1,right)
+          (l,xx,r2,c4)
         }
         else if (cc < 0) {
-          val (l,xx,r) = c.split(right,x)
-          (c.join(c.join(left,(c.create(e))),l),xx,r)
+          val (l,xx,r,c1) = c.split(right,x)
+          val (el,c2) = c1.create(e)
+          val (l1,c3) = c2.join(left,el)
+          val (l2,c4) = c3.join(l1,l)
+          (l2,xx,r,c4)
         }
-        else (left,some,right)
+        else (left,some,right,c)
       }
-      case None => (left,some,right)
+      case None => (left,some,right,c)
     }
 
-    def combine(s: SS, op: SetOperation[X,M,SS,CC])(implicit c: CC): SS = {
+    def combine(s: SS, op: SetOperation[X,M,SS,CC])(implicit c: CC): (SS,CC) = {
       // combines two Sets with bias - given the SetOperation and the (partial) order on the elements
       if (this eq s) op.combineEqual(self,s) // fast equality
       else if (isEmpty) op.combineJoin(self,s) // join if this Set is empty
@@ -66,21 +72,26 @@ object AbstractImmutableOrderedSet {
       else if (c.compareOrder(last.get,s.first.get) < 0) op.combineJoin(self,s) // join if Sets are disjoint
       else if (c.compareOrder(first.get,s.last.get) > 0) op.swap.combineJoin(s,self)
       else {
-        val (l,xx,r) = s.split(some.get)
-        val ms = op.combineElements(some,xx) match { // combine elements
-          case None => c.empty
-          case Some(x) => c.create(x)
+        val (l,xx,r,c1) = s.split(some.get)
+        val (ms,c2) = op.combineElements(some,xx) match { // combine elements
+          case None => c1.empty
+          case Some(x) => c1.create(x)
         }
-        left.combine(l,op) join ms join right.combine(r,op) // recurse on left and right Sets
+        val (ll,c3) = left.combine(l,op)(c2)
+        val (rr,c4) = right.combine(r,op)(c3)
+        val (l1,c5) = ll.join(ms)(c4)
+        l1.join(rr)(c5)
       }
     }
 
-    def union(s: SS)(implicit c: CC): SS = combine(s,c.union)
-    def intersect(s: SS)(implicit c: CC): SS = combine(s,c.intersect)
-    def difference(s: SS)(implicit c: CC): SS = combine(s,c.difference)
+    def union(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.union)
+    def intersect(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.intersect)
+    def difference(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.difference)
 
     def get(x: X)(implicit c: CC): Option[X] = split(x)._2 // override for a more efficient implementation
-    def put(x: X)(implicit c: CC): (SS) = c.create(x) union self // override for a more efficient implementation
+    def put(x: X)(implicit c: CC): (SS,CC) = {
+      val (el,c1) = c.create(x) ; el.union(self)(c1)
+    } // override for a more efficient implementation
   }
 
   trait SISetContextImpl[X,M, SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
@@ -90,9 +101,9 @@ object AbstractImmutableOrderedSet {
 
     def first(s: SS): Option[X] = s.first // returns the first element - O(log(size(s))
     def last(s: SS): Option[X] = s.last // returns the last element - O(log(size(s))
-    def split(s: SS, x: X): (SS,Option[X],SS) = s.split(x) // returns the split, given x - O(log(size(s))
+    def split(s: SS, x: X): (SS,Option[X],SS,CC) = s.split(x) // returns the split, given x - O(log(size(s))
     def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] = None // returns measure on l,x and r - must be O(1)
-    def join(s1: SS, s2: SS): SS = s1.join(s2) // returns the join, must be O(max(log(size(this)),log(size(c))))
+    def join(s1: SS, s2: SS): (SS,CC) = s1.join(s2) // returns the join, must be O(max(log(size(this)),log(size(c))))
 
     val unionV: SetOperation[X,M,SS,CC] = LeftSetUnion() // construct once, to avoid excessive allocations
     val intersectV: SetOperation[X,M,SS,CC] = LeftSetIntersect()
@@ -106,8 +117,8 @@ object AbstractImmutableOrderedSet {
   // Abstract Set operation
   trait SetOperation[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]] {
     def swap: SetOperation[X,M,SS,CC] // must return the same SetOperation, but than with arguments swapped.
-    def combineEqual(s1: SS, s2: SS)(implicit c: CC): SS // must return a (possibly empty) Set when Sets are equal
-    def combineJoin(s1: SS, s2: SS)(implicit c: CC): SS  // must return a (possibly empty) Set when Sets are disjoint
+    def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) // must return a (possibly empty) Set when Sets are equal
+    def combineJoin(s1: SS, s2: SS)(implicit c: CC): (SS,CC) // must return a (possibly empty) Set when Sets are disjoint
     def combineElements(x1: Option[X], x2: Option[X]): Option[X] // may return either elements, or None
 
   }
@@ -141,14 +152,14 @@ object AbstractImmutableOrderedSet {
   // common implementation for (left) Intersection and Union operation
   trait LeftIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
-    def combineEqual(s1: SS, s2: SS)(implicit c: CC): SS = s1
+    def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s1,c)
     def combineEqualElements(x1: X, x2: X): Option[X] = Some(x1)
   }
 
   // common implementation for (right) Intersection and Union operation
   trait RightIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
-    def combineEqual(s1: SS, s2: SS)(implicit c: CC): SS = s2
+    def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s2,c)
     def combineEqualElements(x1: X, x2: X): Option[X] = Some(x2)
   }
 
@@ -185,25 +196,5 @@ object AbstractImmutableOrderedSet {
     def combineEqual(s1: SS,s2: SS)(implicit c: CC) = c.empty
     def combineJoin(s1: SS, s2: SS)(implicit c: CC) = s1.join(s2)
     def combineEqualElements(x1: X, x2: X): Option[X] = None
-  }
-
-    // Memoization SISetContext delegate (hash-consing) with smart constructors
-  trait MemoizationContext[X,M,SS <: SISet[X,M,SS,CC], CC <: SISetContext[X,M,SS,CC]] extends SISetContext[X,M,SS,CC] {
-    import java.lang.ref.WeakReference
-    import collection.mutable.WeakHashMap
-
-    def cc: CC // the delegate
-    var mm = WeakHashMap.empty[SS,WeakReference[SS]]
-
-    def m(x: SS): SS = mm.get(x) match {
-      case None => { mm.put(x,new WeakReference(x)) ; x }
-      case Some(xx) => val r = xx.get ; if (r == null) m(x) ; else r
-    }
-
-    override def empty: SS = cc.empty
-    override def create(x: X) = m(cc.create(x)) // memoize
-    override def create(l: SS, x: Option[X], r: SS) = m(cc.create(l,x,r)) // memoize
-    override def compareOrder(x1: X, x2: X) = cc.compareOrder(x1,x2)
-    override def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] = cc.measure(l,x,r)
   }
 }

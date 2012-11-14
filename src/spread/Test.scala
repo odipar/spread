@@ -2,7 +2,7 @@ package spread
 
 object Test {
   import Types._
-  //import OrderedSetImplementation._
+  import OrderedSetImplementation._
   import OrderedTreapSet._
   import Hashing._
 
@@ -19,8 +19,10 @@ object Test {
   //implicit def mordering[A,B](implicit d: Ordering[B]): Ordering[Binding[A,B]] = BindingOrdering(d)
   //implicit def mhasher[A,B](implicit labeled: PriorityHasher[B], label: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(d)
 
+  type ST[X,M,P] = OrderedISetImpl[X, M, STreap[X,M,P], STreapContext[X,M,P]]
+  val e: ST[Int,Any,Int] = EmptyOrderedISet(DefaultSTreapContext[Int]()) // no measure
   //type ST[X] = OrderedISetImpl[X, Any, STreap[X, Any], STreapContext[X, Any]]
-  type BIN[B] = Binding[Int,B]
+  //type BIN[B] = Binding[Int,B]
   //type BST[B] = ST[BIN[B]]
 
   //val dtc: DefaultSTreapContext[BIN[String]] = DefaultSTreapContext[BIN[String]]()
@@ -31,6 +33,14 @@ object Test {
   // TODO: Memoization of bindings
 
   def main(args: Array[String]): Unit = {
+    val s = 100000
+    var i = 0
+    var ee = e
+    while (i < s) {
+      ee = ee.put(i)
+      i = i + 1
+    }
+    println(ee.split(99991)._3)
     /*def i = (2:IntExpr[Any]) * 3
     println("i: " + i)
     println("i.e: " + i.evaluate)        */
