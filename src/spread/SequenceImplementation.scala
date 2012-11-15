@@ -13,6 +13,7 @@ object SequenceImplementation {
     def construct(ss: (SS,CC)): SIS
     def create(x: X): SIS = construct(c.create(x))
     def append(o: SIS): SIS = construct(s.append(o.s)(c))
+    def compare(o: SIS): Int = s.compare(o.s)(c)
     def measure: Option[M] = s.measure(c)
     def size: N = s.size(c)
     def first: Option[X] = s.first(c)
@@ -28,9 +29,9 @@ object SequenceImplementation {
       val ss = c.sizing
       if (ss.equals(size,ss.zero)) ""
       else if (ss.equals(size,ss.one)) first.get.toString
-      else left.prettyString2 + " " + right.prettyString2
+      else left.prettyString2 + "." + right.prettyString2
     }
-    def prettyString = "[" + prettyString2 + "]"
+    def prettyString = "<" + prettyString2 + ">"
   }
 
   trait SeqImpl[N,X,M, SS <: ISeqImpl[N,X,M,SS,CC], CC <: ISeqContextImpl[N,X,M,SS,CC]]

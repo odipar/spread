@@ -159,17 +159,19 @@ object WeightBalancedSequence {
     def mul(n1: Int, n2: Int) = n1 * n2
 
     def equals(n1: Int, n2: Int) = n1 == n2
-    def compare(n1: Int, n2: Int) = n1.compare(n2)
+    def compare(n1: Int, n2: Int) = n1 compare n2
   }
 
  implicit val intNum: Num[Int] = IntNum
 
   case class DepthMeasuringContext[N,X]()(implicit csc: IWBTreeContextImpl[N,X,Any]) extends IWBTreeContextImpl[N,X,Int] {
     def sizing = csc.sizing
+    def compareOrder(x1: X, x2: X) = csc.compareOrder(x1,x2)
     override def measure(x: Option[X]) = Some(1)
     override def measure(m1: Option[Int], m2: Option[Int]) = Some((m1.get max m2.get) + 1)
   }
-  case class DefaultIWBTreeContext[X](implicit n: Num[Int]) extends IWBTreeContextImpl[Int,X,Any] {
+  case class DefaultIWBTreeContext[X](implicit n: Num[Int], o: Ordering[X]) extends IWBTreeContextImpl[Int,X,Any] {
     def sizing = n
+    def compareOrder(x1: X, x2: X): Int = o.compare(x1,x2)
   }
 }

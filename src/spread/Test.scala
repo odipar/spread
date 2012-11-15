@@ -41,13 +41,18 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     var i = 0
-    val size = 1000000
-    var ss = s
+    val size = 10
+    var s1 = s
+    var s2 = s
     while (i < size) {
-      ss = ss.append(s.create(i))
+      s1 = s1.append(s.create(i))
+      s2 = s2.append(s.create(i))
       i = i + 1
     }
-    println("s: " + ss.measure)
+    val ss1 = s2.append(s.create(1).append(s2))
+    val ss2 = s2.append(s.create(1).append(s2))
+
+    println("s1: " + ss1.compare(ss2))
 
     /*val s = 10
     var i = 0
