@@ -7,12 +7,12 @@ object OrderedTreapSet {
   trait JoinTreapImpl[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
     def join(o: SS)(implicit c: CC): (SS,CC) = { // returns the join of this with c
       if (isEmpty) (o,c)
-      else if (o.isEmpty) (this.asInstanceOf[SS],c)
+      else if (o.isEmpty) (self,c)
       else if (c.orderPriority(priority,o.priority) > 0) {
         val (r1,c1) = c.join(right,o) ; c1.create(left,some,r1)
       }
       else {
-        val (l1,c1) = c.join(this.asInstanceOf[SS],o.left) ; c1.create(l1,o.some,o.right)
+        val (l1,c1) = c.join(self,o.left) ; c1.create(l1,o.some,o.right)
       }
     }
   }
@@ -44,7 +44,10 @@ object OrderedTreapSet {
     type CC = STreapContext[X,M,P]
   }
 
-  trait STreapImpl[X,M,P] extends STreap[X,M,P] with JoinTreapImpl[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  type STP[X,M,P] = STreap[X,M,P]
+  type STC[X,M,P] = STreapContext[X,M,P]
+
+  trait STreapImpl[X,M,P] extends STreap[X,M,P] with JoinTreapImpl[X,M,P,STP[X,M,P],STC[X,M,P]]
 
   trait STreapContextImpl[X,M,P] extends STreapContext[X,M,P] {  // Default Set Treap constructors
     val emptyC: MM = EmptySTreap()
@@ -71,7 +74,7 @@ object OrderedTreapSet {
     def measure(implicit c: CC) = Some(m)
   }
 
-  trait EmptyTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] {
+  trait EmptyTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {
     override def hashCode = 0
     def priority(implicit c: CC) = c.priorityHash(None)
     def isEmpty = true
@@ -104,13 +107,13 @@ object OrderedTreapSet {
     def right(implicit c: CC) = r
   }
 
-  type EMS[X,M,P]= EmptyMeasure[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
-  type LMS[X,M,P]= LeafMeasure[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  type EMS[X,M,P] = EmptyMeasure[X,M,P,STP[X,M,P],STC[X,M,P]]
+  type LMS[X,M,P] = LeafMeasure[X,M,P,STP[X,M,P],STC[X,M,P]]
 
-  trait NonEmptySTreap[X,M,P] extends STreapImpl[X,M,P] with NonEmptyTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
-  trait LeafSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with LeafTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
-  trait BinSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with BinTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
-  case class EmptySTreap[X,M,P]() extends STreapImpl[X,M,P] with EmptyTreap[X,M,P,STreap[X,M,P],STreapContext[X,M,P]]
+  trait NonEmptySTreap[X,M,P] extends STreapImpl[X,M,P] with NonEmptyTreap[X,M,P,STP[X,M,P],STC[X,M,P]]
+  trait LeafSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with LeafTreap[X,M,P,STP[X,M,P],STC[X,M,P]]
+  trait BinSTreap[X,M,P] extends NonEmptySTreap[X,M,P] with BinTreap[X,M,P,STP[X,M,P],STC[X,M,P]]
+  case class EmptySTreap[X,M,P]() extends STreapImpl[X,M,P] with EmptyTreap[X,M,P,STP[X,M,P],STC[X,M,P]]
   case class VLeafSTreap[X,M,P](x: X) extends LeafSTreap[X,M,P] with EMS[X,M,P]
   case class MLeafSTreap[X,M,P](x: X, m: M) extends LeafSTreap[X,M,P] with LMS[X,M,P]
   case class VBinSTreap[X,M,P](l: STreap[X,M,P],x: X, r: STreap[X,M,P]) extends BinSTreap[X,M,P] with EMS[X,M,P]

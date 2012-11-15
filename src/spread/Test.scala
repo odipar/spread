@@ -4,6 +4,8 @@ object Test {
   import Types._
   import OrderedSetImplementation._
   import OrderedTreapSet._
+  import WeightBalancedSequence._
+  import SequenceImplementation._
   import Hashing._
 
   //implicit def intToIExpr[B](i: Int): IntExpr[B] = IExpr[B](i)
@@ -19,8 +21,12 @@ object Test {
   //implicit def mordering[A,B](implicit d: Ordering[B]): Ordering[Binding[A,B]] = BindingOrdering(d)
   //implicit def mhasher[A,B](implicit labeled: PriorityHasher[B], label: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(d)
 
+  type SQT[N,X,M] = SeqImpl[N,X,M,IWBTree[N,X,M],IWBTreeContext[N,X,M]]
+  val s: SQT[Int,Int,Any] = EmptySeqImpl(DefaultIWBTreeContext[Int]())
+
   type ST[X,M,P] = OrderedISetImpl[X, M, STreap[X,M,P], STreapContext[X,M,P]]
   val e: ST[Int,Any,Int] = EmptyOrderedISet(DefaultSTreapContext[Int]()) // no measure
+
   //type ST[X] = OrderedISetImpl[X, Any, STreap[X, Any], STreapContext[X, Any]]
   //type BIN[B] = Binding[Int,B]
   //type BST[B] = ST[BIN[B]]
@@ -32,15 +38,31 @@ object Test {
   // TODO: Memoization of evaluation
   // TODO: Memoization of bindings
 
+
   def main(args: Array[String]): Unit = {
-    val s = 100000
     var i = 0
-    var ee = e
-    while (i < s) {
-      ee = ee.put(i)
+    val size = 10
+    var ss = s
+    while (i < size) {
+      ss = ss.append(s.create(i))
       i = i + 1
     }
-    println(ee.split(99991)._3)
+    println("s: " + ss.split(0)._2.prettyString)
+    println(ss.split(5)._1)
+
+    /*val s = 10
+    var i = 0
+    var ee = e
+    while (i <= s) {
+      ee = ee.put(i)
+      i = i + 2
+    }
+    val (left,element,right) = ee.split(5)
+
+    println(left.prettyString)
+    println(element)
+    println(right.prettyString)*/
+
     /*def i = (2:IntExpr[Any]) * 3
     println("i: " + i)
     println("i.e: " + i.evaluate)        */
