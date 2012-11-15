@@ -20,10 +20,10 @@ object AbstractImmutableOrderedSet {
     def join(s: SS)(implicit c: CC): (SS,CC) // returns the union of this with another s, given last(this) < first(s)
   }
 
-  // SISetContext drives the construction of new SISets with empty, construct and join (building).
+  // SISetContext drives the construction of new SISets with empty, create and join (building).
   // It must provide a (partial) order on SISet elements with compareOrder (ordering).
   // The accompanying SISet may be optionally measured via the measure method. (measuring).
-  // A new immutable SISetContext can be created while constructing SISets (memoization)
+  // New immutable SISetContexts can be created and threaded while creating SISets (memoization)
   trait SISetContext[X,M, SS <: SISet[X,M,SS,CC], CC <: SISetContext[X,M,SS,CC]] {
     def self: CC
     implicit def c: CC = self

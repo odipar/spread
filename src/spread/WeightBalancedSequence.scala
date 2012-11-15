@@ -3,6 +3,7 @@ package spread
 object WeightBalancedSequence {
   import AbstractImmutableSequence._
 
+  // An implementation based on weight-balanced BB(alpha) trees
   trait AppendWBTreeImpl[N,X,M, SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC] {
     def append(r: SS)(implicit c: CC) = {
       val l = self
@@ -113,7 +114,6 @@ object WeightBalancedSequence {
     def left(implicit c: CC) = c.empty._1
     def right(implicit c: CC) = c.empty._1
     def measure(implicit c: CC) =  c.measure(None)
-    def depth = 0
   }
 
   trait NonEmptyWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC]
@@ -125,7 +125,6 @@ object WeightBalancedSequence {
     def left(implicit c: CC): SS = c.empty._1
     def right(implicit c: CC): SS = c.empty._1
     def size(implicit c: CC): N = c.sizing.one
-    def depth = 1
   }
 
   trait BinWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC] {
@@ -137,7 +136,6 @@ object WeightBalancedSequence {
     def left(implicit c: CC) = l
     def right(implicit c: CC) = r
     def size(implicit c: CC) = s
-    def depth = (l.depth max r.depth) + 1
   }
 
   type EMS[N,X,M] = EmptyWBMeasure[N,X,M,SWB[N,X,M],SWC[N,X,M]]
@@ -164,8 +162,13 @@ object WeightBalancedSequence {
     def compare(n1: Int, n2: Int) = n1.compare(n2)
   }
 
-  implicit val intNum: Num[Int] = IntNum
+ implicit val intNum: Num[Int] = IntNum
 
+  case class DepthMeasuringContext[N,X]()(implicit csc: IWBTreeContextImpl[N,X,Any]) extends IWBTreeContextImpl[N,X,Int] {
+    def sizing = csc.sizing
+    override def measure(x: Option[X]) = Some(1)
+    override def measure(m1: Option[Int], m2: Option[Int]) = Some((m1.get max m2.get) + 1)
+  }
   case class DefaultIWBTreeContext[X](implicit n: Num[Int]) extends IWBTreeContextImpl[Int,X,Any] {
     def sizing = n
   }

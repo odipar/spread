@@ -22,7 +22,7 @@ object Test {
   //implicit def mhasher[A,B](implicit labeled: PriorityHasher[B], label: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(d)
 
   type SQT[N,X,M] = SeqImpl[N,X,M,IWBTree[N,X,M],IWBTreeContext[N,X,M]]
-  val s: SQT[Int,Int,Any] = EmptySeqImpl(DefaultIWBTreeContext[Int]())
+  val s: SQT[Int,Int,Int] = EmptySeqImpl(DepthMeasuringContext()(DefaultIWBTreeContext[Int]()))
 
   type ST[X,M,P] = OrderedISetImpl[X, M, STreap[X,M,P], STreapContext[X,M,P]]
   val e: ST[Int,Any,Int] = EmptyOrderedISet(DefaultSTreapContext[Int]()) // no measure
@@ -41,14 +41,13 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     var i = 0
-    val size = 10
+    val size = 1000000
     var ss = s
     while (i < size) {
       ss = ss.append(s.create(i))
       i = i + 1
     }
-    println("s: " + ss.split(0)._2.prettyString)
-    println(ss.split(5)._1)
+    println("s: " + ss.measure)
 
     /*val s = 10
     var i = 0

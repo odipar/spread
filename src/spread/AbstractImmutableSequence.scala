@@ -2,6 +2,10 @@ package spread
 
 object AbstractImmutableSequence {
 
+  // Abstract Immutable Ordered Sequence with a measurement.
+  // Example measurements are size, depth, min, max, etc.
+  // Finger trees, AVL trees, Radix trees (and other implementations), need at least implement ISeq and ISeqContext
+
   trait ISeq[N,X,M, SS <: ISeq[N,X,M,SS,CC], CC <: ISeqContext[N,X,M,SS,CC]] {
     def self: SS
 
@@ -15,9 +19,12 @@ object AbstractImmutableSequence {
     def right(implicit c: CC): SS
 
     def append(s: SS)(implicit c: CC): (SS,CC)
-
-    def depth: Int
   }
+
+  // ISeqContext drives the construction of new ISeqs with empty, create and join (building).
+  // It must provide a (partial) order on ISeq elements with compareOrder (ordering).
+  // The accompanying ISeq may be optionally measured via the measure method. (measuring).
+  // New immutable ISeqContexts can be created and threaded while creating ISeqs (memoization)
 
   trait ISeqContext[N,X,M, SS <: ISeq[N,X,M,SS,CC], CC <: ISeqContext[N,X,M,SS,CC]] {
     def self: CC
@@ -75,4 +82,6 @@ object AbstractImmutableSequence {
     def append(s1: SS, s2: SS): (SS,CC) = s1.append(s2)
     def split(s: SS, n: N): (SS,SS,CC) = s.split(n)
   }
+
+
 }

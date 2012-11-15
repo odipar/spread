@@ -4,7 +4,7 @@ object OrderedSetImplementation {
   import AbstractImmutableOrderedSet._
   import Types.SortedSet
 
-  // OrderdedISet combines a compatible SISetImpl and SISSetContextImpl into one coherent unit
+  // OrderedISet combines a compatible SISetImpl and SISSetContextImpl into one coherent unit
   // and recasts the combination into a new Immutable Ordered Set
 
   trait OrderedISet[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC], SIS <: OrderedISet[X,M,SS,CC,SIS]]

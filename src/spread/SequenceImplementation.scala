@@ -13,6 +13,7 @@ object SequenceImplementation {
     def construct(ss: (SS,CC)): SIS
     def create(x: X): SIS = construct(c.create(x))
     def append(o: SIS): SIS = construct(s.append(o.s)(c))
+    def measure: Option[M] = s.measure(c)
     def size: N = s.size(c)
     def first: Option[X] = s.first(c)
     def last: Option[X] = s.last(c)
@@ -22,7 +23,6 @@ object SequenceImplementation {
       val (l,r,cc) = s.split(n)(c)
       (construct((l,cc)),construct((r,cc)))
     }
-    def depth = s.depth
 
     def prettyString2: String = {
       val ss = c.sizing
