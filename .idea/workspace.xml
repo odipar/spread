@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/SequenceImplementation.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/WeightBalancedSequence.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/OrderedTreapSet.scala" afterPath="$PROJECT_DIR$/src/spread/OrderedTreapSet.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -635,7 +630,11 @@
       <created>1352909321698</created>
       <updated>1352909321698</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="sequences based on weight balanced trees: first cut">
+      <created>1353006706073</created>
+      <updated>1353006706073</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -701,7 +700,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="monadic threading of a context (similar to the State monad)" />
+    <option name="LAST_COMMIT_MESSAGE" value="sequences based on weight balanced trees: first cut" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -729,6 +728,7 @@
     <MESSAGE value="incremental computation with divide and conquer memoization" />
     <MESSAGE value="parameterized priority hash type" />
     <MESSAGE value="monadic threading of a context (similar to the State monad)" />
+    <MESSAGE value="sequences based on weight balanced trees: first cut" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
