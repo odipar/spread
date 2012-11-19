@@ -634,7 +634,11 @@
       <created>1353278806903</created>
       <updated>1353278806903</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="small typo">
+      <created>1353311456795</created>
+      <updated>1353311456795</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -700,7 +704,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="A new look at multimaps" />
+    <option name="LAST_COMMIT_MESSAGE" value="small typo" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -732,6 +736,7 @@
     <MESSAGE value="wording + small tweaks" />
     <MESSAGE value="implemented ordering on sequences" />
     <MESSAGE value="A new look at multimaps" />
+    <MESSAGE value="small typo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
