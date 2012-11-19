@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/A new look at multimaps.pdf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/A new look at multimaps.pdf" afterPath="$PROJECT_DIR$/A new look at multimaps.pdf" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
@@ -630,7 +630,11 @@
       <created>1353014864296</created>
       <updated>1353014864296</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="A new look at multimaps">
+      <created>1353278806903</created>
+      <updated>1353278806903</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -696,7 +700,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented ordering on sequences" />
+    <option name="LAST_COMMIT_MESSAGE" value="A new look at multimaps" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -727,6 +731,7 @@
     <MESSAGE value="sequences based on weight balanced trees: first cut" />
     <MESSAGE value="wording + small tweaks" />
     <MESSAGE value="implemented ordering on sequences" />
+    <MESSAGE value="A new look at multimaps" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
