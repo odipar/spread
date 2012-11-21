@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/A new look at multimaps.pdf" afterPath="$PROJECT_DIR$/A new look at multimaps.pdf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/WildbergerRational.scala" afterPath="$PROJECT_DIR$/src/spread/WildbergerRational.scala" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -22,7 +24,7 @@
   </component>
   <component name="DebuggerManager">
     <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/spread/Test.scala" line="83" class="spread.Test.IExpr" package="spread">
+      <breakpoint url="file://$PROJECT_DIR$/src/spread/Test.scala" line="87" class="spread.Test.IExpr" package="spread">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -76,15 +78,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="README" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="33" selection-start="202" selection-end="202" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Types.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Types.scala">
           <provider selected="true" editor-type-id="text-editor">
@@ -97,7 +90,7 @@
       <file leaf-file-name="Test.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="49" column="30" selection-start="1849" selection-end="1849" vertical-scroll-proportion="0.0">
+            <state line="40" column="29" selection-start="1638" selection-end="1638" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#32#46#0" expanded="true" />
               </folding>
@@ -105,10 +98,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractImmutableOrderedSet.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="AbstractImmutableOrderedSet.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="86" column="1" selection-start="4271" selection-end="4271" vertical-scroll-proportion="0.92105263">
+            <state line="86" column="1" selection-start="4271" selection-end="4271" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WildbergerRational.scala" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/spread/WildbergerRational.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="28" column="28" selection-start="594" selection-end="594" vertical-scroll-proportion="0.03816794">
               <folding />
             </state>
           </provider>
@@ -194,14 +196,15 @@
         <option value="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" />
         <option value="$PROJECT_DIR$/src/spread/WeightBalancedSequence.scala" />
         <option value="$PROJECT_DIR$/src/spread/SequenceImplementation.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
         <option value="$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
+        <option value="$PROJECT_DIR$/src/spread/WildbergerRational.scala" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="209" />
-    <option name="y" value="22" />
+    <option name="x" value="53" />
+    <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="709" />
   </component>
@@ -243,6 +246,24 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
@@ -638,11 +659,19 @@
       <created>1353311456795</created>
       <updated>1353311456795</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="other typo">
+      <created>1353312006378</created>
+      <updated>1353312006378</updated>
+    </task>
+    <task id="LOCAL-00037" summary="other typo">
+      <created>1353532576394</created>
+      <updated>1353532576394</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="209" y="22" width="1280" height="709" extended-state="6" />
+    <frame x="53" y="23" width="1280" height="709" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -704,7 +733,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="small typo" />
+    <option name="LAST_COMMIT_MESSAGE" value="other typo" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -737,6 +766,7 @@
     <MESSAGE value="implemented ordering on sequences" />
     <MESSAGE value="A new look at multimaps" />
     <MESSAGE value="small typo" />
+    <MESSAGE value="other typo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -797,15 +827,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="30" selection-start="1849" selection-end="1849" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#32#46#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="59" column="18" selection-start="1739" selection-end="1739" vertical-scroll-proportion="0.0">
@@ -815,7 +836,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="1" selection-start="4271" selection-end="4271" vertical-scroll-proportion="0.92105263">
+        <state line="86" column="1" selection-start="4271" selection-end="4271" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="40" column="29" selection-start="1638" selection-end="1638" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#32#46#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/WildbergerRational.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="28" selection-start="594" selection-end="594" vertical-scroll-proportion="0.03816794">
           <folding />
         </state>
       </provider>

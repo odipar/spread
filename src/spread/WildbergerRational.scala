@@ -26,7 +26,7 @@ object WildbergerRational {
     def /(o: WRat): WRat = this * ~o
   }
 
-  trait WRatImpl extends WRat {
+  trait WRatImpl extends WRlat {
     def negate = create(numerator.negate,denominator)
     def inverse = create(denominator,numerator)
     def add(o: WRat) = {

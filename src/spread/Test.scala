@@ -40,7 +40,11 @@ object Test {
 
 
   def main(args: Array[String]): Unit = {
-    var i = 0
+    import WildbergerRational._
+
+    val r:R = ((1:R)/4) + ((2:R)/3)
+    println(r)
+    /*var i = 0
     val size = 10
     var s1 = s
     var s2 = s
@@ -52,7 +56,7 @@ object Test {
     val ss1 = s2.append(s.create(1).append(s2))
     val ss2 = s2.append(s.create(1).append(s2))
 
-    println("s1: " + ss1.compare(ss2))
+    println("s1: " + ss1.compare(ss2))   */
 
     /*val s = 10
     var i = 0
