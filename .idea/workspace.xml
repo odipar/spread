@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/rapido.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/WildbergerRational.scala" afterPath="$PROJECT_DIR$/src/spread/WildbergerRational.scala" />
     </list>
     <ignored path="spread.iws" />
@@ -110,7 +108,7 @@
       <file leaf-file-name="WildbergerRational.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/WildbergerRational.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="28" selection-start="594" selection-end="594" vertical-scroll-proportion="0.03816794">
+            <state line="28" column="27" selection-start="593" selection-end="593" vertical-scroll-proportion="0.03816794">
               <folding />
             </state>
           </provider>
@@ -667,7 +665,11 @@
       <created>1353532576394</created>
       <updated>1353532576394</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="wildberger rationals">
+      <created>1353532596474</created>
+      <updated>1353532596474</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -688,7 +690,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24918832" sideWeight="0.78911567" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24918832" sideWeight="0.78911567" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39965987" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21088435" sideWeight="0.49675325" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -733,7 +735,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="other typo" />
+    <option name="LAST_COMMIT_MESSAGE" value="wildberger rationals" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -767,6 +769,7 @@
     <MESSAGE value="A new look at multimaps" />
     <MESSAGE value="small typo" />
     <MESSAGE value="other typo" />
+    <MESSAGE value="wildberger rationals" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -852,7 +855,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/WildbergerRational.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="28" selection-start="594" selection-end="594" vertical-scroll-proportion="0.03816794">
+        <state line="28" column="27" selection-start="593" selection-end="593" vertical-scroll-proportion="0.03816794">
           <folding />
         </state>
       </provider>
