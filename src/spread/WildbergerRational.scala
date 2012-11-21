@@ -4,8 +4,6 @@ import java.math.BigInteger
 
 object WildbergerRational {
 
-  implicit def longToWRat(i: Long): WRat = WNat(BigInteger.valueOf(i))
-
   type R = WRat
 
   trait WRat {
@@ -94,4 +92,6 @@ object WildbergerRational {
   }
 
   case class WRatI(numerator: BigInteger, denominator: BigInteger) extends WRatImpl
+
+  implicit def longToWRat(i: Long): WRat = WNat(BigInteger.valueOf(i))
 }
