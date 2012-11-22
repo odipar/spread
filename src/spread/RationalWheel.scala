@@ -46,7 +46,7 @@ object RationalWheel {
     def create(n: BigInteger, d: BigInteger) = (n.signum,d.signum) match {
       case (0,0) => ZeroZeroW
       case (0,_) => ZeroW
-      case (_,0) => NegInfW
+      case (_,0) => InfW
       case (_,-1) => create(n.negate,d.negate)
       case (_,_) => {
         val gcd = n.gcd(d)
