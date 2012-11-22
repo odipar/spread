@@ -2,96 +2,95 @@ package spread
 
 import java.math.BigInteger
 
-object WildbergerRational {
+/* Wheels: On Division by Zero, Jesper Carlstrom
+ see: http://www2.math.su.se/reports/2001/11/2001-11.ps
+ */
 
-  type R = WRat
 
-  trait WRat {
+object RationalWheel {
+
+  type Q = RatW
+
+  trait RatW {
     def numerator: BigInteger
     def denominator: BigInteger
 
-    def negate: WRat
-    def inverse: WRat
-    def add(o: WRat): WRat
-    def multiply(o: WRat): WRat
+    def negate: RatW
+    def inverse: RatW
+    def add(o: RatW): RatW
+    def multiply(o: RatW): RatW
 
-    def create(n: BigInteger, d: BigInteger): WRat
+    def create(n: BigInteger, d: BigInteger): RatW
 
     def unary_-() = negate
     def unary_~() = inverse
-    def +(o: WRat): WRat = add(o)
-    def *(o: WRat): WRat = multiply(o)
-    def /(o: WRat): WRat = this * ~o
+    def +(o: RatW) = add(o)
+    def *(o: RatW) = multiply(o)
+    def /(o: RatW) = this * ~o
   }
 
-  trait WRatImpl extends WRat {
+  trait RatWImpl extends RatW {
     def negate = create(numerator.negate,denominator)
     def inverse = create(denominator,numerator)
-    def add(o: WRat) = {
+    def add(o: RatW) = {
       val n = numerator.multiply(o.denominator).add(denominator.multiply(o.numerator))
       val d = denominator.multiply(o.denominator)
       create(n,d)
     }
-    def multiply(o: WRat) = {
+    def multiply(o: RatW) = {
       val n = numerator.multiply(o.numerator)
       val d = denominator.multiply(o.denominator)
       create(n,d)
     }
 
     def create(n: BigInteger, d: BigInteger) = (n.signum,d.signum) match {
-      case (0,0) => WZeroZero
-      case (0,_) => WZero
-      case (-1,0) => WNegInf
-      case (1,0) => WPosInf
+      case (0,0) => ZeroZeroW
+      case (0,_) => ZeroW
+      case (_,0) => NegInfW
       case (_,-1) => create(n.negate,d.negate)
       case (_,_) => {
         val gcd = n.gcd(d)
         val nn = n.divide(gcd)
         val dd = d.divide(gcd)
-        if (nn.equals(dd)) WOne
-        else if (dd.equals(BigInteger.ONE)) WNat(nn)
-        else WRatI(nn,dd)
+        if (nn.equals(dd)) OneW
+        else if (dd.equals(BigInteger.ONE)) NatW(nn)
+        else RatWI(nn,dd)
       }
     }
 
     override def toString = numerator+"/"+denominator
   }
 
-  case object WZero extends WRatImpl {
+  case object ZeroW extends RatWImpl {
     val numerator = BigInteger.ZERO
     val denominator = BigInteger.ONE
     override def toString = "0"
   }
 
-  case object WOne extends WRatImpl {
+  case object OneW extends RatWImpl {
     val numerator = BigInteger.ONE
     val denominator = BigInteger.ONE
-    override def toString = ""+numerator
+    override def toString = "1"
   }
 
-  case object WPosInf extends WRatImpl {
+  case object InfW extends RatWImpl {
     val numerator = BigInteger.ONE
     val denominator = BigInteger.ZERO
-    override def toString = "Inf"
+    override def toString = "Infinity"
   }
 
-  case object WNegInf extends WRatImpl {
-    val numerator = BigInteger.ONE.negate
-    val denominator = BigInteger.ZERO
-    override def toString = "-Inf"
-  }
-
-  case object WZeroZero extends WRatImpl {
+  case object ZeroZeroW extends RatWImpl {
     val numerator = BigInteger.ZERO
     val denominator = BigInteger.ZERO
+    override def toString = "Bottom"
   }
 
-  case class WNat(numerator: BigInteger) extends WRatImpl {
+  case class NatW(numerator: BigInteger) extends RatWImpl {
     val denominator = BigInteger.ONE
     override def toString = ""+numerator
   }
 
-  case class WRatI(numerator: BigInteger, denominator: BigInteger) extends WRatImpl
+  case class RatWI(numerator: BigInteger, denominator: BigInteger) extends RatWImpl
 
-  implicit def longToWRat(i: Long): WRat = WNat(BigInteger.valueOf(i))
+  implicit def longToRatW(i: Long): RatW = NatW(BigInteger.valueOf(i))
 }

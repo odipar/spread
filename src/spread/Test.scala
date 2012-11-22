@@ -40,10 +40,11 @@ object Test {
 
 
   def main(args: Array[String]): Unit = {
-    import WildbergerRational._
+    import RationalWheel._
 
-    val r:R = ((1:R)/4) + ((2:R)/3)
-    println(r)
+    val r1 = (3:Q)/4
+    val r2 = (4:Q)/5
+    println(r1*r2)
     /*var i = 0
     val size = 10
     var s1 = s
