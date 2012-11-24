@@ -5,13 +5,13 @@ package spread
 object Integer {
   import Natural._
 
-  def iOne: IntPImpl[NatImpl] = Integer.create(nOne+nOne,nOne)
+  def iOne[O]: IntPImpl[O,NatImpl[O]] = Integer.create(nOne+nOne,nOne)
 
-  def create[N <: Nat[N]](d: N, c: N): IntPImpl[N] = {
+  def create[O,N <: Nat[O,N]](d: N, c: N): IntPImpl[O,N] = {
     NatPair(d,c)
   }
 
-  trait IntP[N <: Nat[N],I <: IntP[N,I]] extends Nat[I] {
+  trait IntP[O,N <: Nat[O,N],I <: IntP[O,N,I]] extends Nat[O,I] {
     def debit: N
     def credit: N
     def negate: I
@@ -21,9 +21,9 @@ object Integer {
     override def toString = debit+"\\"+credit
   }
 
-  trait IntPImpl[N <: Nat[N]] extends IntP[N,IntPImpl[N]] {
+  trait IntPImpl[O,N <: Nat[O,N]] extends IntP[O,N,IntPImpl[O,N]] {
     def self = this
-    type IP = IntPImpl[N]
+    type IP = IntPImpl[O,N]
 
     def half = {
       if (debit.even && !credit.even) create(debit.half.inc,credit.half)
@@ -42,5 +42,5 @@ object Integer {
 
   }
 
-  case class NatPair[N <: Nat[N]](debit: N, credit: N) extends IntPImpl[N]
+  case class NatPair[O,N <: Nat[O,N]](debit: N, credit: N) extends IntPImpl[O,N]
 }

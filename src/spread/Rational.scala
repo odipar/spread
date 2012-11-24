@@ -6,11 +6,11 @@ object Rational {
   import Natural._
   import Integer._
 
-  def rOne: RatPImpl[NatImpl,IntPImpl[NatImpl]] = create(iOne,iOne)
+   def rOne[O]: RatPImpl[O,NatImpl[O],IntPImpl[O,NatImpl[O]]] = create(iOne,iOne)
 
-  def create[N <: Nat[N],I <: IntP[N,I]](n: I, d: I): RatPImpl[N,I] = IPair(n,d)
+  def create[O,N <: Nat[O,N],I <: IntP[O,N,I]](n: I, d: I): RatPImpl[O,N,I] = IPair(n,d)
 
-  trait RatP[N <: Nat[N],I <: IntP[N,I], Q <: RatP[N,I,Q]] extends IntP[N,Q] {
+  trait RatP[O,N <: Nat[O,N],I <: IntP[O,N,I], Q <: RatP[O,N,I,Q]] extends IntP[O,N,Q] {
 
     def numerator: I
     def denominator: I
@@ -20,9 +20,9 @@ object Rational {
     def unary_~ = inverse
   }
 
-  trait RatPImpl[N <: Nat[N], I <: IntP[N,I]] extends RatP[N,I,RatPImpl[N,I]] {
+  trait RatPImpl[O,N <: Nat[O,N], I <: IntP[O,N,I]] extends RatP[O,N,I,RatPImpl[O,N,I]] {
     def self = this
-    type Q = RatPImpl[N,I]
+    type Q = RatPImpl[O,N,I]
 
     def credit = sys.error("not yet")
     def debit = sys.error("not yet")
@@ -74,5 +74,5 @@ object Rational {
     override def toString = numerator+"/"+denominator
   }
 
-  case class IPair[N <: Nat[N], I <: IntP[N,I]](numerator: I, denominator: I) extends RatPImpl[N,I]
+  case class IPair[O,N <: Nat[O,N], I <: IntP[O,N,I]](numerator: I, denominator: I) extends RatPImpl[O,N,I]
 }

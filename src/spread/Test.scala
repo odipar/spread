@@ -44,6 +44,9 @@ object Test {
     import Integer._
     import Rational._
 
+
+    println("s")
+
     val one = rOne
     val two = one + one
     val three = two + one
@@ -67,36 +70,6 @@ object Test {
     println("r2: " + r2)
     println("r3: " + r3)
     println("GCD: " + r1.gcd(r2).simplify)
-    /*var i = 0
-    val size = 10
-    var s1 = s
-    var s2 = s
-    while (i < size) {
-      s1 = s1.append(s.create(i))
-      s2 = s2.append(s.create(i))
-      i = i + 1
-    }
-    val ss1 = s2.append(s.create(1).append(s2))
-    val ss2 = s2.append(s.create(1).append(s2))
-
-    println("s1: " + ss1.compare(ss2))   */
-
-    /*val s = 10
-    var i = 0
-    var ee = e
-    while (i <= s) {
-      ee = ee.put(i)
-      i = i + 2
-    }
-    val (left,element,right) = ee.split(5)
-
-    println(left.prettyString)
-    println(element)
-    println(right.prettyString)*/
-
-    /*def i = (2:IntExpr[Any]) * 3
-    println("i: " + i)
-    println("i.e: " + i.evaluate)        */
   }
 
   /*trait IntExpr[B] extends Expr[Int,B] {

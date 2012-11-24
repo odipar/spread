@@ -7,11 +7,11 @@ import java.math.BigInteger
 object Natural {
   private val ONE = BigInteger.ONE
 
-  def nOne = One
+  def nOne[O]: NatImpl[O] = One()
 
-  def create(n: BigInteger): NatImpl = if (n.equals(One.size)) One ; else BiggerThanOne(n)
+  def create[O](n: BigInteger): NatImpl[O] = if (n.equals(One().size)) One() ; else BiggerThanOne(n)
 
-  trait Nat[N <: Nat[N]] {
+  trait Nat[O,N <: Nat[O,N]] {
     def self: N
 
     def simplify: N
@@ -55,24 +55,26 @@ object Natural {
     }
   }
 
-  trait NatImpl extends Nat[NatImpl] {
+  trait NatImpl[O] extends Nat[O,NatImpl[O]] {
     def self = this
     def size: BigInteger
 
+    type NI  = NatImpl[O]
+
     def simplify = self
-    def half: NatImpl = if (size.and(ONE).compareTo(ONE) != 0) create(size.shiftRight(1)) ; else create(size.shiftRight(1).add(ONE))
-    def div(o: NatImpl) = create(size.divide(size.gcd(o.size)))
-    def add(o: NatImpl) = create(size.add(o.size))
-    def mul(o: NatImpl) = create(size.multiply(o.size))
-    def diff1(o: NatImpl) = create(size.subtract(o.size).abs.add(ONE))
-    def compare(o: NatImpl) = size.compareTo(o.size)
+    def half: NI = if (size.and(ONE).compareTo(ONE) != 0) create(size.shiftRight(1)) ; else create(size.shiftRight(1).add(ONE))
+    def div(o: NI) = create(size.divide(size.gcd(o.size)))
+    def add(o: NI) = create(size.add(o.size))
+    def mul(o: NI) = create(size.multiply(o.size))
+    def diff1(o: NI) = create(size.subtract(o.size).abs.add(ONE))
+    def compare(o: NI) = size.compareTo(o.size)
 
     override def toString = size.toString
   }
 
-  final case object One extends NatImpl {
+  case class One[O]() extends NatImpl[O] {
     val size = ONE
   }
 
-  case class BiggerThanOne(size: BigInteger) extends NatImpl
+  case class BiggerThanOne[O](size: BigInteger) extends NatImpl[O]
 }
