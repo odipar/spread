@@ -40,11 +40,33 @@ object Test {
 
 
   def main(args: Array[String]): Unit = {
-    import RationalWheel._
+    import Natural._
+    import Integer._
+    import Rational._
 
-    val r1 = (3:Q)/4
-    val r2 = (4:Q)/5
-    println(r1*r2)
+    val one = rOne
+    val two = one + one
+    val three = two + one
+    val four = two + two
+    val five = four + one
+    val fifteen = (three * five)
+    val sixteen = four * four
+    val eight = four + four
+    val twelve = eight + four
+    val thirteen = twelve + one
+    val ten = (five * two)
+    val minus_ten = -ten
+    val six = sixteen + minus_ten
+    val thirty_six = six * six
+
+    val r1 = fifteen.simplify
+    val r2 = five.simplify
+
+    val r3 = (r1 * ~r2).simplify
+    println("r1: " + r1)
+    println("r2: " + r2)
+    println("r3: " + r3)
+    println("GCD: " + r1.gcd(r2).simplify)
     /*var i = 0
     val size = 10
     var s1 = s
