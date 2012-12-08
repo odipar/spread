@@ -32,8 +32,8 @@ object Types {
   // immutable expressions
   trait Expr[A,B] {
     def evaluate: Expr[A,B]
-    def bind(b: SSet[Binding[A,B]]): Expr[A,B]
-    def bindings: SSet[Binding[A,B]]
+  //  def bind(b: SSet[Binding[A,B]]): Expr[A,B]
+  //  def bindings: SSet[Binding[A,B]]
   }
 
   trait Binding[A,B] extends Expr[A,B] {

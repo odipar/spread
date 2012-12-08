@@ -1,5 +1,7 @@
 package spread
 
+import javax.swing.DefaultComboBoxModel
+
 object Test {
   import Types._
   import OrderedSetImplementation._
@@ -10,22 +12,36 @@ object Test {
 
   //implicit def intToIExpr[B](i: Int): IntExpr[B] = IExpr[B](i)
 
-  /*case class BindingOrdering[A,B](label: Ordering[B]) extends Ordering[Binding[A,B]] {
+  case class BindingOrdering[A,B](label: Ordering[B]) extends Ordering[Binding[A,B]] {
     def compare(m1: Binding[A,B], m2: Binding[A,B]): Int = label.compare(m1.label,m2.label)
   }
 
-  case class BindingHasher[A,B](labeled: PriorityHasher[A], label: PriorityHasher[B]) extends Ordering[Binding[A,B]] {
-    def hash(b: Binding[A,B]): Int = Hashing.jenkinsHash(labeled.hash(b.labeled) ^ label.hash(b.label))
-  } */
+  case class BindingHasher[A,B](labelHasher: PriorityHasher[B]) extends PriorityHasher[Binding[A,B]] {
+    def hash(b: Binding[A,B]): Int = labelHasher.hash(b.label)
+  }
 
-  //implicit def mordering[A,B](implicit d: Ordering[B]): Ordering[Binding[A,B]] = BindingOrdering(d)
-  //implicit def mhasher[A,B](implicit labeled: PriorityHasher[B], label: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(d)
+  case object StringHasher extends PriorityHasher[String] {
+    def hash(b: String) = Hashing.jenkinsHash(b.hashCode)
+  }
+
+  implicit def mordering[A,B](implicit d: Ordering[B]): Ordering[Binding[A,B]] = BindingOrdering(d)
+  implicit def mhasher[A,B](implicit lh: PriorityHasher[B]): PriorityHasher[Binding[A,B]] = BindingHasher(lh)
+  implicit def sHasher: PriorityHasher[String] = StringHasher
 
   type SQT[N,X,M] = SeqImpl[N,X,M,IWBTree[N,X,M],IWBTreeContext[N,X,M]]
   val s: SQT[Int,Int,Int] = EmptySeqImpl(DepthMeasuringContext()(DefaultIWBTreeContext[Int]()))
 
   type ST[X,M,P] = OrderedISetImpl[X, M, STreap[X,M,P], STreapContext[X,M,P]]
   val e: ST[Int,Any,Int] = EmptyOrderedISet(DefaultSTreapContext[Int]()) // no measure
+
+
+  type SST[X] = ST[X,Any,Int]
+  type BIN = Binding[Int,String]
+  type BST = SST[BIN]
+
+  val b = DefaultSTreapContext[BIN]()
+
+  val ee: BST = EmptyOrderedISet(b)
 
   //type ST[X] = OrderedISetImpl[X, Any, STreap[X, Any], STreapContext[X, Any]]
   //type BIN[B] = Binding[Int,B]
@@ -40,7 +56,7 @@ object Test {
 
 
   def main(args: Array[String]): Unit = {
-    import Natural._
+    /*import Natural._
     import Integer._
     import Rational._
 
@@ -62,42 +78,96 @@ object Test {
     val six = sixteen + minus_ten
     val thirty_six = six * six
 
-    val r1 = fifteen.simplify
-    val r2 = five.simplify
+    val r1 = ten.simplify
+    val r2 = (one + -(one)).simplify
+    val r3 = r1 * r2
+    val r4 = ~r2
+    val r5 = r3 * r4
 
-    val r3 = (r1 * ~r2).simplify
     println("r1: " + r1)
     println("r2: " + r2)
     println("r3: " + r3)
-    println("GCD: " + r1.gcd(r2).simplify)
+    println("r4: " + r4)
+    println("r5: " + r5.simplify)
+       */
+
+
+
+    val one = "01" :- 1:IntS
+    val two = "02" :- one + one
+    val four = "04" :- two * two
+    val six = "06" :- four + two
+    val thirtysix = "36" :- six * six
+
+    println(thirtysix)
+    println(thirtysix.bindings.prettyString)
+    println(thirtysix.evaluate)
+
   }
 
-  /*trait IntExpr[B] extends Expr[Int,B] {
-    def bind(s: SSet[Binding[Int,B]]) = sys.error("not yet")
-    def bindings: SSet[Binding[Int,B]] = sys.error("not yet")
-    def +(i: IntExpr[B]) = IAdd(this,i)
-    def *(i: IntExpr[B]) = IMul(this,i)
+  type IntS = IntExpr
+
+  implicit def intIntS(i: Int): IntS = IExpr(i)
+  implicit def stringLabel(s: String): ILabel = ILabel(s)
+
+  trait IntExpr extends Expr[Int,String] {
+    def bind(s: Binding[Int,String]) = this
+    def bindings: BST
+    def +(i: IntExpr) = IAdd(this,i)
+    def *(i: IntExpr) = IMul(this,i)
   }
 
-  case class IExpr[B](i: Int) extends IntExpr[B] {
+  case object IEmpty extends IntExpr {
+    def bindings = ee
     def evaluate = this
   }
 
-  case class IAdd[B](first: IntExpr[B], second: IntExpr[B]) extends IntExpr[B] {
-    lazy val evaluate: IntExpr[B] =  (first.evaluate,second.evaluate) match {
+  case class IExpr[B](i: Int) extends IntExpr {
+    def bindings = ee
+    def evaluate = this
+    override def toString = i.toString
+  }
+
+  case class IAdd[B](first: IntExpr, second: IntExpr) extends IntExpr {
+    override def bind(s: Binding[Int,String]) = bindings.get(s) match {
+      case None => this
+      case Some(x) => IAdd(first.bind(s),second.bind(s))
+    }
+    lazy val bindings = first.bindings.union(second.bindings)
+    lazy val evaluate: IntExpr = (first.evaluate,second.evaluate) match {
       case (IExpr(i1),IExpr(i2)) => IExpr(i1+i2)
+      case (i: IBinding, e: IntExpr) => IAdd(i.labeled,e).evaluate
+      case (e: IntExpr, i: IBinding) => IAdd(e,i.labeled).evaluate
       case _ => this
     }
+    override def toString = "("+first.toString + " + " + second.toString+")"
   }
 
-  case class IMul[B](first: IntExpr[B], second: IntExpr[B]) extends IntExpr[B] {
-    lazy val evaluate: IntExpr[B] =  (first.evaluate,second.evaluate) match {
+  case class IMul[B](first: IntExpr, second: IntExpr) extends IntExpr {
+    override def bind(s: Binding[Int,String]) = bindings.get(s) match {
+      case None => this
+      case Some(x) => IMul(first.bind(s),second.bind(s))
+    }
+    lazy val bindings = first.bindings union second.bindings
+    lazy val evaluate: IntExpr =  (first.evaluate,second.evaluate) match {
       case (IExpr(i1),IExpr(i2)) => IExpr(i1*i2)
+      case (i: IBinding, e: IntExpr) => IMul(i.labeled,e).evaluate
+      case (e: IntExpr, i: IBinding) => IMul(e,i.labeled).evaluate
       case _ => this
     }
+    override def toString = "("+first.toString + " * " + second.toString+")"
   }
 
-  case class IBinding[B](label: B, labeled: IntExpr[B]) extends IntExpr[B] with Binding[Int,B] {
-    lazy val evaluate: IntExpr[B] = IBinding(label,labeled.evaluate.asInstanceOf[IntExpr[B]])
-  } */
+  case class ILabel(label: String) extends IntExpr with Binding[Int,String] {
+    def labeled = IEmpty
+    lazy val bindings = ee.put(label)
+    lazy val evaluate: IntExpr = this
+    def :-(e: IntExpr) = IBinding(label,e)
+    override def toString = "(\"" + label +")"
+  }
+  case class IBinding(label: String, labeled: IntExpr) extends IntExpr with Binding[Int,String] {
+    lazy val bindings = labeled.bindings.put(this)
+    lazy val evaluate: IntExpr = labeled.evaluate.asInstanceOf[IntExpr]
+    override def toString = "(\"" + label + "\":-" + labeled +")"
+  }
 }
