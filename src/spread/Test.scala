@@ -92,7 +92,7 @@ object Test {
        */
 
 
-
+    // Transition
     val one = "01" :- 1:IntS
     val two = "02" :- one + one
     val four = "04" :- two * two
