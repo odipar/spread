@@ -40,9 +40,9 @@ object Engine {
     def reduce = this
     def label = None
     def bind(b: Map[Expr,Expr]) = {
-        val bb = b filterKeys localLabels // TODO: use fast set intersection
-        if (bb.isEmpty) this
-        else source.bind(bb).reduce
+      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      if (bb.isEmpty) this
+      else source.bind(bb).reduce
     }
     def localLabels = source.localLabels
     def globalLabels = source.globalLabels
@@ -103,7 +103,7 @@ object Engine {
     def reduce: Expr = {
       val vadd = IAdd(arg1.reduce,arg2.reduce)
 
-       (vadd.arg1,vadd.arg2) match {
+      (vadd.arg1,vadd.arg2) match {
         case (Reduction(IExpr(i1),_),Reduction(IExpr(i2),_)) => Reduction(IExpr(i1+i2),vadd)
         case _ => vadd
       }
@@ -119,28 +119,112 @@ object Engine {
     def asString = arg1.asString + " " + arg2.asString + " +"
   }
 
-    case class IMul(arg1: Expr, arg2: Expr) extends Expr {
-      def label = None
-      def source = this
-      def reduce: Expr = {
-        val vmul = IMul(arg1.reduce,arg2.reduce)
+  case class IMul(arg1: Expr, arg2: Expr) extends Expr {
+    def label = None
+    def source = this
+    def reduce: Expr = {
+      val vmul = IMul(arg1.reduce,arg2.reduce)
 
-        (vmul.arg1,vmul.arg2) match {
-          case (Reduction(IExpr(i1),_),Reduction(IExpr(i2),_)) => Reduction(IExpr(i1*i2),vmul)
-          case _ => vmul
-        }
+      (vmul.arg1,vmul.arg2) match {
+        case (Reduction(IExpr(i1),_),Reduction(IExpr(i2),_)) => Reduction(IExpr(i1*i2),vmul)
+        case _ => vmul
       }
-      def bind(b: Map[Expr,Expr]) = {
-        val bb = b filterKeys localLabels // TODO: use fast set intersection
-        if (bb.isEmpty) this
-        else IMul(arg1.bind(bb),arg2.bind(bb))
-      }
-      lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
-      lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
-
-      def asString = arg1.asString + " " + arg2.asString + " *"
-
     }
+    def bind(b: Map[Expr,Expr]) = {
+      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      if (bb.isEmpty) this
+      else IMul(arg1.bind(bb),arg2.bind(bb))
+    }
+    lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
+    lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
+
+    def asString = arg1.asString + " " + arg2.asString + " *"
+
+  }
+
+  case class Red(arg1: Expr) extends Expr {
+    def label = None
+    def source = this
+    def reduce: Expr = {
+      val vred = Red(arg1.reduce)
+
+      (vred.arg1) match {
+        case Reduction(MExpr(b),_) => {
+            var nm:Map[Expr,Expr] = Map()
+            for (k <- b.keys) {
+              val v = b.get(k).get
+              nm = nm + (k -> v.reduce)
+            }
+            Reduction(MExpr(nm),vred)
+        }
+        case _ => vred
+      }
+    }
+    def bind(b: Map[Expr,Expr]) = {
+      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      if (bb.isEmpty) this
+      else Red(arg1.bind(bb))
+    }
+    lazy val localLabels = arg1.localLabels
+    lazy val globalLabels = arg1.globalLabels
+
+    def asString = arg1.asString + " $"
+  }
+  case class Bind(arg1: Expr, arg2: Expr) extends Expr {
+    def label = None
+    def source = this
+    def reduce: Expr = {
+      val vbind = Bind(arg1.reduce,arg2.reduce)
+
+      (vbind.arg1,vbind.arg2) match {
+        case (Reduction(MExpr(m1),_),Reduction(MExpr(m2),_)) => {
+          Reduction(MExpr(m1).bind(m2),this)
+        }
+        case _ => vbind
+      }
+    }
+    def bind(b: Map[Expr,Expr]) = {
+      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      if (bb.isEmpty) this
+      else Bind(arg1.bind(bb),arg2.bind(bb))
+    }
+    lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
+    lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
+
+    def asString = arg1.asString + " " + arg2.asString + " !"
+  }
+
+  case class MExpr(m: Map[Expr,Expr]) extends Expr {
+    def reduce = Reduction(this,this)
+    def source = this
+    def label = None
+    def bind(b: Map[Expr,Expr]): Expr = {
+      var nm:Map[Expr,Expr] = Map()
+      for (k <- m.keys) {
+        val v = m.get(k).get
+        nm = nm + (k -> v.bind(b))
+      }
+      MExpr(nm)
+    }
+    lazy val localLabels = {
+      var ll: Set[Expr] = Set()
+      for (k <- m.keys) {
+        ll = ll ++ m.get(k).get.localLabels
+      }
+      ll
+    }
+    def globalLabels = Set()
+    def asString = {
+      var i = 0
+      var s = "["
+      for (k <- m.keys) {
+        if (i > 0) { s = s + ", "}
+        s = s + k.asString + "=" + m.get(k).get.asString
+        i = i + 1
+      }
+      s + "]"
+    }
+  }
 }
 
 // Implementation notes

@@ -67,7 +67,10 @@ object Test {
     val b:Map[Expr,Expr] = Map(Symbol("a")->IExpr(5))
     val r = a2.reduce
     val rb = r.bind(b)
-    println("r: " + r.asString)
-    println("rb: " + rb.asString)
+    val m1 = MExpr(Map(Symbol("x1")->a2,Symbol("x2")->m))
+    val m2 = MExpr(b)
+    val bb = Bind(m1,m2)
+    val rr = Red(bb)
+    println("bb: " + rr.reduce.asString)
   }
 }
