@@ -178,7 +178,7 @@ object Engine {
 
       (vbind.arg1,vbind.arg2) match {
         case (Reduction(MExpr(m1),_),Reduction(MExpr(m2),_)) => {
-          Reduction(MExpr(m1).bind(m2),this)
+          Reduction(MExpr(m1).bind(m2),vbind)
         }
         case _ => vbind
       }

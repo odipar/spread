@@ -71,6 +71,9 @@ object Test {
     val m2 = MExpr(b)
     val bb = Bind(m1,m2)
     val rr = Red(bb)
+    val r2 = Red(m1)
+    val b2 = Bind(r2,m2)
     println("bb: " + rr.reduce.asString)
+    println("b2: " + b2.reduce.asString)
   }
 }
