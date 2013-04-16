@@ -1,6 +1,7 @@
 package spread
 
 import java.math.BigInteger
+import scala.language.implicitConversions
 
 /* Wheels: On Division by Zero, Jesper Carlstrom 2001
  see: http://www2.math.su.se/reports/2001/11/2001-11.ps
