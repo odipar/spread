@@ -2,13 +2,67 @@ package spread
 
 object Engine {
 
+  import scala.collection.immutable.SortedSet
+
+  object ExprOrdering extends Ordering[Expr] {
+    def compare(e1: Expr, e2: Expr): Int = (e1,e2) match {
+      case (NilExpr,NilExpr) => 0
+      case (NilExpr,_) => -1
+      case (Symbol(s1),Symbol(s2)) => s1.compare(s2)
+      case (Symbol(s1),_) => -1
+      case (UnboundExpr(l1),UnboundExpr(l2)) => compare(l1.content,l2.content)
+      case (UnboundExpr(l1),_) => -1
+      case (BoundExpr(l1,e1),BoundExpr(l2,e2)) => {
+        val c = compare(e1,e2)
+        if (c == 0) compare(l1.content,l2.content)
+        else c
+      }
+      case (BoundExpr(_,e1),e2) => compare(e1,e2)
+      case (e1,BoundExpr(_,e2)) => compare(e1,e2)
+      case (IExpr(i1),IExpr(i2)) => i1 - i2
+      case (IExpr(_),_) => -1
+      case (Reduction(r1,s1),Reduction(r2,s2)) => {
+        val c = compare(r1,r2)
+        if (c == 0) compare(s2,s2)
+        else c
+      }
+      case (Reduction(r1,s1),_) => -1
+      case (IMul(a11,a12),IMul(a21,a22)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (IMul(_,_),_) => -1
+      case (Alternatives(a1),Alternatives(a2)) => {
+        compare_s(a1,a2)
+      }
+      case (Alternatives(_),_) => -1
+    }
+
+    def compare_s(s1: SortedSet[Expr],s2: SortedSet[Expr]): Int = {
+      if (s1.size > s2.size) -compare_s(s2,s1)
+      else {
+        var i1 = s1.iterator
+        var i2 = s2.iterator
+        var c = 0
+        while (i1.hasNext && (c==0)) {
+          c = compare(i1.next,i2.next())
+        }
+        c
+      }
+    }
+  }
+
+  implicit val exprOrdering = ExprOrdering
+
   trait Expr {
     def reduce: Expr
     def source: Expr
 
+    def alternatives: Alternatives
+
     def label: Option[Label]
-    def localLabels: Set[Expr]
-    def globalLabels: Set[Expr]
+    def labels: SortedSet[Expr]
 
     def bind(b: Map[Expr,Expr]): Expr
 
@@ -16,12 +70,53 @@ object Engine {
   }
 
   trait Atom extends Expr {
-    def reduce = Reduction(this,this)
+    def reduce = Reduction(alternatives,this)
+    def alternatives = Alternatives(SortedSet[Expr](this))
     def source = this
     def label = None
+    def labels = SortedSet[Expr]()
+
     def bind(b: Map[Expr,Expr]): Expr = this
-    def localLabels = Set()
-    def globalLabels = Set()
+  }
+
+  case class Alternatives(v: SortedSet[Expr]) extends Expr {
+    def alternatives = {
+      var aa:SortedSet[Expr] = SortedSet[Expr]()
+      for (a <- v) aa = aa ++ a.alternatives.v
+      Alternatives(aa)
+    }
+    def reduce = {
+      var aa:SortedSet[Expr] = SortedSet[Expr]()
+      for (a <- alternatives.v) aa = aa + a.reduce.alternatives
+      Reduction(Alternatives(aa),this)
+    }
+    def source = this
+    def label = None
+    lazy val labels = {
+      var l:SortedSet[Expr] = SortedSet[Expr]()
+      for (a <- v) l = l ++ a.labels
+      l
+    }
+
+    def bind(b: Map[Expr,Expr]): Expr = {
+      var aa:SortedSet[Expr] = SortedSet[Expr]()
+      for (a <- v) aa = aa + a.bind(b)
+      Alternatives(aa)
+    }
+
+    def asString = {
+      var i = 0
+      val size = v.size
+      var s = ""
+      if (size > 1) s = s + "{"
+      for (a <- v) {
+        if (i > 0) { s = s + ", "}
+        s = s + a.asString
+        i = i + 1
+      }
+      if (size > 1) s = s + "}"
+      s
+    }
   }
 
   case class Symbol(s: String) extends Atom {
@@ -39,16 +134,28 @@ object Engine {
   case class Reduction(v: Expr, source: Expr) extends Expr {
     def reduce = this
     def label = None
+    lazy val labels = v.labels ++ source.labels
+
+    def alternatives = v.alternatives
+
     def bind(b: Map[Expr,Expr]) = {
-      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      val bb = b filterKeys labels // TODO: use fast set intersection
       if (bb.isEmpty) this
-      else source.bind(bb).reduce
+      else {
+        val bb2 = bb filterKeys source.labels
+        if (bb2.isEmpty) {
+          val bb3 = bb filterKeys v.labels
+          if (bb3.isEmpty) this
+          else Reduction(v.bind(bb3),source)
+        }
+        else {
+          source.bind(b).reduce
+        }
+      }
     }
-    def localLabels = source.localLabels
-    def globalLabels = source.globalLabels
 
     def asString = {
-      if (v == source) v.asString
+      if (v == source.alternatives) v.asString
       else v.asString + "@(" + source.asString + ")"
     }
   }
@@ -64,79 +171,129 @@ object Engine {
     def asString = content.asString+"'"
   }
 
-  case class GlobalLabel(content: Expr) extends Label {
-    def isLocal = false
-    def asString = content.asString+"''"
-  }
-
   case class UnboundExpr(l: Label) extends Expr {
     def reduce = this
     def source = this
+    def alternatives = Alternatives(SortedSet[Expr](this))
     def label = Some(l)
+    def labels = if (l.isLocal) SortedSet(l.content) else SortedSet[Expr]()
     def bind(b: Map[Expr,Expr]): Expr = {
       if (b.contains(l.content)) BoundExpr(l,b.get(l.content).get)
       else this
     }
-    def localLabels = if (l.isLocal) Set(l.content) else Set()
-    def globalLabels = if (!l.isLocal) Set(l.content) else Set()
 
     def asString = l.asString
   }
 
   case class BoundExpr(l: Label, e: Expr) extends Expr {
-    def reduce = Reduction(e,this)
+    def alternatives = Alternatives(SortedSet[Expr](this)) // TODO: iterate through e.alternatives and label them
+    def reduce = {
+      val nb = BoundExpr(l,e.reduce)
+      (nb.e) match {
+        case Reduction(v,_) => Reduction(v,nb)
+        case _ => this
+      }
+    }
     def source = this
     def label = Some(l)
     def bind(b: Map[Expr,Expr]): Expr = {
       if (b.contains(l.content)) BoundExpr(l,b.get(l.content).get)
-      else this
+      else BoundExpr(l,e.bind(b))
     }
-    def localLabels = if (l.isLocal) Set(l.content) else Set()
-    def globalLabels = if (!l.isLocal) Set(l.content) else Set()
+    lazy val labels = e.labels ++ SortedSet[Expr](l.content)
 
     def asString = l.asString + e.asString
   }
 
   case class IAdd(arg1: Expr, arg2: Expr) extends Expr {
     def label = None
+    lazy val alternatives = {
+     var s:SortedSet[Expr] = SortedSet[Expr]()
+     val a1 = arg1.alternatives.v
+     val a2 = arg2.alternatives.v
+     for (a11 <- a1) {
+       for (a22 <- a2) {
+        s = s + IAdd(a11,a22)
+       }
+     }
+     Alternatives(s)
+    }
     def source = this
     def reduce: Expr = {
       val vadd = IAdd(arg1.reduce,arg2.reduce)
 
-      (vadd.arg1,vadd.arg2) match {
-        case (Reduction(IExpr(i1),_),Reduction(IExpr(i2),_)) => Reduction(IExpr(i1+i2),vadd)
-        case _ => vadd
+      val a1 = vadd.arg1.alternatives.v
+      val a2 = vadd.arg2.alternatives.v
+
+      var s:SortedSet[Expr] = SortedSet[Expr]()
+
+      for (aa1 <- a1) {
+         for (aa2 <- a2) {
+            (aa1,aa2) match {
+              case (IExpr(i1),IExpr(i2)) =>  s = s + IExpr(i1+i2)
+              case _ =>
+            }
+         }
       }
+      if (s.isEmpty) vadd
+      else Reduction(Alternatives(s),vadd)
     }
     def bind(b: Map[Expr,Expr]) = {
-      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      val bb = b filterKeys labels // TODO: use fast set intersection
       if (bb.isEmpty) this
       else IAdd(arg1.bind(bb),arg2.bind(bb))
     }
-    lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
-    lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
+    lazy val labels = arg1.labels ++ arg2.labels // TODO: use fast set union
 
     def asString = arg1.asString + " " + arg2.asString + " +"
   }
 
   case class IMul(arg1: Expr, arg2: Expr) extends Expr {
+    lazy val alternatives = {
+      var s:SortedSet[Expr] = SortedSet[Expr]()
+      val a1 = arg1.alternatives.v
+      val a2 = arg2.alternatives.v
+      for (a11 <- a1) {
+        for (a22 <- a2) {
+          s = s + IMul(a11,a22)
+        }
+      }
+      Alternatives(s)
+    }
     def label = None
     def source = this
     def reduce: Expr = {
       val vmul = IMul(arg1.reduce,arg2.reduce)
 
-      (vmul.arg1,vmul.arg2) match {
-        case (Reduction(IExpr(i1),_),Reduction(IExpr(i2),_)) => Reduction(IExpr(i1*i2),vmul)
-        case _ => vmul
+      //println("arg1: " + vmul.arg1)
+      //println("arg2: " + vmul.arg2)
+
+
+      val a1 = vmul.arg1.alternatives.v
+      val a2 = vmul.arg2.alternatives.v
+
+      //println("a1: " + a1)
+      //println("a2: " + a2)
+
+      var s:SortedSet[Expr] = SortedSet[Expr]()
+
+      for (aa1 <- a1) {
+        for (aa2 <- a2) {
+          (aa1,aa2) match {
+            case (IExpr(i1),IExpr(i2)) =>  s = s + IExpr(i1*i2).reduce
+            case _ =>
+          }
+        }
       }
+      if (s.isEmpty) vmul
+      else Reduction(Alternatives(s),vmul)
     }
     def bind(b: Map[Expr,Expr]) = {
-      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      val bb = b filterKeys labels // TODO: use fast set intersection
       if (bb.isEmpty) this
       else IMul(arg1.bind(bb),arg2.bind(bb))
     }
-    lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
-    lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
+    lazy val labels = arg1.labels ++ arg2.labels // TODO: use fast set union
 
     def asString = arg1.asString + " " + arg2.asString + " *"
 
@@ -144,6 +301,7 @@ object Engine {
 
   case class Red(arg1: Expr) extends Expr {
     def label = None
+    def alternatives = Alternatives(SortedSet[Expr](this))
     def source = this
     def reduce: Expr = {
       val vred = Red(arg1.reduce)
@@ -161,40 +319,45 @@ object Engine {
       }
     }
     def bind(b: Map[Expr,Expr]) = {
-      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      val bb = b filterKeys labels // TODO: use fast set intersection
       if (bb.isEmpty) this
       else Red(arg1.bind(bb))
     }
-    lazy val localLabels = arg1.localLabels
-    lazy val globalLabels = arg1.globalLabels
+    lazy val labels = arg1.labels
 
     def asString = arg1.asString + " $"
   }
   case class Bind(arg1: Expr, arg2: Expr) extends Expr {
     def label = None
+    def alternatives = Alternatives(SortedSet[Expr](this))
     def source = this
     def reduce: Expr = {
       val vbind = Bind(arg1.reduce,arg2.reduce)
 
       (vbind.arg1,vbind.arg2) match {
-        case (Reduction(MExpr(m1),_),Reduction(MExpr(m2),_)) => {
+        case (Reduction(MExpr(m1),s1),Reduction(MExpr(m2),_)) => {
           Reduction(MExpr(m1).bind(m2),vbind)
+          /*val l = m2 filterKeys s1.labels
+          if (l.isEmpty) Reduction(MExpr(m1).bind(m2),vbind)
+          else {*/
+           // Reduction(s1.bind(m2).reduce,vbind)
+          //}
         }
         case _ => vbind
       }
     }
     def bind(b: Map[Expr,Expr]) = {
-      val bb = b filterKeys localLabels // TODO: use fast set intersection
+      val bb = b filterKeys labels // TODO: use fast set intersection
       if (bb.isEmpty) this
       else Bind(arg1.bind(bb),arg2.bind(bb))
     }
-    lazy val localLabels = arg1.localLabels ++ arg2.localLabels // TODO: use fast set union
-    lazy val globalLabels = arg1.globalLabels ++ arg2.globalLabels
+    lazy val labels = arg1.labels ++ arg2.labels // TODO: use fast set union
 
     def asString = arg1.asString + " " + arg2.asString + " !"
   }
 
   case class MExpr(m: Map[Expr,Expr]) extends Expr {
+    def alternatives = Alternatives(SortedSet[Expr](this))
     def reduce = Reduction(this,this)
     def source = this
     def label = None
@@ -206,14 +369,13 @@ object Engine {
       }
       MExpr(nm)
     }
-    lazy val localLabels = {
-      var ll: Set[Expr] = Set()
+    lazy val labels = {
+      var ll: SortedSet[Expr] = SortedSet[Expr]()
       for (k <- m.keys) {
-        ll = ll ++ m.get(k).get.localLabels
+        ll = ll ++ m.get(k).get.labels
       }
       ll
     }
-    def globalLabels = Set()
     def asString = {
       var i = 0
       var s = "["
@@ -230,7 +392,7 @@ object Engine {
 // Implementation notes
 //
 // Each map should carry the following weak functional memoization tables
-// - joinLocal(localLabels,LocalLabels) => localLabels
+// - joinLocal(labels,LocalLabels) => labels
 // - joinGlobal(globalLabels,globalLabels) => globalLabels
 // - bind(expr,map) => map
 // - reduce(expr) => expr
