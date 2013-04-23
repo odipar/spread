@@ -9,25 +9,18 @@ object Test {
   def main(args: Array[String]): Unit = {
     import Engine_v2._
 
-    val i1 = EInt(1,1)
-    val i2 = EInt(2,1)
-    val a12: MultiSetExpr = createAlt(i1) combine createAlt(i2)
+    val e = createMap(EPair(ESymbol("y",1),EAdd(EPair(ESymbol("x",1),EExpr,1),EInt(3,1),1),1))
+    val m1: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(1,1),1))
+    val m2: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(2,2),1))
 
-    val i3 = EInt(9,1)
-    val i4 = EPair(ESymbol("a",1),a12,1)
-    val a34 = createAlt(i3) combine createAlt(i4)
+    val e0 = EBind(EEMap(e,1),EEMap(m1,1),1)
+    val e1 = ERed(EBind(EEMap(e,1),EEMap(m1,1),1),1)
+    val e2 = ERed(EBind(EEMap(e,1),EEMap(m2,1),1),1)
+    val e3 = ERed(EBind(EEMap(e,1),EEMap(m1 combine m2,1),1),1)
 
-    val add = EAdd(a12,a34,1)
+    println(e1.reduce.asString)
+    println(e2.reduce.asString)
+    println(e3.reduce.asString)
 
-    println(add.labels.asString)
-    //println(add.reduce.asString)
-
-   /* val i3 = EInt(1,1)
-    val i4 = EInt(2,1)
-    val a34 = createAlt(i3) combine createAlt(i4)
-
-    val add = EAdd(a12,a34,1)
-    println(add.asString)
-    println(add.reduce.asString)       */
   }
 }

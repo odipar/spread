@@ -33,6 +33,12 @@ object Engine {
         else c
       }
       case (IMul(_,_),_) => -1
+      case (IAdd(a11,a12),IAdd(a21,a22)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (IAdd(_,_),_) => -1
       case (Alternatives(a1),Alternatives(a2)) => {
         compare_s(a1,a2)
       }
