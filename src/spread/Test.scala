@@ -13,8 +13,12 @@ object Test {
     val m1: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(1,1),1))
     val m2: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(2,2),1))
 
+    val a1 = createAlt(EEMap(m1,1))
+    val a2 = createAlt(EEMap(m2,1))
+    val a3 = a1 combine a2
+
     val e0 = EBind(EEMap(e,1),EEMap(m1,1),1)
-    val e1 = ERed(EBind(EEMap(e,1),EEMap(m1,1),1),1)
+    val e1 = ERed(EBind(EEMap(e,1),a3,1),1)
     val e2 = ERed(EBind(EEMap(e,1),EEMap(m2,1),1),1)
     val e3 = ERed(EBind(EEMap(e,1),EEMap(m1 combine m2,1),1),1)
 

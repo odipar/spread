@@ -38,6 +38,7 @@ object Engine_v2 {
       case (ESymbol(s,_)) => jenkinsHash(s.hashCode*123)
       case (Reduction(v1,s1)) => jenkinsHash(hash(v1)+13)
       case (EPair(label,value,_)) => jenkinsHash(jenkinsHash(hash(label)) + 13*hash(value))
+      case (EEMap(EMap(m,_),_)) => jenkinsHash(m.hashCode-1234)
     }
   }
 
@@ -115,6 +116,9 @@ object Engine_v2 {
         case (EBind(_,_,_),EPair(_,_,_)) => 1
         case (EBind(_,_,_),_) => -1
         case (EEMap(m1: MultiMapExpr,_),EEMap(m2: MultiMapExpr,_)) => {
+          //println("m1: " + m1.asString)
+          //println("m2: " + m2.asString)
+
           (m1.some, m2.some) match {
             case (None,None) => 0
             case (None,_) => -1
@@ -124,7 +128,11 @@ object Engine_v2 {
               val (l2,ss2,r2) = m2.split(s)
               val c = compare(EEMap(l1,1),EEMap(l2,1))
               if (c == 0) ss2 match {
-                case Some(x) => compare(EEMap(r2,1),EEMap(r2,1))
+                case Some(x) => {
+                  val cc = compare(EEMap(r2,1),EEMap(r2,1))
+                  if (cc == 0) compare(s,x)
+                  else cc
+                }
                 case _ => -1
               }
               else c
@@ -147,7 +155,7 @@ object Engine_v2 {
         case (ERed(_,_),EInt(_,_)) => 1
         case (ERed(_,_),EPair(_,_,_)) => 1
         case (ERed(_,_),_) => -1
-          case (s1: MultiSetExpr, s2: MultiSetExpr) => {
+        case (s1: Alternatives, s2: Alternatives) => {
           val s = s1.some.get
           val (l1,ss1,r1) = s1.split(s)
           val (l2,ss2,r2) = s2.split(s)
@@ -158,6 +166,7 @@ object Engine_v2 {
           }
           else c
         }
+        case (s1: Alternatives, _) => 1
       }
     }
   }
@@ -425,7 +434,7 @@ object Engine_v2 {
         }
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,red(EBind(ra1,ra2,occurrence),this))
+      red(e,this)
     }
     def source = EExpr
 
