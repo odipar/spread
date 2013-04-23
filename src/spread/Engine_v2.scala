@@ -161,7 +161,11 @@ object Engine_v2 {
           val (l2,ss2,r2) = s2.split(s)
           val c = compare(l1,l2)
           if (c == 0) ss2 match {
-            case Some(x) => compare(r2,r2)
+            case Some(x) => {
+              val cc = compare(r2,r2)
+              if (cc == 0) compare(s,x)
+              else cc
+            }
             case _ => -1
           }
           else c
