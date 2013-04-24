@@ -35,6 +35,9 @@ object Engine_v2 {
       case EExpr => jenkinsHash(0)
       case (Alternatives(s)) => jenkinsHash(s.hashCode)
       case (EInt(i1,_)) => jenkinsHash(i1)
+      case (EAdd(a1,a2,_)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
+      case (EBind(a1,a2,_)) => jenkinsHash(hash(a1) | jenkinsHash(hash(a2)))
+      case (ERed(a1,_)) => jenkinsHash(hash(a1)*201-1239)
       case (ESymbol(s,_)) => jenkinsHash(s.hashCode*123)
       case (Reduction(v1,s1)) => jenkinsHash(hash(v1)+13)
       case (EPair(label,value,_)) => jenkinsHash(jenkinsHash(hash(label)) + 13*hash(value))
@@ -224,7 +227,7 @@ object Engine_v2 {
     def combine(o: MultiSetExpr) = o
     def some = None
 
-    def asString = ""
+    def asString = "."
   }
 
   def createMap(e: EPair): MultiMapExpr = {
@@ -356,10 +359,10 @@ object Engine_v2 {
 
   case class EEMap(e: MultiMapExpr, occurrence: Int) extends Atom {
     def setOccurrence(o: Int) = EEMap(e,o)
-    def bind(b: MultiMapExpr) = this
+    def bind(b: MultiMapExpr) = EEMap(e.bind(b),occurrence)
 
-    def labels = EExpr
-    def reduce = red(EEMap(e.reduce,occurrence),this)
+    def labels = e.labels
+    def reduce = EEMap(e.reduce,occurrence)
     def some = Some(this)
     def combine(o: MultiSetExpr) = createAlt(this) combine o
     def asString = occurrenceAsString(occurrence)  + e.asString
@@ -367,7 +370,13 @@ object Engine_v2 {
 
   def red(a1: MultiSetExpr, a2: MultiSetExpr): MultiSetExpr = {
     if (MSOrdering.compare(a1,a2) == 0) a1
-    else Reduction(a1,a2)
+    else a2 match {
+      /*case Reduction(a21,a22) => {
+        if (MSOrdering.compare(a1,a21) == 0) red(a1,a22)
+        else Reduction(a1,a2)
+      } */
+      case _ => Reduction(a1,a2)
+    }
   }
 
   case class EAdd(arg1: MultiSetExpr, arg2: MultiSetExpr, occurrence: Int) extends MultiSetExpr {
@@ -438,7 +447,7 @@ object Engine_v2 {
         }
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,this)
+      red(e,red(EBind(ra1,ra2,1),this))
     }
     def source = EExpr
 
@@ -509,7 +518,7 @@ object Engine_v2 {
       var mm = m
       while (mm.first != None) {
         val p = mm.first.get
-        r = r combine p.labels
+        r = r combine p.value.labels
         mm = mm.split(mm.first.get)._3
       }
       r
@@ -569,9 +578,17 @@ object Engine_v2 {
 
     def combine(o: MultiSetExpr) = createAlt(this) combine o
 
-    def asString = occurrenceAsString(occurrence) + label.asString + "'" + value.asString
+    def asString = occurrenceAsString(occurrence) + subexpr(label) + "'" + subexpr(value)
   }
 
+  def subexpr(s: MultiSetExpr): String = s match {
+    case e: EInt => e.asString
+    case s: ESymbol => s.asString
+    case a: Alternatives => s.asString
+    case m: EEMap => m.asString
+    case EExpr => EExpr.asString
+    case _ => "(" + s.asString + ")"
+  }
   import AbstractImmutableOrderedSet._
 
   // Abstract MultiSet operation

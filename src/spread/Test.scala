@@ -8,23 +8,21 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     import Engine_v2._
+    import Parser._
 
-    val e = createMap(EPair(ESymbol("y",1),EAdd(EPair(ESymbol("x",1),EExpr,1),EInt(3,1),1),1))
-    val m1: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(1,1),1))
-    val m2: MultiMapExpr = createMap(EPair(ESymbol("x",1),EInt(2,2),1))
+    val i1 = "[c=((a'2 1 +)'d)'. 1 +] [(a'2 1 +)'d=2] ! $ [a=3] !"
 
-    val a1 = createAlt(EEMap(m1,1))
-    val a2 = createAlt(EEMap(m2,1))
-    val a3 = a1 combine a2
+    val e1 = SpreadParser.doParse(i1).get.toSpread
 
-    val e0 = EBind(EEMap(e,1),EEMap(m1,1),1)
-    val e1 = ERed(EBind(EEMap(e,1),a3,1),1)
-    val e2 = ERed(EBind(EEMap(e,1),EEMap(m2,1),1),1)
-    val e3 = ERed(EBind(EEMap(e,1),EEMap(m1 combine m2,1),1),1)
-
+    println(e1.asString)
     println(e1.reduce.asString)
-    println(e2.reduce.asString)
-    println(e3.reduce.asString)
-
   }
 }
+
+  /*
+[b'=b'] [b=1,b=2] ^ => [b'{1,2}=b'{1,2}] => [b'1=b'1,b'1=b'2,b'2=b'2]
+[b'=b'] [b=1,b=2] ! => [b'1=b'1,b'2=b'2]
+
+[b=a,d=a] => [a={b,d}]
+
+[y=x' 2 +] [x={0,1,2,3,4,5}] */
