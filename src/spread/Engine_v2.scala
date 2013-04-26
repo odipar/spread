@@ -14,6 +14,23 @@ object Engine_v2 {
   type MST = SST[MS]
   type MMT = SST[EP]
 
+  def order(v: MultiSetExpr): Int = v match {
+    case EExpr => 1
+    case (vv: Alternatives) => 2
+    case (vv: ESymbol) => 3
+    case (vv: Reduction) => 4
+    case (vv: EPair) => 5
+    case (vv: EEMap) => 6
+    case (vv: EInt) => 7
+    case (vv: EAdd) => 8
+    case (vv: EMul) => 9
+    case (vv: EBind) => 10
+    case (vv: EIter) => 12
+    case (vv: ERed) => 13
+    case (vv: EDesolve) => 14
+    case (vv: EWipe) => 15
+  }
+
   object MSTreapContext extends STreapContextImpl[MS,Any,Int] {
     def compareOrder(x1: MS, x2: MS): Int = MSOrdering.compare(x1,x2)
     def priorityHash(x: Option[MS]): Int = MSHashing.hash(x.get)
@@ -36,8 +53,11 @@ object Engine_v2 {
       case (Alternatives(s)) => jenkinsHash(s.hashCode)
       case (EInt(i1,_)) => jenkinsHash(i1)
       case (EAdd(a1,a2,_)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
-      case (EBind(a1,a2,_)) => jenkinsHash(hash(a1) | jenkinsHash(hash(a2)))
+      case (EMul(a1,a2,_)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
+      case (EBind(a1,a2,_)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
+      case (EIter(a1,a2,_)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
       case (ERed(a1,_)) => jenkinsHash(hash(a1)*201-1239)
+      case (EDesolve(a1,_)) => jenkinsHash(hash(a1)*123+123991)
       case (ESymbol(s,_)) => jenkinsHash(s.hashCode*123)
       case (Reduction(v1,s1)) => jenkinsHash(hash(v1)+13)
       case (EPair(label,value,_)) => jenkinsHash(jenkinsHash(hash(label)) + 13*hash(value))
@@ -67,130 +87,106 @@ object Engine_v2 {
   }
 
   object MSOrdering extends Ordering[MS] {
+    def compareEqual(v1: MultiSetExpr, v2: MultiSetExpr): Int = (v1,v2) match {
+      case (EExpr,EExpr) => 0
+      case (Reduction(v1,s1),Reduction(v2,s2)) => {
+        val c = compare(v1,v2)
+        if (c == 0) compare(s1,s2)
+        else c
+      }
+      case (EPair(l1,v1,_),EPair(l2,v2,_)) => {
+        val c = compare(v1,v2)
+        if (c == 0) compare(l1,l2)
+        else c
+      }
+      case (EInt(i1,_), EInt(i2,_)) => i1 - i2
+      case (ESymbol(s1,_),ESymbol(s2,_)) => s1.compareTo(s2)
+      case (EAdd(a11,a12,_),EAdd(a21,a22,_)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (EBind(a11,a12,_),EBind(a21,a22,_)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (EIter(a11,a12,_),EIter(a21,a22,_)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (EMul(a11,a12,_),EMul(a21,a22,_)) => {
+        val c = compare(a11,a21)
+        if (c == 0) compare(a12,a22)
+        else c
+      }
+      case (EEMap(EMap(m1,_),_),EEMap(EMap(m2,_),_)) => {
+        compareMap(m1,m2)
+      }
+      case (ERed(e11,_),ERed(e21,_)) => compare(e11,e21)
+      case (EDesolve(e11,_),EDesolve(e21,_)) => compare(e11,e21)
+      case (EWipe(e11,_),EWipe(e21,_)) => compare(e11,e21)
+      case (Alternatives(a1), Alternatives(a2)) => {
+        compareAlt(a1,a2)
+      }
+    }
     def compare(s1: MS, s2: MS):Int = {
-      (s1,s2) match {
-        case (EExpr,EExpr) => 0
-        case (EExpr,_) => -1
-        case (Reduction(v1,s1),Reduction(v2,s2)) => {
-          val c = compare(v1,v2)
-          if (c == 0) compare(s1,s2)
-          else c
-        }
-        case (Reduction(v1,s1),EExpr) => 1
-        case (Reduction(v1,s1),_) => -1
-        case (EInt(i1,_),EInt(i2,_)) => i1 - i2
-        case (EInt(i1,_),EExpr) => 1
-        case (EInt(i1,_),Reduction(_,_)) => 1
-        case (EInt(i1,_),_) => -1
-        case (EPair(l1,v1,_),EPair(l2,v2,_)) => {
-          val c = compare(v1,v2)
-          if (c == 0) compare(l1,l2)
-          else c
-        }
-        case (EPair(l1,v1,_),EExpr) => 1
-        case (EPair(l1,v1,_),Reduction(_,_)) => 1
-        case (EPair(l1,v1,_),EInt(_,_)) => 1
-        case (EPair(l1,v1,_),_) => -1
-        case (ESymbol(s1,_),ESymbol(s2,_)) => s1.compareTo(s2)
-        case (ESymbol(s1,_),EExpr) => 1
-        case (ESymbol(s1,_),Reduction(_,_)) => 1
-        case (ESymbol(s1,_),EInt(_,_)) => 1
-        case (ESymbol(s1,_),EPair(_,_,_)) => 1
-        case (ESymbol(s1,_),_) => -1
-        case (EAdd(a11,a12,_),EAdd(a21,a22,_)) => {
-          val c = compare(a11,a21)
-          if (c == 0) compare(a12,a22)
-          else c
-        }
-        case (EAdd(_,_,_),EExpr) => 1
-        case (EAdd(_,_,_),Reduction(_,_)) => 1
-        case (EAdd(_,_,_),EInt(_,_)) => 1
-        case (EAdd(_,_,_),EPair(_,_,_)) => 1
-        case (EAdd(_,_,_),_) => -1
-        case (EBind(a11,a12,_),EBind(a21,a22,_)) => {
-          val c = compare(a11,a21)
-          if (c == 0) compare(a12,a22)
-          else c
-        }
-        case (EBind(_,_,_),EAdd(_,_,_)) => 1
-        case (EBind(_,_,_),EExpr) => 1
-        case (EBind(_,_,_),Reduction(_,_)) => 1
-        case (EBind(_,_,_),EInt(_,_)) => 1
-        case (EBind(_,_,_),EPair(_,_,_)) => 1
-        case (EBind(_,_,_),_) => -1
-        case (EEMap(m1: MultiMapExpr,_),EEMap(m2: MultiMapExpr,_)) => {
-          //println("m1: " + m1.asString)
-          //println("m2: " + m2.asString)
+      val o1 = order(s1)
+      val o2 = order(s2)
+      if (o1 == o2) compareEqual(s1,s2)
+      else o1 - o2
+    }
 
-          (m1.some, m2.some) match {
-            case (None,None) => 0
-            case (None,_) => -1
-            case (_,None) => 1
-            case (Some(s),_) => {
-              val (l1,ss1,r1) = m1.split(s)
-              val (l2,ss2,r2) = m2.split(s)
-              val c = compare(EEMap(l1,1),EEMap(l2,1))
-              if (c == 0) ss2 match {
-                case Some(x) => {
-                  val cc = compare(EEMap(r2,1),EEMap(r2,1))
-                  if (cc == 0) compare(s,x)
-                  else cc
-                }
-                case _ => -1
-              }
-              else c
-            }
-          }
+    def compareMap(m1: MMT, m2: MMT): Int = {
+      (m1.some, m2.some) match {
+        case (None,None) => 0
+        case (None,_) => -1
+        case (_,None) => 1
+        case (Some(s),_) => {
+          val f1 = m1.first.get
+          val f2 = m2.first.get
+          val c = compare(f1,f2)
+          if (c != 0)  c
+          else compareMap(m1.split(f1)._3,m2.split(f2)._3)
         }
-        case (EEMap(_,_),EBind(_,_,_)) => 1
-        case (EEMap(_,_),EAdd(_,_,_)) => 1
-        case (EEMap(_,_),EExpr) => 1
-        case (EEMap(_,_),Reduction(_,_)) => 1
-        case (EEMap(_,_),EInt(_,_)) => 1
-        case (EEMap(_,_),EPair(_,_,_)) => 1
-        case (EEMap(_,_),_) => -1
-        case (ERed(e11,_),ERed(e21,_)) => compare(e11,e21)
-        case (ERed(e11,_),EEMap(_,_)) => 1
-        case (ERed(_,_),EBind(_,_,_)) => 1
-        case (ERed(_,_),EAdd(_,_,_)) => 1
-        case (ERed(_,_),EExpr) => 1
-        case (ERed(_,_),Reduction(_,_)) => 1
-        case (ERed(_,_),EInt(_,_)) => 1
-        case (ERed(_,_),EPair(_,_,_)) => 1
-        case (ERed(_,_),_) => -1
-        case (s1: Alternatives, s2: Alternatives) => {
-          val s = s1.some.get
-          val (l1,ss1,r1) = s1.split(s)
-          val (l2,ss2,r2) = s2.split(s)
-          val c = compare(l1,l2)
-          if (c == 0) ss2 match {
-            case Some(x) => {
-              val cc = compare(r2,r2)
-              if (cc == 0) compare(s,x)
-              else cc
-            }
-            case _ => -1
-          }
-          else c
+      }
+    }
+    def compareAlt(a1: MST, a2: MST): Int = {
+      (a1.some, a2.some) match {
+        case (None,None) => 0
+        case (None,_) => -1
+        case (_,None) => 1
+        case (Some(s),_) => {
+          val f1 = a1.first.get
+          val f2 = a2.first.get
+          val c = compare(f1,f2)
+          if (c != 0)  c
+          else compareAlt(a1.split(f1)._3,a2.split(f2)._3)
         }
-        case (s1: Alternatives, _) => 1
       }
     }
   }
 
   trait Expr[E, EXPR <: Expr[E,EXPR]] {
     //def one: Int  // (the base case: later stage, MultiMapExpr)
-    def occurrence: Int // (a number, later stage MultiMapExpr)
-    def setOccurrence(o: Int): EXPR
 
     def labels: MultiSetExpr // union of all labels found in all Pairs in all subexpressions
     def bind(b: MultiMapExpr): EXPR
-    def normalize: EXPR
+    def wipe: EXPR
     def reduce: EXPR
     def source: EXPR
 
     def asString: String
   }
+
+  trait Pair extends Expr[MultiSetExpr,Pair] {
+    def label: MultiSetExpr
+    def target: MultiSetExpr
+  }
+
+  trait MSPair extends Pair
+
 
   trait MultiExpr[E, EXPR <: MultiExpr[E,EXPR]] extends Expr[E,EXPR] {
     // Multi- alternatives
@@ -210,15 +206,14 @@ object Engine_v2 {
   trait MultiSetExpr extends MultiExpr[MultiSetExpr,MultiSetExpr]
 
   trait Atom extends MultiSetExpr {
-    def normalize = this
     def source = EExpr
-
     def first = some
     def last = some
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
   }
 
   case object EExpr extends Atom {
+    def wipe = this
     def setOccurrence(o: Int) = this
     def occurrence = 0
     def bind(b: MultiMapExpr): MultiSetExpr = this
@@ -227,7 +222,7 @@ object Engine_v2 {
     def combine(o: MultiSetExpr) = o
     def some = None
 
-    def asString = "."
+    def asString = "EMPTY"
   }
 
   def createMap(e: EPair): MultiMapExpr = {
@@ -271,15 +266,22 @@ object Engine_v2 {
       }
       red(s2,this)
     }
-    def normalize = this
+    def wipe = {
+      var e1 = s
+      var r: MultiSetExpr = EExpr
+      while (e1.first != None) {
+        r = r combine e1.first.get.wipe
+        e1 = e1.split(e1.first.get)._3
+      }
+      r
+    }
+
     def source = EExpr
 
     def first = s.first
     def some = s.some
     def last = s.last
-    def split(e: MultiSetExpr) = {
-      val (h,ee,t) = s.split(e) ; (createAlt(h),ee,createAlt(t))
-    }
+    def split(e: MultiSetExpr) = { val (l,ee,r) = s.split(e) ; (createAlt(l),ee,createAlt(r))}
 
     lazy val labels = { // TODO: optimize with Measure
     var e1 = s
@@ -315,6 +317,7 @@ object Engine_v2 {
   }
 
   case class EInt(e: Int, occurrence: Int) extends Atom {
+    def wipe = this
     def bind(b: MultiMapExpr) = this
     def setOccurrence(o: Int) = EInt(e,o)
     def labels = EExpr
@@ -326,6 +329,7 @@ object Engine_v2 {
   }
 
   case class ESymbol(s: String, occurrence: Int) extends Atom {
+    def wipe = this
     def setOccurrence(o: Int) = ESymbol(s,o)
     def bind(b: MultiMapExpr) = this
 
@@ -337,6 +341,7 @@ object Engine_v2 {
   }
 
   case class ERed(m: MultiSetExpr, occurrence: Int) extends Atom {
+    def wipe = ERed(m.wipe,occurrence)
     def setOccurrence(o: Int) = ERed(m,o)
     def bind(b: MultiMapExpr) = ERed(m.bind(b),occurrence)
 
@@ -350,14 +355,72 @@ object Engine_v2 {
         e = e combine ee.reduce
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,red(ERed(a1,occurrence),this))
+      if (e.some == None) red(a1,this)
+      else red(e,red(ERed(a1,occurrence),this))
     }
+
     def some = Some(this)
     def combine(o: MultiSetExpr) = createAlt(this) combine o
     def asString = occurrenceAsString(occurrence) + m.asString + " $"
   }
 
+  case class EDesolve(m: MultiSetExpr, occurrence: Int) extends Atom {
+    def wipe = ERed(m.wipe,occurrence)
+    def setOccurrence(o: Int) = EDesolve(m,o)
+    def bind(b: MultiMapExpr) = EDesolve(m.bind(b),occurrence)
+
+    def labels = m.labels
+    def reduce = {
+      val ra1 = m.reduce
+      var e: MultiSetExpr = EExpr
+
+      var e1 = ra1
+      while (e1.first != None) {
+        val r = e1.first.get.reduce
+        r match {
+            case EEMap(m,_) => {
+              var e2 = m
+              while (e2.first != None) {
+                e = e combine e2.first.get.reduce
+                e2 = e2.split(e2.first.get)._3
+              }
+            }
+            case _ =>
+        }
+        e1 = e1.split(e1.first.get)._3
+      }
+      red(e,red(EDesolve(ra1,occurrence),this))
+    }
+
+    def some = Some(this)
+    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def asString = occurrenceAsString(occurrence) + m.asString + " >"
+  }
+
+  case class EWipe(m: MultiSetExpr, occurrence: Int) extends Atom {
+    def wipe = EWipe(m.wipe, occurrence)
+    def setOccurrence(o: Int) = EWipe(m,o)
+    def bind(b: MultiMapExpr) = EWipe(m.bind(b),occurrence)
+
+    def labels = m.labels
+    def reduce = {
+      var a1 = m.reduce
+      var e1 = a1
+      var e: MultiSetExpr = EExpr
+      while (e1.first != None) {
+        val ee = e1.first.get
+        e = e combine ee.wipe
+        e1 = e1.split(e1.first.get)._3
+      }
+      red(e,red(EWipe(a1,occurrence),this))
+    }
+    def some = Some(this)
+    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def asString = occurrenceAsString(occurrence) + m.asString + " #"
+  }
+
   case class EEMap(e: MultiMapExpr, occurrence: Int) extends Atom {
+    def wipe = EEMap(e.wipe,occurrence)
     def setOccurrence(o: Int) = EEMap(e,o)
     def bind(b: MultiMapExpr) = EEMap(e.bind(b),occurrence)
 
@@ -383,14 +446,10 @@ object Engine_v2 {
     def setOccurrence(o: Int) = EAdd(arg1,arg2,o)
     def bind(b: MultiMapExpr) = EAdd(arg1.bind(b),arg2.bind(b),occurrence)
 
-    def normalize = EAdd(arg1.normalize,arg2.normalize, occurrence)
+    def wipe = EAdd(arg1.wipe,arg2.wipe, occurrence)
     def reduce = {
       val ra1 = arg1.reduce
       val ra2 = arg2.reduce
-
-      //println("ra1: " + ra1)
-      //println("ra2: " + ra2)
-
       var e: MultiSetExpr = EExpr
 
       var e1 = ra1
@@ -399,6 +458,7 @@ object Engine_v2 {
         while (e2.first != None) {
           (e1.first.get,e2.first.get) match {
             case (EInt(i1,o1),EInt(i2,o2)) => e = e combine EInt(i1+i2,o1*o2*occurrence)
+            case (EEMap(m1,o1),EEMap(m2,o2)) => e = e combine EEMap(m1 combine m2,o1*o2*occurrence)
             case _ => this
           }
           e2 = e2.split(e2.first.get)._3
@@ -410,9 +470,9 @@ object Engine_v2 {
     }
     def source = EExpr
 
-    def first = None
+    def first = some
     def some = Some(this)
-    def last = None
+    def last = some
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
     def combine(o: MultiSetExpr) = createAlt(this) combine o
@@ -421,17 +481,117 @@ object Engine_v2 {
     def asString = arg1.asString + " " + arg2.asString + occurrenceAsString(occurrence) + " +"
   }
 
-  case class EBind(arg1: MultiSetExpr, arg2: MultiSetExpr, occurrence: Int) extends MultiSetExpr {
-    def setOccurrence(o: Int) = EBind(arg1,arg2,o)
-    def bind(b: MultiMapExpr) = EBind(arg1.bind(b),arg2.bind(b),occurrence)
+  def iterate(m1: MultiMapExpr, m2: MultiMapExpr): MultiMapExpr = {
+    var m4 = m1
+    var e2 = m2
+    while (e2.first != None) {
+      var m3: MultiMapExpr = EMap(emptyMap,1)
+      val p = e2.first.get
+      val l = p.label
+      val a = p.value
+      var e3 = a
+      while (e3.first != None) {
+        val v = e3.first.get
+        val np = EPair(l,v,1)
+        var nm = createMap(np)
+        m3 = m3 combine m4.bind(nm)
+        e3 = e3.split(e3.first.get)._3
+      }
+      m4 = m3
+      e2 = e2.split(e2.first.get)._3
+    }
+    m4
+  }
 
-    def normalize = EBind(arg1.normalize,arg2.normalize, occurrence)
+  case class EIter(arg1: MultiSetExpr, arg2: MultiSetExpr, occurrence: Int) extends MultiSetExpr {
+    def setOccurrence(o: Int) = EAdd(arg1,arg2,o)
+    def bind(b: MultiMapExpr) = EAdd(arg1.bind(b),arg2.bind(b),occurrence)
+
+    def wipe = EAdd(arg1.wipe,arg2.wipe, occurrence)
+    def reduce = {
+      val ra1 = arg1.reduce
+      val ra2 = arg2.reduce
+      var e: MultiSetExpr = EExpr
+
+      var e1 = ra1
+      while (e1.first != None) {
+        var e2 = ra2
+        while (e2.first != None) {
+          (e1.first.get,e2.first.get) match {
+            case (EInt(i1,o1),_) => e = e combine EInt(i1,o1*occurrence)
+            case (EEMap(m1,o1),EEMap(m2,o2)) => {
+              e = e combine EEMap(iterate(m1,m2),o1*o2*occurrence)
+            }
+            case (EEMap(m1,o1),EInt(_,_)) => e = e combine EEMap(m1,o1*occurrence)
+            case _ =>
+          }
+          e2 = e2.split(e2.first.get)._3
+        }
+        e1 = e1.split(e1.first.get)._3
+      }
+      if (e.some == None) EIter(ra1,ra2,occurrence)
+      else red(e,red(EIter(ra1,ra2,occurrence),this))
+    }
+    def source = EExpr
+
+    def first = some
+    def some = Some(this)
+    def last = some
+    def split(e: MultiSetExpr) = (EExpr,some,EExpr)
+
+    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    lazy val labels = arg1.labels combine arg2.labels
+
+    def asString = arg1.asString + " " + arg2.asString + occurrenceAsString(occurrence) + " ~"
+  }
+
+  case class EMul(arg1: MultiSetExpr, arg2: MultiSetExpr, occurrence: Int) extends MultiSetExpr {
+    def setOccurrence(o: Int) = EMul(arg1,arg2,o)
+    def bind(b: MultiMapExpr) = EMul(arg1.bind(b),arg2.bind(b),occurrence)
+
+    def wipe = EMul(arg1.wipe,arg2.wipe, occurrence)
     def reduce = {
       val ra1 = arg1.reduce
       val ra2 = arg2.reduce
 
-      //println("ra1: " + ra1)
-      //println("ra2: " + ra2)
+      var e: MultiSetExpr = EExpr
+
+      var e1 = ra1
+      while (e1.first != None) {
+        var e2 = ra2
+        while (e2.first != None) {
+          (e1.first.get,e2.first.get) match {
+            case (EInt(i1,o1),EInt(i2,o2)) => e = e combine EInt(i1*i2,o1*o2*occurrence)
+            case _ =>
+          }
+          e2 = e2.split(e2.first.get)._3
+        }
+        e1 = e1.split(e1.first.get)._3
+      }
+      if (e.some == None) EMul(ra1,ra2,occurrence)
+      else red(e,red(EMul(ra1,ra2,occurrence),this))
+    }
+    def source = EExpr
+
+    def first = some
+    def some = Some(this)
+    def last = some
+    def split(e: MultiSetExpr) = (EExpr,some,EExpr)
+
+    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    lazy val labels = arg1.labels combine arg2.labels
+
+    def asString = arg1.asString + " " + arg2.asString + occurrenceAsString(occurrence) + " *"
+  }
+
+  case class EBind(arg1: MultiSetExpr, arg2: MultiSetExpr, occurrence: Int) extends MultiSetExpr {
+    def setOccurrence(o: Int) = EBind(arg1,arg2,o)
+    def bind(b: MultiMapExpr) = EBind(arg1.bind(b),arg2.bind(b),occurrence)
+
+    def wipe = EBind(arg1.wipe,arg2.wipe, occurrence)
+    def reduce = {
+      val ra1 = arg1.reduce
+      val ra2 = arg2.reduce
 
       var e: MultiSetExpr = EExpr
 
@@ -441,7 +601,7 @@ object Engine_v2 {
         while (e2.first != None) {
           (e1.first.get,e2.first.get) match {
             case (EEMap(m1,o1), EEMap(m2,o2)) => e = e combine EEMap(m1.bind(m2),o1*o2)
-            case _ => this
+            case _ =>
           }
           e2 = e2.split(e2.first.get)._3
         }
@@ -451,9 +611,9 @@ object Engine_v2 {
     }
     def source = EExpr
 
-    def first = None
+    def first = some
     def some = Some(this)
-    def last = None
+    def last = some
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
     def combine(o: MultiSetExpr) = createAlt(this) combine o
@@ -467,13 +627,9 @@ object Engine_v2 {
     lazy val labels = value.labels combine source.labels
 
     def bind(b: MultiMapExpr) = source.bind(b).reduce
-
+    def wipe = value
     def setOccurrence(o: Int) = sys.error("not yet")
-    def occurrence = value.occurrence
     def reduce = this
-
-    def normalize = this
-
     def first = value.first
     def some = value.some
     def last = value.last
@@ -488,9 +644,19 @@ object Engine_v2 {
   }
   case class EMap(m: MMT, occurrence: Int) extends MultiMapExpr {
     def source = this
-    def normalize = this
 
     def setOccurrence(o: Int) = EMap(m, occurrence)
+
+    def wipe= {
+      var r = emptyMap
+      var mm = m
+      while (mm.first != None) {
+        val p = mm.first.get
+        r = r put p.wipe
+        mm = mm.split(mm.first.get)._3
+      }
+      EMap(r,occurrence)
+    }
 
     def bind(b: MultiMapExpr) = {
       var r = emptyMap
@@ -508,7 +674,7 @@ object Engine_v2 {
       var mm = m
       while (mm.first != None) {
         val p = mm.first.get
-        r = r put EPair(p.label,p.value.reduce,p.occurrence)
+        r = r put EPair(p.label.reduce,p.value.reduce,p.occurrence)
         mm = mm.split(mm.first.get)._3
       }
       EMap(r,occurrence)
@@ -537,18 +703,41 @@ object Engine_v2 {
       case _ => sys.error("no")
     }
 
-    def asString = {
+    def isSequence: Boolean  = {
       var e1 = m
-      var r: String = "["
-      var i = 0
-      while (e1.first != None) {
-        if (i > 0) { r = r + "," }
-        val p: EPair = e1.first.get
-        r = r + (p.label.asString+"="+p.value.asString)
+      var i: Int = 0
+      var seq = true
+      while ((e1.first != None) && seq) {
+        seq = MSOrdering.compare(e1.first.get.label,EInt(i,1)) == 0
         e1 = e1.split(e1.first.get)._3
         i = i + 1
       }
-      r + "]"
+      seq
+    }
+    def asString = {
+      val (seq,el2,st,el,et) = {
+        if (isSequence) (true,"","",".","")
+        else (false,"=","[",",","]")
+      }
+      var e1 = m
+      var r: String = st
+      var i = 0
+      while (e1.first != None) {
+        if (i > 0) { r = r + el }
+        val p: EPair = e1.first.get
+        val vv = {
+          if (seq) subexpr(p.value)
+          else p.value.asString
+        }
+        if (MSOrdering.compare(p.label,p.value) == 0) r = r + vv
+        else {
+          if (seq) r = r + vv
+          else r = r + (p.label.asString+el2+vv)
+        }
+        e1 = e1.split(e1.first.get)._3
+        i = i + 1
+      }
+      r + et
     }
   }
 
@@ -563,12 +752,13 @@ object Engine_v2 {
     lazy val labels = label combine label.labels combine value.labels
 
     def reduce = {
+      val l = label.reduce
       val v = value.reduce
-      if (v.some == None) EPair(label,value,occurrence)
-      else red(v,red(EPair(label,v,occurrence),this))
+      if (v.some == None) EPair(l,value,occurrence)
+      else red(v,red(EPair(l,v,occurrence),this))
     }
 
-    def normalize = this
+    def wipe = EPair(label.wipe,value.wipe,occurrence)
     def source = EExpr
 
     def first = some
@@ -578,7 +768,19 @@ object Engine_v2 {
 
     def combine(o: MultiSetExpr) = createAlt(this) combine o
 
-    def asString = occurrenceAsString(occurrence) + subexpr(label) + "'" + subexpr(value)
+    def asString = {
+      if (value == EExpr) occurrenceAsString(occurrence) + subexpr2(label) + "`"
+      else occurrenceAsString(occurrence) + subexpr2(label) + "'" + subexpr2(value)
+    }
+  }
+
+  def subexpr2(s: MultiSetExpr): String = s match {
+    case e: EInt => e.asString
+    case s: ESymbol => s.asString
+    case a: Alternatives => s.asString
+    case m: EEMap => m.asString
+    case EExpr => EExpr.asString
+    case _ => "(" + s.asString + ")"
   }
 
   def subexpr(s: MultiSetExpr): String = s match {
@@ -614,7 +816,7 @@ object Engine_v2 {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC) = (s1,c)
     def combineJoin(s1: SS, s2: SS)(implicit c: CC) = s1.join(s2)
     def combineEqualElements(x1: MultiSetExpr, x2: MultiSetExpr): Option[MultiSetExpr] = {
-      Some(x1.setOccurrence(x1.occurrence max x2.occurrence))
+      Some(x1 max x2)
     } //Some(ME(x1.value,x1.count max x2.count))
   }
 
@@ -624,7 +826,7 @@ object Engine_v2 {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC)= mul(s1,2)
     def combineJoin(s1: SS, s2: SS)(implicit c: CC) = s1.join(s2)
     def combineEqualElements(x1: MultiSetExpr, x2: MultiSetExpr): Option[MultiSetExpr] = {
-      Some(x1.setOccurrence(x1.occurrence + x2.occurrence))
+      Some(x1 add x2)
     } //Some(ME(x1.value,x1.count + x2.count))
   }
 
@@ -655,7 +857,7 @@ object Engine_v2 {
     def combineLeftElement(left: MultiSetExpr): Option[MultiSetExpr] = None
     def combineRightElement(right: MultiSetExpr): Option[MultiSetExpr] = None
     def combineEqualElements(x1: MultiSetExpr, x2: MultiSetExpr): Option[MultiSetExpr] = {
-      Some(x1.setOccurrence(x1.occurrence min x2.occurrence))
+      Some(x1 min x2))
     } // Some(ME(x1.value,x1.count min x2.count))
   }
 
@@ -675,7 +877,7 @@ object Engine_v2 {
     def combineEqual(s1: SS,s2: SS)(implicit c: CC) = c.empty
     def combineJoin(s1: SS, s2: SS)(implicit c: CC) = s1.join(s2)
     def combineEqualElements(x1: MultiSetExpr, x2: MultiSetExpr): Option[MultiSetExpr] = {
-      Some(x1.setOccurrence(x1.occurrence - x2.occurrence))
+      Some(x1 add x2.neg)
     } //Some(ME(x1.value,(x1.count - x2.count) max 0))
   }
 
