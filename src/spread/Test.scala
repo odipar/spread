@@ -10,8 +10,8 @@ object Test {
     import Engine_v2._
     import Parser._
 
-    val i1 = "[0=0,0=0,0=0,a=1]"
-    val i2 = "[a.(x`1+)=a.(x`)` 1 +] [x=1,x=2,x=3] ~ $ #"
+    val i1 = "{1,2} {3,4} +"
+    val i2 = "[a`={b`:c`}] [a`={d`:c`}] + [b=1,d=2] ! $"
 
     val e1 = SpreadParser.doParse(i1).get.toSpread
 
