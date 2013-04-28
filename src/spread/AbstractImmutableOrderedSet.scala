@@ -73,7 +73,7 @@ object AbstractImmutableOrderedSet {
       else if (c.compareOrder(first.get,s.last.get) > 0) op.swap.combineJoin(s,self)
       else {
         val (l,xx,r,c1) = s.split(some.get)
-        val (ms,c2) = op.combineElements(some,xx) match { // combine elements
+        val (ms,c2) = op.combineElements(some,xx) match { // multiAdd elements
           case None => c1.empty
           case Some(x) => c1.create(x)
         }

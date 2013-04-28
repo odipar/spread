@@ -78,9 +78,16 @@ object Parser {
     case object Wipe extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) = EWipe(arg1)
     }
-    case object Desolve extends UnaryOp {
-      def toSpread(arg1: MultiSetExpr) = EDesolve(arg1)
+    case object UnPack extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = EUnPack(arg1)
     }
+    case object Pack extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = EPack(arg1)
+    }
+    case object OTrace extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = ETrace(arg1)
+    }
+
     case class E(l: List[Term]) extends Atom {
       def toSpread: MultiSetExpr = {
         var s = Stack[MultiSetExpr]()
@@ -109,9 +116,26 @@ object Parser {
         else sys.error("parse error: expressions is unbalanced: " + s)
       }
     }
-    case class A(l: List[SPair]) extends Atom {
-      val ll = l.reverse
+    case class T(l: List[E]) extends Atom {
       def toSpread = {
+        val ll = l
+        var i = ll.iterator
+        var m = emptyMap
+        var ii = 0
+        while (i.hasNext) {
+          val e = i.next.toSpread
+          val p = MMapPair(EInt(ii),e)
+          m = m put p
+          ii = ii + 1
+        }
+
+        createTrace(EMap(m))
+      }
+    }
+
+    case class A(l: List[SPair]) extends Atom {
+      def toSpread = {
+        val ll = l.reverse
         var i = ll.iterator
         var aa = noAlternatives
         while (i.hasNext) {
@@ -137,14 +161,14 @@ object Parser {
     lazy val program = expr
     lazy val expr: Parser[E] = rep1(elem) ^^ { case l => E(l) }
     lazy val elem: Parser[Term] = labeled | sequence | atom | operator
-    lazy val sexpr: Parser[E] = "(" ~ expr ~ ")" ^^ { case "(" ~ l ~ ")" => l }
-    lazy val atom: Parser[Atom] = spreadsheet | sexpr | alternatives | number | symbol
+    lazy val trace: Parser[T] = "(" ~ repsep(expr,",") ~ ")" ^^ { case "(" ~ l ~ ")" => T(l) }
+    lazy val atom: Parser[Atom] = spreadsheet | trace | alternatives | number | symbol
     lazy val alternatives: Parser[A] = "{" ~ repsep(setpair,",") ~ "}" ^^ { case "{" ~ l ~ "}" =>  A(l) }
     lazy val spreadsheet: Parser[M] = "[" ~ repsep(mappair,",") ~ "]" ^^ { case "[" ~ l ~ "]" => M(l) }
     lazy val number = reg("[-]?[0-9]+") ^^ { i => Number(i.toInt) }
     lazy val symbol = reg("[a-zA-Z0-9]+") ^^ { t => MSymbol(t) }
     lazy val operator = unary | binary
-    lazy val unary = reduce | wipe | desolve
+    lazy val unary = reduce | wipe | pack | unpack | traceo
     lazy val labeled = nlabeled | alabeled
     lazy val mappair = meqpair | spair
     lazy val setpair = msetpair | ssetpair
@@ -158,7 +182,9 @@ object Parser {
     lazy val alabeled = (sequence | atom) ~ "'" ~ (sequence | atom) ^^ { case e1 ~ "'" ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
     lazy val binary = add | mul | bind | iter
     lazy val wipe = "#" ^^ { case o => Wipe }
-    lazy val desolve = ">" ^^ { case o => Desolve }
+    lazy val traceo = "@" ^^ { case o => OTrace }
+    lazy val unpack = ">" ^^ { case o => UnPack }
+    lazy val pack = "<" ^^ { case o => Pack }
     lazy val reduce = "$" ^^ { case o => Reduce }
     lazy val add = "+" ^^ { case o => Add }
     lazy val mul = "*" ^^ { case o => Mul }

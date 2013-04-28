@@ -19,7 +19,7 @@ object Engine_v2 {
     case EExpr => 1
     case (vv: Alternatives) => 2
     case (vv: ESymbol) => 3
-    case (vv: Reduction) => 4
+    case (vv: Trace) => 4
     case (vv: LabeledExpr) => 5
     case (vv: EEMap) => 6
     case (vv: EInt) => 7
@@ -28,8 +28,10 @@ object Engine_v2 {
     case (vv: EBind) => 10
     case (vv: EIter) => 12
     case (vv: ERed) => 13
-    case (vv: EDesolve) => 14
-    case (vv: EWipe) => 15
+    case (vv: EUnPack) => 14
+    case (vv: EPack) => 15
+    case (vv: EWipe) => 16
+    case (vv: ETrace) => 17
   }
 
   object MSTreapContext extends STreapContextImpl[SP,Any,Int] {
@@ -37,10 +39,11 @@ object Engine_v2 {
     def priorityHash(x: Option[SP]): Int = MSHashing.hash(x.get)
     def orderPriority(p1: Int, p2: Int) = p1.compareTo(p2)
 
-    val unionV2: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetSumUnion() // construct once, to avoid excessive allocations
+    val add: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetSumUnion() // construct once, to avoid excessive allocations
+    val mul: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetMultiply() // construct once, to avoid excessive allocations
 
-    override def union = unionV2
-    override def intersect = sys.error("not yet")
+    override def union = add
+    override def intersect = mul
     override def difference = sys.error("not yet")
   }
 
@@ -50,7 +53,7 @@ object Engine_v2 {
   object MSHashing extends PriorityHasher[SP] {
     import Hashing.jenkinsHash
     def hash(s1: SP): Int = 1
-    
+
     def hash(s1: MS): Int = s1 match {
       case EExpr => jenkinsHash(0)
       case (Alternatives(s)) => jenkinsHash(s.hashCode)
@@ -60,9 +63,10 @@ object Engine_v2 {
       case (EBind(a1,a2)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
       case (EIter(a1,a2)) => jenkinsHash(hash(a1) + jenkinsHash(hash(a2)))
       case (ERed(a1)) => jenkinsHash(hash(a1)*201-1239)
-      case (EDesolve(a1)) => jenkinsHash(hash(a1)*123+123991)
+      case (ETrace(a1)) => jenkinsHash(hash(a1)*223123-1239)
+      case (EUnPack(a1)) => jenkinsHash(hash(a1)*123+123991)
       case (ESymbol(s)) => jenkinsHash(s.hashCode*123)
-      case (Reduction(v1,e1)) => jenkinsHash(hash(v1)+13)
+      case (Trace(EMap(m))) => jenkinsHash(m.hashCode-4321)
       case (LabeledExpr(label,value)) => jenkinsHash(jenkinsHash(hash(label)) + 13*hash(value))
       case (EEMap(EMap(m))) => jenkinsHash(m.hashCode-1234)
     }
@@ -73,10 +77,11 @@ object Engine_v2 {
     def priorityHash(x: Option[EP]): Int = MMHashing.hash(x.get)
     def orderPriority(p1: Int, p2: Int) = p1.compareTo(p2)
 
-    val unionV2: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetSumUnion() // construct once, to avoid excessive allocations
+    val add: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetSumUnion() // construct once, to avoid excessive allocations
+    val mul: SetOperation[PP,Any,STreap[PP,Any,Int],STreapContext[PP,Any,Int]] = LeftMultiSetMultiply() // construct once, to avoid excessive allocations
 
-    override def union = unionV2
-    override def intersect = sys.error("not yet")
+    override def union = add
+    override def intersect = mul
     override def difference = sys.error("not yet")
   }
 
@@ -92,18 +97,14 @@ object Engine_v2 {
   object MSOrdering extends Ordering[MS] {
     def compareEqual(v1: MultiSetExpr, v2: MultiSetExpr): Int = (v1,v2) match {
       case (EExpr,EExpr) => 0
-      case (Reduction(v1,s1),Reduction(v2,s2)) => {
-        val c = compare(v1,v2)
-        if (c == 0) compare(s1,s2)
-        else c
-      }
+      case (Trace(EMap(t1)), Trace(EMap(t2))) => compareMap(t1,t2)
       case (LabeledExpr(l1,v1),LabeledExpr(l2,v2)) => {
-        val c = compare(v1,v2)
-        if (c == 0) compare(l1,l2)
+        val c = compare(l1,l2)
+        if (c == 0) compare(v1,v2)
         else c
       }
       case (EInt(i1), EInt(i2)) => i1 - i2
-      case (ESymbol(s1),ESymbol(s2)) => s1.compareTo(s2)
+      case (ESymbol(s1),ESymbol(s2)) =>  s1.compareTo(s2)
       case (EAdd(a11,a12),EAdd(a21,a22)) => {
         val c = compare(a11,a21)
         if (c == 0) compare(a12,a22)
@@ -128,7 +129,9 @@ object Engine_v2 {
         compareMap(m1,m2)
       }
       case (ERed(e11),ERed(e21)) => compare(e11,e21)
-      case (EDesolve(e11),EDesolve(e21)) => compare(e11,e21)
+      case (ETrace(e11),ETrace(e21)) => compare(e11,e21)
+      case (EUnPack(e11),EUnPack(e21)) => compare(e11,e21)
+      case (EPack(e11),EPack(e21)) => compare(e11,e21)
       case (EWipe(e11),EWipe(e21)) => compare(e11,e21)
       case (Alternatives(a1), Alternatives(a2)) => {
         compareAlt(a1,a2)
@@ -155,9 +158,7 @@ object Engine_v2 {
         }
       }
     }
-    def compare(p1: PP, p2: PP): Int = {
-      compare(p1.value,p2.value)
-    }
+    def compare(p1: PP, p2: PP): Int = compare(p1.value,p2.value)
     def compareAlt(a1: MST, a2: MST): Int = {
       (a1.some, a2.some) match {
         case (None,None) => 0
@@ -181,7 +182,6 @@ object Engine_v2 {
     def bind(b: MultiMapExpr): EXPR
     def wipe: EXPR
     def value: EXPR
-    def source: EXPR
     def reduce: EXPR
 
     def asString: String
@@ -214,14 +214,20 @@ object Engine_v2 {
     def split(e: E): (EXPR,Option[E],EXPR)
 
     // Multi- operations
-    def combine(o: EXPR): EXPR
-  }
-  trait MultiMapExpr extends MultiExpr[PP,MultiMapExpr] {
-    def contains(p: PP): Boolean
-    def get(p: PP): Option[PP]
+    def multiAdd(o: EXPR): EXPR
+    def multiMul(o: EXPR): EXPR
   }
 
-  trait MultiSetExpr extends MultiExpr[PP,MultiSetExpr] with SetPair
+  trait MultiMapExpr extends MultiExpr[PP,MultiMapExpr] {
+    def isEmpty: Boolean
+    def contains(p: PP): Boolean
+    def get(p: PP): Option[PP]
+    def put(p: PP): MultiMapExpr
+  }
+
+  trait MultiSetExpr extends MultiExpr[PP,MultiSetExpr] with SetPair {
+    def isEmpty: Boolean
+  }
 
   trait MultiSetExprI extends MultiSetExpr {
     def label = EInt(1)
@@ -230,7 +236,7 @@ object Engine_v2 {
     def bindPair(b: MultiMapExpr) = bind(b)
 
     def add(o: PP): PP = {
-      val a = EAdd(label,o.label)
+      val a = EAdd(label,o.label).reduce.wipe
       SSetPair(a,this)
     }
     def mul(o: PP): PP = {
@@ -242,8 +248,8 @@ object Engine_v2 {
   }
 
   trait Atom extends  MultiSetExprI {
+    def isEmpty = false
     def value: MultiSetExpr = this
-    def source = EExpr
     def split(e: PP): (MultiSetExpr,Option[PP],MultiSetExpr) = (EExpr,some,EExpr)
     def first: Option[PP] = some
     def some: Option[PP] = Some(this)
@@ -252,12 +258,17 @@ object Engine_v2 {
 
   trait Operator extends Atom
 
-  case object EExpr extends Atom {
+  case object EExpr extends MultiSetExprI {
+    def isEmpty = true
+    def value = this
+    def split(e: PP) = (this,Some(this),this)
     def wipe = this
     def bind(b: MultiMapExpr): MultiSetExpr = this
     def labels = this
     def reduce = this
-    def combine(o: MultiSetExpr) = o
+    def multiAdd(o: MultiSetExpr) = o
+    def multiMul(o: MultiSetExpr) = this
+
     override def first: Option[SetPair] = None
     override def some: Option[SetPair] = None
     override def last: Option[SetPair] = None
@@ -267,13 +278,23 @@ object Engine_v2 {
 
   def createMap(e: MapPair): MultiMapExpr = EMap(emptyMap.put(e))
   def createAlt(e: SetPair): MultiSetExpr = Alternatives(noAlternatives.put(e))
-
+  def createAlt3(e: MultiSetExpr): MultiSetExpr = {
+    if (e.isEmpty) e
+    val (l,ee,r) = e.split(e.some.get)
+    if (l.isEmpty && r.isEmpty) {
+      if (MSOrdering.compare(ee.get.label,EInt(1)) == 0) {  ee.get.value }
+      else e
+    }
+    else e
+  }
   def createAlt2(e: MST): MultiSetExpr = {
     if (e.isEmpty) EExpr
     else {
       val (l,ee,r) = e.split(e.some.get)
-      if (l.isEmpty && r.isEmpty && (1==0)) {
+      if (l.isEmpty && r.isEmpty) {
         val p: PP = ee.get
+        val l = p.label
+        //  Alternatives(e)
         if (MSOrdering.compare(p.label,EInt(1)) == 0) p.value
         else Alternatives(e)
       }
@@ -307,7 +328,9 @@ object Engine_v2 {
     }
   }
 
-  case class Alternatives(s: MST) extends Atom {
+  case class Alternatives(s: MST) extends MultiSetExprI {
+    def isEmpty = s.isEmpty
+    def value = this
     def bind(b: MultiMapExpr) = {
       var e1 = s
       var r = noAlternatives
@@ -327,12 +350,12 @@ object Engine_v2 {
         var e2: MultiSetExpr = p.value
         while (e2.first != None ) {
           val p2: PP = e2.first.get.reducePair
-          s2 = s2 combine createAlt(SSetPair(domul(p.label,p2.label),p2.value.reduce))
+          s2 = s2 multiAdd createAlt(SSetPair(domul(p.label,p2.label),p2.value.reduce))
           e2 = e2.split(e2.first.get)._3
         }
         e1 = e1.split(e1.first.get)._3
       }
-      red(s2,this)
+      red(this,s2)
     }
     def wipe = {
       var e1 = s
@@ -355,16 +378,19 @@ object Engine_v2 {
     var e1 = s
       var r: MultiSetExpr = EExpr
       while (e1.first != None) {
-        r = r combine e1.first.get.labels
+        r = r multiAdd e1.first.get.labels
         e1 = e1.split(e1.first.get)._3
       }
       r
     }
-    def combine(s2: MultiSetExpr) =  s2 match {
+    def multiAdd(s2: MultiSetExpr) =  s2 match {
       case Alternatives(s2: MST) => createAlt2(s union s2)
-      case ss => {this combine createAlt(ss.asInstanceOf[SetPair])}
+      case ss => {this multiAdd createAlt(ss.asInstanceOf[SetPair])}
     }
-
+    def multiMul(s2: MultiSetExpr) =  s2 match {
+      case Alternatives(s2: MST) => createAlt2(s intersect s2)
+      case ss => {this multiMul createAlt(ss.asInstanceOf[SetPair])}
+    }
     def asString = {
       var e1 = s
       var r: String = "{"
@@ -389,7 +415,8 @@ object Engine_v2 {
     def bind(b: MultiMapExpr) = this
     def labels = EExpr
     def reduce = this
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
 
     def asString = e.toString
   }
@@ -400,7 +427,9 @@ object Engine_v2 {
 
     def labels = EExpr
     def reduce = this
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
     def asString = s
   }
 
@@ -411,25 +440,89 @@ object Engine_v2 {
     def labels = m.labels
     def reduce = {
       var a1 = m.reduce
-      var e1 = a1
+      var e1 = a1.value
       var e: MultiSetExpr = EExpr
       while (e1.first != None) {
         val p = e1.first.get
-        val ee: PP = p.reducePair
-        e = e combine createAlt(SSetPair(ee.label,ee.value))
+        p.value match {
+          case em: EEMap => e = e multiAdd em.reduceMap
+          case _ => e = e multiAdd p.value
+        }
         e1 = e1.split(e1.first.get)._3
       }
-      if (e.some == None) red(a1,this)
-      else red(e,red(ERed(a1),this))
+      if (e.some == None) { println("this") ; red(this,a1) }
+      red(red(this,ERed(a1)),createAlt3(e))
     }
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
     def asString =  m.asString + " $"
   }
 
-  case class EDesolve(m: MultiSetExpr) extends Atom {
-    def wipe = EDesolve(m.wipe)
-    def bind(b: MultiMapExpr) = EDesolve(m.bind(b))
+  case class EUnPack(m: MultiSetExpr) extends Atom {
+    def wipe = EUnPack(m.wipe)
+    def bind(b: MultiMapExpr) = EUnPack(m.bind(b))
+
+    def labels = m.labels
+    def reduce = {
+      val ra1 = m.reduce
+      var e: MultiSetExpr = EExpr
+
+      var e1 = ra1.value
+      while (e1.first != None) {
+        val r = e1.first.get.reducePair
+        r.value match {
+          case EEMap(m) => {
+            var e2 = m
+            while (e2.first != None) {
+              val p: PP = e2.first.get.reducePair
+              val l: LabeledExpr = LabeledExpr(p.label,p.value)
+              e = e multiAdd createAlt(l)
+              e2 = e2.split(e2.first.get)._3
+            }
+          }
+          case _ =>
+        }
+        e1 = e1.split(e1.first.get)._3
+      }
+      red(red(this,EUnPack(ra1)),createAlt3(e))
+    }
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    def asString = m.asString + " >"
+  }
+
+  case class EPack(m: MultiSetExpr) extends Atom {
+    def wipe = EPack(m.wipe)
+    def bind(b: MultiMapExpr) = EPack(m.bind(b))
+
+    def labels = m.labels
+    def reduce = {
+      val ra1 = m.reduce.value
+      var e1 = ra1
+      var mm = emptyMap
+      var ii = 0
+      while (e1.first != None) {
+        val r = e1.first.get.reducePair
+        mm = mm put MMapPair(EInt(ii),r.value)
+        ii = ii + 1
+        e1 = e1.split(e1.first.get)._3
+      }
+
+      red(red(this,EPack(ra1)),EEMap(EMap(mm)))
+    }
+
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    def asString = m.asString + " <"
+  }
+
+  case class ETrace(m: MultiSetExpr) extends Atom {
+    def wipe = EUnPack(m.wipe)
+    def bind(b: MultiMapExpr) = EUnPack(m.bind(b))
 
     def labels = m.labels
     def reduce = {
@@ -440,24 +533,23 @@ object Engine_v2 {
       while (e1.first != None) {
         val r = e1.first.get.reducePair
         r match {
-            case EEMap(m) => {
-              var e2 = m
-              while (e2.first != None) {
-                val p: PP = e2.first.get.reducePair
-                val l: LabeledExpr = LabeledExpr(p.label,p.value)
-                e = e combine createAlt(l)
-                e2 = e2.split(e2.first.get)._3
-              }
-            }
-            case _ =>
+          case Trace(m) => {
+            e = e multiAdd createAlt(EEMap(m))
+          }
+          case _ => {
+            val m = createMap(MMapPair(EInt(0),r.value))
+            e = e multiAdd createAlt(EEMap(m))
+          }
         }
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,red(EDesolve(ra1),this))
+      red(red(this,ETrace(ra1)),createAlt3(e))
     }
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    def asString = m.asString + " >"
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    def asString = m.asString + " @"
   }
 
   case class EWipe(m: MultiSetExpr) extends Operator {
@@ -472,12 +564,14 @@ object Engine_v2 {
       while (e1.first != None) {
         val ee = e1.first.get
         val p: PP = ee.wipePair
-        e = e combine createAlt(SSetPair(p.label,p.value))
+        e = e multiAdd createAlt(SSetPair(p.label,p.value))
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,red(EWipe(a1),this))
+      red(red(this,EWipe(a1)),createAlt3(e))
     }
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
     def asString = m.asString + " #"
   }
 
@@ -486,8 +580,11 @@ object Engine_v2 {
     def bind(b: MultiMapExpr) = EEMap(e.bind(b))
 
     def labels = e.labels
-    def reduce = EEMap(e.reduce)
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
+    def reduceMap = EEMap(e.reduce)
+    def reduce = this
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
     def asString = e.asString
 
     override def wipePair = wipe
@@ -495,14 +592,26 @@ object Engine_v2 {
     override def bindPair(b: MultiMapExpr) = this
   }
 
-  def red(a1: MultiSetExpr, a2: MultiSetExpr): MultiSetExpr = {
-    if (MSOrdering.compare(a1,a2) == 0) a1
-    else a2 match {
-      /*case Reduction(a21,a22) => {
-        if (MSOrdering.compare(a1,a21) == 0) red(a1,a22)
-        else Reduction(a1,a2)
-      } */
-      case _ => Reduction(a1,a2)
+  def createTrace(mm: MultiMapExpr): MultiSetExpr = {
+    val (l,ee,r) = mm.split(mm.some.get)
+    if (l.isEmpty && r.isEmpty) ee.get.value
+    else Trace(mm)
+  }
+
+  def red(source: MultiSetExpr, reduction: MultiSetExpr): MultiSetExpr = {
+    if (MSOrdering.compare(source,reduction) == 0) source
+    else source match {
+      case Trace(trace) => {
+        val p = trace.last.get
+        val l = EAdd(p.label,EInt(1)).reduce.wipe
+        val m: MultiMapExpr = trace.put(MMapPair(l,reduction))
+        Trace(m)
+      }
+      case _ =>
+      {
+        var m = emptyMap put MMapPair(EInt(0),source) put MMapPair(EInt(1),reduction)
+        createTrace(EMap(m))
+      }
     }
   }
 
@@ -524,34 +633,36 @@ object Engine_v2 {
           val a2 = e2.first.get
 
           (a1.value, a2.value) match {
-            case (EInt(i1),EInt(i2)) => e = e combine EInt(i1+i2)
-            case (EEMap(m1),EEMap(m2)) => e = e combine EEMap(m1 combine m2)
-            case _ => e = e combine EAdd(a1.value,a2.value)
+            case (EInt(i1),EInt(i2)) => e = e multiAdd EInt(i1+i2)
+            case (EEMap(m1),EEMap(m2)) => e = e multiAdd EEMap(m1 multiAdd m2)
+            case _ => e = e multiAdd EAdd(a1.value,a2.value)
           }
           e2 = e2.split(e2.first.get)._3
         }
         e1 = e1.split(e1.first.get)._3
       }
       if (e.some == None) EAdd(ra1,ra2)
-      else red(e,red(EAdd(ra1,ra2),this))
+      else red(red(this,EAdd(ra1,ra2)),createAlt3(e))
     }
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    lazy val labels = arg1.labels combine arg2.labels
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    lazy val labels = arg1.labels multiAdd arg2.labels
 
     def asString = arg1.asString + " " + arg2.asString + " +"
   }
 
   case class LabeledExpr(l: MultiSetExpr, v: MultiSetExpr) extends Atom {
     def bind(b: MultiMapExpr) = {
-        val mp = MMapPair(l,v)
-        if (b.contains(mp)) {
-          val vv: PP = b.get(mp).get
-          LabeledExpr(l,vv.value)
-        }
-        else LabeledExpr(l.bind(b), v.bind(b))
+      val mp = MMapPair(l,v)
+      if (b.contains(mp)) {
+        val vv: PP = b.get(mp).get
+        LabeledExpr(l,vv.value)
       }
+      else LabeledExpr(l.bind(b), v.bind(b))
+    }
 
     def wipe = LabeledExpr(l.wipe,v.wipe)
     def reduce = {
@@ -560,14 +671,16 @@ object Engine_v2 {
       }
       else {
         val vr = v.reduce
-        red(v,red(LabeledExpr(l.reduce,vr),this))
+        red(red(this,LabeledExpr(l.reduce,vr)),v)
       }
     }
 
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    lazy val labels = l combine l.labels combine v.labels
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    lazy val labels = l multiAdd l.labels multiAdd v.labels
 
     def asString = {
       if (v.some == None) l.asString + "`"
@@ -588,7 +701,7 @@ object Engine_v2 {
         val v = e3.first.get
         val np = MMapPair(l,v.value)
         var nm = createMap(np)
-        m3 = m3 combine m4.bind(nm)
+        m3 = m3 multiAdd m4.bind(nm)
         e3 = e3.split(e3.first.get)._3
       }
       m4 = m3
@@ -611,11 +724,11 @@ object Engine_v2 {
         var e2 = ra2
         while (e2.first != None) {
           (e1.first.get,e2.first.get) match {
-            case (EInt(i1),_) => e = e combine EInt(i1)
+            case (EInt(i1),_) => e = e multiAdd EInt(i1)
             case (EEMap(m1),EEMap(m2)) => {
-              e = e combine EEMap(iterate(m1,m2))
+              e = e multiAdd EEMap(iterate(m1,m2))
             }
-            case (EEMap(m1),EInt(_)) => e = e combine EEMap(m1)
+            case (EEMap(m1),EInt(_)) => e = e multiAdd EEMap(m1)
             case _ =>
           }
           e2 = e2.split(e2.first.get)._3
@@ -623,12 +736,14 @@ object Engine_v2 {
         e1 = e1.split(e1.first.get)._3
       }
       if (e.some == None) EIter(ra1,ra2)
-      else red(e,red(EIter(ra1,ra2),this))
+      else red(red(this,EIter(ra1,ra2)),createAlt3(e))
     }
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    lazy val labels = arg1.labels combine arg2.labels
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    lazy val labels = arg1.labels multiAdd arg2.labels
 
     def asString = arg1.asString + " " + arg2.asString + " ~"
   }
@@ -652,21 +767,25 @@ object Engine_v2 {
           val a2 = e2.first.get
 
           (a1.value, a2.value) match {
-            case (EInt(i1),EInt(i2)) =>  e = e combine EInt(i1*i2)
-            case _ =>
+
+            case (EInt(i1),EInt(i2)) =>  e = e multiAdd EInt(i1*i2)
+            case (EEMap(m1),EEMap(m2)) => e = e multiAdd EEMap(m1 multiMul m2)
+            case _ => e = e multiAdd EMul(a1.value,a2.value)
           }
           e2 = e2.split(e2.first.get)._3
         }
         e1 = e1.split(e1.first.get)._3
       }
       if (e.some == None) EMul(ra1,ra2)
-      else red(e,red(EMul(ra1,ra2),this))
+      else red(red(this,EMul(ra1,ra2)),createAlt3(e))
     }
 
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    lazy val labels = arg1.labels combine arg2.labels
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    lazy val labels = arg1.labels multiAdd arg2.labels
 
     def asString = arg1.asString + " " + arg2.asString + " *"
   }
@@ -689,49 +808,71 @@ object Engine_v2 {
           val a2 = e2.first.get
 
           (a1.value, a2.value) match {
-            case (EEMap(m1), EEMap(m2)) => e = e combine EEMap(m1.bind(m2))
-            case _ =>
+            case (EEMap(m1), EEMap(m2)) => e = e multiAdd EEMap(m1.bind(m2))
+            case (k,i: EInt) => e = e multiAdd createAlt(k)
+            case _ => e = e multiAdd createAlt(EBind(a1.value,a2.value))
           }
           e2 = e2.split(e2.first.get)._3
         }
         e1 = e1.split(e1.first.get)._3
       }
-      red(e,red(EBind(ra1,ra2),this))
+      red(red(this,EBind(ra1,ra2)),createAlt3(e))
     }
 
     def split(e: MultiSetExpr) = (EExpr,some,EExpr)
 
-    def combine(o: MultiSetExpr) = createAlt(this) combine o
-    lazy val labels = arg1.labels combine arg2.labels
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
+
+    lazy val labels = arg1.labels multiAdd arg2.labels
 
     def asString = arg1.asString + " " + arg2.asString + " !"
   }
 
+  case class Trace(trace: MultiMapExpr) extends MultiSetExprI {
+    def isEmpty = false
+    def labels = trace.labels
+    def value = trace.last.get.value
+    def bind(b: MultiMapExpr) = {
+      trace.first.get.value.bind(b).reduce
+      //val nt: MultiMapExpr = trace.split(trace.first.get)._1
+      /*println("nt: " + nt.asString)
+      // TODO: optimize
+      val p = trace.first.get
+      println("p: " + p.asString)
 
-  case class Reduction(value: MultiSetExpr, source: MultiSetExpr) extends MultiSetExprI {
-    lazy val labels = value.labels combine source.labels
-
-    def bind(b: MultiMapExpr) = source.bind(b).reduce
-    def wipe = value
-    def setOccurrence(o: Int) = sys.error("not yet")
+      val p2 = p.bindPair(b)
+      println("p2: " + p2.asString)
+      Trace(nt.put(p2))  */
+    }
     def reduce = this
-    def first = value.first
-    def some = value.some
-    def last = value.last
-    def split(e: PP) =  value.split(e)
-
-    def combine(o: MultiSetExpr): MultiSetExpr = this combine o
+    def wipe = {
+      trace.last.get.value
+    }
+    def split(e: PP) = (EExpr,some,EExpr)
+    def first = some
+    def some = Some(this)
+    def last = some
+    def multiAdd(o: MultiSetExpr) = createAlt(this) multiAdd o
+    def multiMul(o: MultiSetExpr) = createAlt(this) multiMul o
 
     def asString = {
-      if (MSOrdering.compare(value,source) == 0) "("+source.asString + ")@=" + value.asString
-      else {
-        "("+source.asString + ")@" + value.asString
+      var e1 = trace
+      var r: String = "("
+      var i = 0
+      while (e1.first != None) {
+        if (i > 0) { r = r + "," }
+        r = r + e1.first.get.value.asString
+        e1 = e1.split(e1.first.get)._3
+        i = i + 1
       }
+      r + ")"
     }
   }
-  case class EMap(m: MMT) extends MultiMapExpr {
-    def source = this
 
+  case class EMap(m: MMT) extends MultiMapExpr {
+
+    def isEmpty = m.isEmpty
     def value = this
     def wipe= {
       var r = emptyMap
@@ -770,7 +911,7 @@ object Engine_v2 {
       var mm = m
       while (mm.first != None) {
         val p = mm.first.get
-        r = r combine p.value.labels
+        r = r multiAdd p.value.labels
         mm = mm.split(mm.first.get)._3
       }
       r
@@ -781,11 +922,16 @@ object Engine_v2 {
 
     def get(e: PP) = m.get(e)
     def contains(e: PP) = get(e) != None
+    def put(e: PP) = EMap(m.put(e))
 
     def split(e: PP) = { val(l,ee,r) = m.split(e) ; (EMap(l),ee,EMap(r)) }
 
-    def combine(o: MultiMapExpr): MultiMapExpr = o match {
-      case EMap(mm) =>  EMap(m union mm)
+    def multiAdd(o: MultiMapExpr): MultiMapExpr = o match {
+      case EMap(mm) =>  { EMap(m union mm) }
+      case _ => sys.error("no")
+    }
+    def multiMul(o: MultiMapExpr): MultiMapExpr = o match {
+      case EMap(mm) =>  EMap(m intersect mm)
       case _ => sys.error("no")
     }
 
@@ -798,7 +944,8 @@ object Engine_v2 {
         e1 = e1.split(e1.first.get)._3
         i = i + 1
       }
-      seq
+      if (i > 1) seq
+      else false
     }
     def asString = {
       val (seq,el2,st,el,et) = {
@@ -833,7 +980,7 @@ object Engine_v2 {
 
     def bindPair(b: MultiMapExpr) = SSetPair(label.bind(b), value.bind(b))
 
-    lazy val labels = label.labels combine value.labels
+    lazy val labels = label.labels multiAdd value.labels
 
     def value = v.value
 
@@ -844,7 +991,7 @@ object Engine_v2 {
     }
 
     def wipePair = SSetPair(label.wipe,value.wipe)
-    def source = this
+
 
     def first = some
     def some = Some(this)
@@ -856,8 +1003,8 @@ object Engine_v2 {
       else label.asString + ":" +value.asString
     }
 
-    def add(o: PP): PP = SSetPair(EAdd(label,o.label),value)
-    def mul(o: PP): PP = sys.error("not yet")
+    def add(o: PP): PP = SSetPair(EAdd(label,o.label).reduce.wipe,value)
+    def mul(o: PP): PP = SSetPair(EMul(label,o.label).reduce.wipe,value)
     def max(o: PP): PP = sys.error("not yet")
     def min(o: PP): PP = sys.error("not yet")
     def neg: PP = sys.error("not yet")
@@ -872,7 +1019,7 @@ object Engine_v2 {
       else MMapPair(label.bind(b), value.bind(b))
     }
 
-    lazy val labels = label combine label.labels combine value.labels
+    lazy val labels = label multiAdd label.labels multiAdd value.labels
 
     def reducePair = {
       val l = label.reduce
@@ -881,7 +1028,6 @@ object Engine_v2 {
     }
 
     def wipePair = MMapPair(label.wipe,value.wipe)
-    def source = this
 
     def first = some
     def some = Some(this)
@@ -894,18 +1040,21 @@ object Engine_v2 {
     }
 
     def add(o: PP): PP = {
-      MMapPair(label,value combine o.value)
+      MMapPair(label,value multiAdd o.value)
     }
-    def mul(o: PP): PP = sys.error("not yet")
+    def mul(o: PP): PP = {
+      MMapPair(label,value multiMul o.value)
+    }
     def max(o: PP): PP = sys.error("not yet")
     def min(o: PP): PP = sys.error("not yet")
     def neg: PP = sys.error("not yet")
   }
-  
+
   def subexpr2(s: MultiSetExpr): String = s match {
     case e: EInt => e.asString
     case s: ESymbol => s.asString
     case a: Alternatives => s.asString
+    case t: Trace => t.asString
     case m: EEMap => m.asString
     case EExpr => EExpr.asString
     case _ => "(" + s.asString + ")"
@@ -915,6 +1064,7 @@ object Engine_v2 {
     case e: EInt => e.asString
     case s: ESymbol => s.asString
     case a: Alternatives => s.asString
+    case t: Trace => t.asString
     case m: EEMap => m.asString
     case EExpr => EExpr.asString
     case _ => "(" + s.asString + ")"
@@ -927,6 +1077,15 @@ object Engine_v2 {
 
   trait MultiSetOperationImpl[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]
     extends MultiSetOperation[M,SS,CC] with SetOperationImpl[PP,M,SS,CC] {
+    def square(s: SS)(implicit c: CC): (SS,CC) = s.some match {
+      case None => (s,c)
+      case Some(x) => {
+        val (l,c1) = square(s.left)(c)
+        val (r,c2) = square(s.right)(c1)
+        val e = x mul x
+        c2.create(l,Some(e),r)
+      }
+    }
     def twice(s: SS)(implicit c: CC): (SS,CC) = s.some match {
       case None => (s,c)
       case Some(x) => {
@@ -944,7 +1103,7 @@ object Engine_v2 {
     def combineLeftElement(left: PP): Option[PP] = Some(left)
     def combineRightElement(right: PP): Option[PP] = Some(right)
   }
-  
+
   trait MultiSetUnion[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]
     extends MultiSetOperationImpl[M,SS,CC] with DifferenceUnion[M,SS,CC] {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC) = (s1,c)
@@ -992,9 +1151,31 @@ object Engine_v2 {
     def combineLeftElement(left: PP): Option[PP] = None
     def combineRightElement(right: PP): Option[PP] = None
     def combineEqualElements(x1: PP, x2: PP): Option[PP] = {
-      Some(x1)
+      Some(x1 min x2)
     } // Some(ME(x1.value,x1.count min x2.count))
   }
+
+  trait MultiSetMultiply[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]
+    extends MultiSetOperationImpl[M,SS,CC] {
+    def combineEqual(s1: SS, s2: SS)(implicit c: CC) = square(s1)
+    def combineJoin(s1: SS, s2: SS)(implicit c: CC) = c.empty
+    def combineLeftElement(left: PP): Option[PP] = None
+    def combineRightElement(right: PP): Option[PP] = None
+    def combineEqualElements(x1: PP, x2: PP): Option[PP] = {
+      Some(x1 mul x2)
+    } // Some(ME(x1.value,x1.count min x2.count))
+  }
+
+  case class LeftMultiSetMultiply[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]()
+    extends MultiSetMultiply[M,SS,CC]  {
+    lazy val swap: MultiSetOperation[M,SS,CC] = RightMultiSetMultiply()
+  }
+
+  case class RightMultiSetMultiply[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]()
+    extends MultiSetMultiply[M,SS,CC] {
+    lazy val swap: MultiSetOperation[M,SS,CC] = LeftMultiSetMultiply()
+  }
+
 
   case class LeftMultiSetIntersect[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]()
     extends MultiSetIntersect[M,SS,CC]  {
@@ -1012,7 +1193,7 @@ object Engine_v2 {
     def combineEqual(s1: SS,s2: SS)(implicit c: CC) = c.empty
     def combineJoin(s1: SS, s2: SS)(implicit c: CC) = s1.join(s2)
     def combineEqualElements(x1: PP, x2: PP): Option[PP] = {
-      Some(x1)
+      Some(x1 add x1.neg)
     } //Some(ME(x1.value,(x1.count - x2.count) max 0))
   }
 }
