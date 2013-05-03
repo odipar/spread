@@ -14,7 +14,7 @@ import java.awt.event._
 import Parser.SpreadParser._
 import scala.util.parsing.input.CharSequenceReader
 
-class SpreadREPL extends JTextPane() {
+object SpreadREPL extends JTextPane() {
   var position : Position = document.getEndPosition
 
   final def document = getDocument

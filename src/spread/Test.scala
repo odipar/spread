@@ -88,7 +88,7 @@ object Test {
 
   class EnchiladaFrame extends JFrame
   {
-    var textPane = new SpreadREPL()
+    var textPane = SpreadREPL
     var scrollPane = new JScrollPane(textPane)
 
     {
