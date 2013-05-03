@@ -3,6 +3,8 @@ package spread
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.matching.Regex
 import scala.collection.immutable.Stack
+import scala.util.parsing.input.Reader
+import scala.util.parsing.input._
 
 object Parser {
 
@@ -50,6 +52,15 @@ object Parser {
     case object Add extends BinaryOp {
       def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EAdd(arg1,arg2)
     }
+    case object Subtract extends BinaryOp {
+      def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = ESub(arg1,arg2)
+    }
+    case object Max extends BinaryOp {
+      def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EMax(arg1,arg2)
+    }
+    case object Min extends BinaryOp {
+      def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EMin(arg1,arg2)
+    }
     case object Mul extends BinaryOp {
       def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EMul(arg1,arg2)
     }
@@ -66,14 +77,35 @@ object Parser {
         EEMap(EMap(em))
       }
     }
+    case object Foreach extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) =  arg1 match {
+        case u: UnaOp => {
+          EForeach(u)
+        }
+        case b: BinOp => EForeach(PartialBinOp(b))
+      }
+    }
+    case object Order extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) =  arg1 match {
+        case u: UnaOp => {
+          sys.error("unary op can't be ordered")
+        }
+        case b: BinOp => {
+          EOrder(b)
+        }
+      }
+    }
     case object Bind extends BinaryOp {
       def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EBind(arg1,arg2)
     }
-    case object Iter extends BinaryOp {
-      def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EIter(arg1,arg2)
+    case object Bindings extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = EBindings(arg1)
     }
     case object Reduce extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) = ERed(arg1)
+    }
+    case object Turn extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = ETurn(arg1)
     }
     case object Wipe extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) = EWipe(arg1)
@@ -158,8 +190,24 @@ object Parser {
       }
     }
 
-    lazy val program = expr
-    lazy val expr: Parser[E] = rep1(elem) ^^ { case l => E(l) }
+    final def getReadLine(input: Reader[Char]) : ParseResult[E] =
+    {
+      program(input)
+    }
+
+    final def parse(input: Reader[Char]) : ParseResult[E] =
+    {
+      program(input)
+    }
+
+    final val eolc = (13:Int).toChar
+    final val lfdc = (10:Int).toChar
+    lazy val lfd = elem("linefeed", ch => ch == lfdc)
+    lazy val eol = elem("end-of-line", ch => ch == eolc)
+    lazy val ret = lfd | (eol ~ lfd)
+
+    lazy val program = expr ~ ret ^^ { case e ~ r => e }
+    lazy val expr: Parser[E] = rep(elem) ^^ { case l => E(l) }
     lazy val elem: Parser[Term] = labeled | sequence | atom | operator
     lazy val trace: Parser[T] = "(" ~ repsep(expr,",") ~ ")" ^^ { case "(" ~ l ~ ")" => T(l) }
     lazy val atom: Parser[Atom] = spreadsheet | trace | alternatives | number | symbol
@@ -167,8 +215,9 @@ object Parser {
     lazy val spreadsheet: Parser[M] = "[" ~ repsep(mappair,",") ~ "]" ^^ { case "[" ~ l ~ "]" => M(l) }
     lazy val number = reg("[-]?[0-9]+") ^^ { i => Number(i.toInt) }
     lazy val symbol = reg("[a-zA-Z0-9]+") ^^ { t => MSymbol(t) }
-    lazy val operator = unary | binary
-    lazy val unary = reduce | wipe | pack | unpack | traceo
+    lazy val operator = special | unary | binary
+    lazy val special = traceo
+    lazy val unary = reduce | wipe | pack | unpack | foreach | bindings
     lazy val labeled = nlabeled | alabeled
     lazy val mappair = meqpair | spair
     lazy val setpair = msetpair | ssetpair
@@ -180,16 +229,22 @@ object Parser {
     lazy val meqpair = expr ~ "=" ~ expr ^^ {case e1 ~ "=" ~ e2 => MPair(e1,e2)}
     lazy val nlabeled = (sequence | atom) ~ "`" ^^ { case e1 ~ "`" => Labeled(E(List(e1)),E(List())) }
     lazy val alabeled = (sequence | atom) ~ "'" ~ (sequence | atom) ^^ { case e1 ~ "'" ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
-    lazy val binary = add | mul | bind | iter
+    lazy val binary = add | subtract | mul | max | min | bind | order
     lazy val wipe = "#" ^^ { case o => Wipe }
-    lazy val traceo = "@" ^^ { case o => OTrace }
+    lazy val turn = "~" ^^ { case o => Turn }
     lazy val unpack = ">" ^^ { case o => UnPack }
     lazy val pack = "<" ^^ { case o => Pack }
     lazy val reduce = "$" ^^ { case o => Reduce }
     lazy val add = "+" ^^ { case o => Add }
+    lazy val subtract = "-" ^^ { case o => Subtract }
+    lazy val max = "|" ^^ { case o => Max }
+    lazy val min = "&" ^^ { case o => Min }
     lazy val mul = "*" ^^ { case o => Mul }
-    lazy val iter = "~" ^^ { case o => Iter }
+    lazy val foreach = "/" ^^ { case o => Foreach }
+    lazy val order = "\\" ^^ { case o => Order }
     lazy val bind = "!" ^^ { case o => Bind }
-  }
+    lazy val bindings = "^" ^^ { case o => Bindings }
 
+    lazy val traceo = "@<" ^^ { case o => OTrace }
+  }
 }

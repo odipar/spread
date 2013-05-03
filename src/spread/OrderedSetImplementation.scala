@@ -7,8 +7,7 @@ object OrderedSetImplementation {
   // OrderedISet combines a compatible SISetImpl and SISSetContextImpl into one coherent unit
   // and recasts the combination into a new Immutable Ordered Set
 
-  trait OrderedISet[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC], SIS <: OrderedISet[X,M,SS,CC,SIS]]
-  extends SortedSet[X, SIS] {
+  trait OrderedISet[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC], SIS <: OrderedISet[X,M,SS,CC,SIS]] {
     def s: SS // returns the concrete SISet
     def c: CC // returns the concrete SISetContext
 
@@ -28,9 +27,13 @@ object OrderedSetImplementation {
       val (l,xx,r,cc) = s.split(x)(c)
       (construct((l,cc)),xx,construct((r,cc)))
     }
-    def union(o: SIS) = construct(s.union(o.s)(c))
-    def intersect(o: SIS) = construct(s.intersect(o.s)(c))
-    def difference(o: SIS) = construct(s.difference(o.s)(c))
+    def maximum(o: SIS) = construct(s.maximum(o.s)(c))
+    def minimum(o: SIS) = construct(s.minimum(o.s)(c))
+    def add(o: SIS) = construct(s.add(o.s)(c))
+    def subtract(o: SIS) = construct(s.subtract(o.s)(c))
+    def multiply(o: SIS) = construct(s.multiply(o.s)(c))
+
+    //def difference(o: SIS) = construct(s.difference(o.s)(c))
     def sameInstanceAs(o: SIS): Boolean = s eq o.s // may return false, while == may return true
     def equalsTo(o: SIS): Boolean = sameInstanceAs(o)
 

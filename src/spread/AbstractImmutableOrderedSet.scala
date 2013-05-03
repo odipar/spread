@@ -17,7 +17,7 @@ object AbstractImmutableOrderedSet {
     def some: Option[X] // returns the element between left and right  - must be O(1)
     def right(implicit c: CC): SS // returns all elements greater than some - must be O(1)
 
-    def join(s: SS)(implicit c: CC): (SS,CC) // returns the union of this with another s, given last(this) < first(s)
+    def join(s: SS)(implicit c: CC): (SS,CC) // returns the maximum of this with another s, given last(this) < first(s)
   }
 
   // SISetContext drives the construction of new SISets with empty, create and join (building).
@@ -84,13 +84,15 @@ object AbstractImmutableOrderedSet {
       }
     }
 
-    def union(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.union)
-    def intersect(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.intersect)
-    def difference(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.difference)
+    def maximum(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.maximum)
+    def minimum(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.minimum)
+    def add(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.add)
+    def multiply(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.multiply)
+    def subtract(s: SS)(implicit c: CC): (SS,CC) = combine(s,c.subtract)
 
     def get(x: X)(implicit c: CC): Option[X] = split(x)._2 // override for a more efficient implementation
     def put(x: X)(implicit c: CC): (SS,CC) = {
-      val (el,c1) = c.create(x) ; el.union(self)(c1)
+      val (el,c1) = c.create(x) ; el.maximum(self)(c1)
     } // override for a more efficient implementation
   }
 
@@ -105,13 +107,16 @@ object AbstractImmutableOrderedSet {
     def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] = None // returns measure on l,x and r - must be O(1)
     def join(s1: SS, s2: SS): (SS,CC) = s1.join(s2) // returns the join, must be O(max(log(size(this)),log(size(c))))
 
-    val unionV: SetOperation[X,M,SS,CC] = LeftSetUnion() // construct once, to avoid excessive allocations
-    val intersectV: SetOperation[X,M,SS,CC] = LeftSetIntersect()
-    val differenceV: SetOperation[X,M,SS,CC] = SetDifference()
+    val maximumV: SetOperation[X,M,SS,CC] = LeftSetUnion() // construct once, to avoid excessive allocations
+    val minimumV: SetOperation[X,M,SS,CC] = LeftSetIntersect()
+    val subtractV: SetOperation[X,M,SS,CC] = SetDifference()
 
-    def union = unionV
-    def intersect = intersectV
-    def difference = differenceV
+    def maximum = maximumV
+    def minimum = minimumV
+    def subtract = subtractV
+    def add = maximum
+    def multiply = minimum
+    //def inverse = (self,c)
   }
 
   // Abstract Set operation
