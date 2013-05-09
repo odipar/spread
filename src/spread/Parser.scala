@@ -1,10 +1,14 @@
 package spread
 
+import scala.language.postfixOps
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.matching.Regex
 import scala.collection.immutable.Stack
-import scala.util.parsing.input.Reader
 import scala.util.parsing.input._
+import scala.util.parsing.combinator.{Parsers}
+import scala.util.parsing.input.CharArrayReader.EofCh
+import scala.util.parsing.input._
+import Character.{isLetter, isLetterOrDigit, isDigit}
 
 object Parser {
 
@@ -19,15 +23,29 @@ object Parser {
 
     object Empty extends Term
 
-    trait Atom extends Term {
-      def toSpread: MultiSetExpr
-    }
+    trait Atom extends AsSpread
 
     case class Number(i: Int) extends Atom {
       def toSpread = EInt(i)
     }
     case class MSymbol(s: String) extends Atom {
       def toSpread = ESymbol(s)
+    }
+
+    case class Concat(l: List[AsSpread]) extends AsSpread {
+      def toSpread = {
+        var i = l.iterator
+        var ii = 0
+        val i1 = i.next.toSpread
+        val i2 = i.next.toSpread
+        var em = EConcat(i1,i2)
+        while (i.hasNext) {
+          val e = i.next.toSpread
+          em = EConcat(em,e)
+          ii = ii + 1
+        }
+        em
+      }
     }
     case class MPair(label: E, target: E) extends Term {
       def toSpread: MapPair = MMapPair(label.toSpread,target.toSpread)
@@ -43,6 +61,11 @@ object Parser {
     }
 
     trait Operator extends Term
+
+    object Fold extends Atom {
+      def toSpread = EFold
+    }
+
     trait UnaryOp extends Operator {
       def toSpread(arg1: MultiSetExpr): MultiSetExpr
     }
@@ -64,7 +87,7 @@ object Parser {
     case object Mul extends BinaryOp {
       def toSpread(arg1: MultiSetExpr, arg2: MultiSetExpr) = EMul(arg1,arg2)
     }
-    case class Sequence(l: List[Atom]) extends Term {
+    case class Sequence(l: List[Atom]) extends AsSpread {
       def toSpread = {
         var i = l.iterator
         var ii = 0
@@ -85,6 +108,11 @@ object Parser {
         case b: BinOp => EForeach(PartialBinOp(b))
       }
     }
+
+    trait AsSpread extends Term {
+      def toSpread: MultiSetExpr
+    }
+
     case object Order extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) =  arg1 match {
         case u: UnaOp => {
@@ -100,6 +128,9 @@ object Parser {
     }
     case object Bindings extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) = EBindings(arg1)
+    }
+    case object Lift extends UnaryOp {
+      def toSpread(arg1: MultiSetExpr) = ELift(arg1)
     }
     case object Reduce extends UnaryOp {
       def toSpread(arg1: MultiSetExpr) = ERed(arg1)
@@ -128,6 +159,7 @@ object Parser {
           i.next match {
             case d: Sequence => s = s push d.toSpread
             case p: Labeled => s = s push p.toSpread
+            case c: Concat => s = s push c.toSpread
             case a: Atom => s = s push a.toSpread
             case u: UnaryOp => {
               val arg1 = s.top
@@ -139,7 +171,7 @@ object Parser {
               s = s.pop
               val arg1 = s.top
               s = s.pop
-              s = s push b.toSpread(arg1,arg2)
+               s = s push b.toSpread(arg1,arg2)
             }
           }
         }
@@ -162,6 +194,23 @@ object Parser {
         }
 
         createTrace(EMap(m))
+      }
+    }
+
+    case class Str(l: List[Char]) extends Atom {
+      def toSpread = {
+        if (l.size == 1) EChar(l.head)
+        else {
+          val it = l.iterator
+          var i = 0
+          var m = emptyMap
+          while (it.hasNext) {
+            val e = it.next
+            m = m put MMapPair(EInt(i),EChar(e))
+            i = i + 1
+          }
+          EEMap(EMap(m))
+        }
       }
     }
 
@@ -190,6 +239,11 @@ object Parser {
       }
     }
 
+    def makeInt(s: String): Int = {
+      if (s.startsWith("_")) (-s.split("_")(1).toInt)
+      else s.toInt
+    }
+
     final def getReadLine(input: Reader[Char]) : ParseResult[E] =
     {
       program(input)
@@ -206,32 +260,39 @@ object Parser {
     lazy val eol = elem("end-of-line", ch => ch == eolc)
     lazy val ret = lfd | (eol ~ lfd)
 
+    def chrExcept(cs: Char*) = elem("", ch => (cs forall (ch !=)))
     lazy val program = expr ~ ret ^^ { case e ~ r => e }
     lazy val expr: Parser[E] = rep(elem) ^^ { case l => E(l) }
-    lazy val elem: Parser[Term] = labeled | sequence | atom | operator
-    lazy val trace: Parser[T] = "(" ~ repsep(expr,",") ~ ")" ^^ { case "(" ~ l ~ ")" => T(l) }
-    lazy val atom: Parser[Atom] = spreadsheet | trace | alternatives | number | symbol
+    lazy val elem: Parser[Term] = fold | labeled | concat  | sequence |  atom | operator
+    lazy val trace: Parser[T] = "(" ~ repsep(expr,"=>") ~ ")" ^^ { case "(" ~ l ~ ")" => T(l) }
+    lazy val atom: Parser[Atom] = spreadsheet | trace | alternatives | number | symbol | string
     lazy val alternatives: Parser[A] = "{" ~ repsep(setpair,",") ~ "}" ^^ { case "{" ~ l ~ "}" =>  A(l) }
     lazy val spreadsheet: Parser[M] = "[" ~ repsep(mappair,",") ~ "]" ^^ { case "[" ~ l ~ "]" => M(l) }
-    lazy val number = reg("[-]?[0-9]+") ^^ { i => Number(i.toInt) }
+    lazy val number = reg("[_]?[0-9]+") ^^ { i => Number(makeInt(i)) }
+    lazy val character = chrExcept('\"')
+    lazy val string = "\"" ~ rep1(character) ~ "\"" ^^ { case "\"" ~ s ~ "\"" => Str(s) }
     lazy val symbol = reg("[a-zA-Z0-9]+") ^^ { t => MSymbol(t) }
     lazy val operator = special | unary | binary
     lazy val special = traceo
-    lazy val unary = reduce | wipe | pack | unpack | foreach | bindings
+    lazy val unary = reduce | wipe | pack | unpack | foreach | bindings | turn | lift
     lazy val labeled = nlabeled | alabeled
+    lazy val satom: Parser[AsSpread] = sequence | atom
+    lazy val clist: Parser[List[AsSpread]] = repsep(satom,";") ^^ { case l => l }
+    lazy val concat: Parser[AsSpread] = satom ~ ";" ~ clist ^^ { case e1 ~ ";" ~ e2 => Concat(List(e1) ++ e2)}
     lazy val mappair = meqpair | spair
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SPair(E(List(Number(1))),l) }
     lazy val msetpair = expr ~ ":" ~ expr ^^ { case m ~ ":" ~ l => SPair(m,l) }
     lazy val path: Parser[List[Atom]] = repsep(atom,".") ^^ { case l => l }
-    lazy val sequence: Parser[Term] = atom ~ "." ~ path ^^ { case e1 ~ "." ~ e2 => Sequence(List(e1) ++ e2)}
+    lazy val sequence: Parser[AsSpread] = atom ~ "." ~ path ^^ { case e1 ~ "." ~ e2 => Sequence(List(e1) ++ e2)}
     lazy val spair = expr ^^ {case e => MPair(e,e) }
     lazy val meqpair = expr ~ "=" ~ expr ^^ {case e1 ~ "=" ~ e2 => MPair(e1,e2)}
     lazy val nlabeled = (sequence | atom) ~ "`" ^^ { case e1 ~ "`" => Labeled(E(List(e1)),E(List())) }
     lazy val alabeled = (sequence | atom) ~ "'" ~ (sequence | atom) ^^ { case e1 ~ "'" ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
     lazy val binary = add | subtract | mul | max | min | bind | order
     lazy val wipe = "#" ^^ { case o => Wipe }
-    lazy val turn = "~" ^^ { case o => Turn }
+    lazy val fold = "." ^^ { case o => Fold }
+    lazy val turn = "%" ^^ { case o => Turn }
     lazy val unpack = ">" ^^ { case o => UnPack }
     lazy val pack = "<" ^^ { case o => Pack }
     lazy val reduce = "$" ^^ { case o => Reduce }
@@ -240,11 +301,12 @@ object Parser {
     lazy val max = "|" ^^ { case o => Max }
     lazy val min = "&" ^^ { case o => Min }
     lazy val mul = "*" ^^ { case o => Mul }
-    lazy val foreach = "/" ^^ { case o => Foreach }
+    lazy val foreach = "@" ^^ { case o => Foreach }
     lazy val order = "\\" ^^ { case o => Order }
     lazy val bind = "!" ^^ { case o => Bind }
-    lazy val bindings = "^" ^^ { case o => Bindings }
+    lazy val lift = "^" ^^ { case o => Lift }
+    lazy val traceo = "/t" ^^ { case o => OTrace }
+    lazy val bindings = "/b" ^^ { case o => Bindings }
 
-    lazy val traceo = "@<" ^^ { case o => OTrace }
   }
 }

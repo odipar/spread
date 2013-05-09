@@ -113,7 +113,8 @@ object SpreadREPL extends JTextPane() {
         {
           case e: Throwable =>
           {
-            appendString("\n " + e.toString)
+            e.printStackTrace(System.out)
+            appendString("\n " + e.getStackTrace.toList)
             one = true
           }
         }

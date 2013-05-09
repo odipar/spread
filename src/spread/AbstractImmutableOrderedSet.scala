@@ -92,7 +92,7 @@ object AbstractImmutableOrderedSet {
 
     def get(x: X)(implicit c: CC): Option[X] = split(x)._2 // override for a more efficient implementation
     def put(x: X)(implicit c: CC): (SS,CC) = {
-      val (el,c1) = c.create(x) ; el.maximum(self)(c1)
+      val (el,c1) = c.create(x) ; el.add(self)(c1)
     } // override for a more efficient implementation
   }
 
