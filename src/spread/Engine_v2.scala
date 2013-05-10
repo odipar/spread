@@ -41,10 +41,11 @@ object Engine_v2 {
     case (vv: ETrace) => 20
     case (vv: EBindings) => 21
     case (vv: ETurn) => 22
-    case (vv: ELift) => 23
-    case (vv: EOrder) => 24
-    case (vv: EChar) => 25
-    case EFold => 26
+    case (vv: EIota) => 23
+    case (vv: ELift) => 24
+    case (vv: EOrder) => 25
+    case (vv: EChar) => 26
+    case EFold => 27
   }
 
   object MSTreapContext extends STreapContextImpl[SP,Any,Int] {
@@ -91,6 +92,7 @@ object Engine_v2 {
       case (ELift(a1)) => jenkinsHash(hash(a1)*3151+141231)
       case (EBindings(a1)) => jenkinsHash(hash(a1)*312412+1232991)
       case (ESymbol(s)) => jenkinsHash(s.hashCode*123)
+      case (EIota(s)) => jenkinsHash(hash(s)*34512)
       case (Trace(EMap(m))) => jenkinsHash(m.hashCode-4321)
       case (LabeledExpr(label,value)) => jenkinsHash(jenkinsHash(hash(label)) + 13*hash(value))
       case (EEMap(EMap(m))) => jenkinsHash(m.hashCode-1234)
@@ -115,6 +117,7 @@ object Engine_v2 {
     override def maximum = maxV
     override def minimum = minV
     override def subtract = subV
+
 
     //override def difference = sys.error("not yet")
   }
@@ -189,6 +192,7 @@ object Engine_v2 {
       case (EForeach(e11),EForeach(e21)) => compare(e11,e21)
       case (EPack(e11),EPack(e21)) => compare(e11,e21)
       case (EWipe(e11),EWipe(e21)) => compare(e11,e21)
+      case (EIota(e11),EIota(e21)) => compare(e11,e21)
       case (ETurn(e11),ETurn(e21)) => compare(e11,e21)
       case (EBindings(e11),EBindings(e21)) => compare(e11,e21)
       case (Alternatives(a1), Alternatives(a2)) => {
@@ -405,9 +409,10 @@ object Engine_v2 {
       }
       else EExpr
     }
-    def reduce: MultiSetExpr = {
-      val ra1 = arg1.reduce
-      val ra2 = arg2.reduce
+    def reduce = reduce2(arg1.reduce,arg2.reduce)
+
+    def reduce2(ra1: MultiSetExpr, ra2: MultiSetExpr): MultiSetExpr = {
+
       (ra1.value,ra2.value) match {
         case (EInt(i1),EInt(i2)) => red(red(this,rebuild(ra1,ra2)),combineInt(i1,i2))
         case (EEMap(m1), EEMap(m2)) =>  red(red(this,rebuild(ra1,ra2)),combineMap(m1,m2))
@@ -498,11 +503,22 @@ object Engine_v2 {
     e
   }
 
-  def createAlt2(e: MST): MultiSetExpr = {
+  /*def createAlt2(e: MST): MultiSetExpr = {
     if (e.isEmpty) EExpr
     else Alternatives(e)
-  }
+  } */
 
+  def createAlt2(e: MST): MultiSetExpr = {
+    if (e.isEmpty) EExpr
+    else {
+      val (l,ee,r) = e.split(e.some.get)
+      if (l.isEmpty && r.isEmpty) {
+        if (MSOrdering.compare(ee.get.label,EInt(1)) == 0) ee.get.target
+        else Alternatives(e)
+      }
+      else Alternatives(e)
+    }
+  }
   def domul(a1: MultiSetExpr, a2: MultiSetExpr): MultiSetExpr =
   {
     a1 match {
@@ -767,6 +783,29 @@ object Engine_v2 {
     def bindings = arg1.bindings
 
     def asString =  arg1.asString + " ^"
+  }
+
+  case class EIota(arg1: MultiSetExpr) extends UnaOp {
+    def rebuild(arg1: MultiSetExpr) = EIota(arg1)
+    def wipe = EIota(arg1.wipe)
+    def bind(b: MapPair) = EIota(arg1.bind(b))
+
+    def combineInt(i: Int) = {
+      var m = emptyMap
+      var ii = 0
+      while (ii < i) {
+        val in = EInt(ii)
+        m = m put MMapPair(in,in)
+        ii = ii + 1
+      }
+      createEM(EMap(m))
+    }
+    def combineMap(m: MultiMapExpr) = sys.error("not yet")
+    override def combineOther(m: MultiSetExpr) = m.value.reduce
+
+    def bindings = arg1.bindings
+
+    def asString =  arg1.asString + " ~"
   }
 
   case class ERed(arg1: MultiSetExpr) extends UnaOp {
@@ -1146,8 +1185,8 @@ object Engine_v2 {
     }
 
     def asString = {
-      if (v.some == None) subexpr(l) + "`"
-      else subexpr(l) + "'" + subexpr(v)
+      if (v.some == None) subexpr2(l) + "'"
+      else subexpr2(l) + "'" + subexpr2(v)
     }
   }
 
@@ -1197,7 +1236,17 @@ object Engine_v2 {
     override def combineOther(a1: MultiSetExpr, a2: MultiSetExpr) = {
       a2.value match {
         case EEMap(m) => combineBind(a1,m)
-        case _ => a1
+        case _ => rebuild(a1,a2)
+      }
+    }
+    override def reduce: MultiSetExpr = {
+      val r1 = arg1.reduce
+      val r2 = arg2.reduce
+      arg1.reduce match {
+        case t: Trace =>  {
+          red(red(this,rebuild(r1,r2)),combineOther(r1,r2))
+        }
+        case _ => reduce2(r1,r2)
       }
     }
     def combineBind(a1: MultiSetExpr, a2: MultiMapExpr): MultiSetExpr = {
@@ -1222,16 +1271,20 @@ object Engine_v2 {
     def labels = trace.labels
     def bindings = trace.bindings
     def bind(b: MapPair) = {
-      trace.first.get.target.bind(b)
-      //val nt: MultiMapExpr = trace.split(trace.first.get)._1
-      /*println("nt: " + nt.asString)
-      // TODO: optimize
-      val p = trace.first.get
-      println("p: " + p.asString)
-
-      val p2 = p.bindPair(b)
-      println("p2: " + p2.asString)
-      Trace(nt.put(p2))  */
+      // TODO: optimize with measure
+      var t = trace
+      var found = false
+      while (t.last != None && !found) {
+        val e = t.last.get
+        val l = e.labels
+        if (!(l multiMin b.label).isEmpty) found = true
+        else t = t.split(e)._1
+      }
+      if (found) {
+        val e = t.last.get
+        createTrace(createMap(e.bindPair(b).asInstanceOf[MapPair]))
+      }
+      else this
     }
     override def value =  trace.last.get.target.value
     def reduce = this
@@ -1535,7 +1588,11 @@ object Engine_v2 {
     case a: Alternatives => s.asString
     case t: Trace => t.asString
     case c: EChar => c.asString
-    case m: EEMap => m.asString
+    case EEMap(x: EMap) => {
+      if (x.isString) EEMap(x).asString
+      else if (x.isSequence) "(" + x.asString + ")"
+      else EEMap(x).asString
+    }
     case EExpr => EExpr.asString
     case _ => "(" + s.asString + ")"
   }

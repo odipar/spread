@@ -12,6 +12,7 @@ import javax.swing.text._
 import java.awt._
 import java.awt.event._
 import Parser.SpreadParser._
+import scala.util.parsing.combinator.PackratParsers
 import scala.util.parsing.input.CharSequenceReader
 
 object SpreadREPL extends JTextPane() {
@@ -70,13 +71,13 @@ object SpreadREPL extends JTextPane() {
       }
       catch { case t: Throwable => "" }
       var reader = new CharSequenceReader(r.trim + "\n")
-      step(reader)
+      step(new PackratReader(reader))
       appendString("\n")
       startInput
     }
   }
 
-  def step(r: scala.util.parsing.input.Reader[Char]) {
+  def step(r: PackratReader[Char]) {
     var br = r
     var one = false
     while((!br.atEnd) && (!one))
@@ -90,14 +91,16 @@ object SpreadREPL extends JTextPane() {
           {
             case _ =>
             {
+              println("start parsing")
               val pi = parse(br)
+              println("done parsing")
               pi match
               {
                 case Success(term, remainder) =>
                 {
                   appendString("\n")
                   appendString(term.toSpread.reduce.topString)
-                  br = remainder
+                  br = remainder.asInstanceOf[PackratReader[Char]]
                   appendString("\n")
                 }
                 case Failure(msg, remainder) => { appendString("\nFailure: " + msg.toString) ; one = true }
