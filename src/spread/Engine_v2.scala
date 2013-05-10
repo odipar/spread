@@ -355,7 +355,6 @@ object Engine_v2 {
 
     def reduce= {
       val ra1 = arg1.reduce
-
       ra1.value match {
         case (EInt(i1)) => red(red(this,rebuild(ra1)),combineInt(i1))
         case (EEMap(m1)) =>  red(red(this,rebuild(ra1)),combineMap(m1))
@@ -801,7 +800,7 @@ object Engine_v2 {
       createEM(EMap(m))
     }
     def combineMap(m: MultiMapExpr) = sys.error("not yet")
-    override def combineOther(m: MultiSetExpr) = m.value.reduce
+    //override def combineOther(m: MultiSetExpr) = m.value.reduce
 
     def bindings = arg1.bindings
 
@@ -815,8 +814,10 @@ object Engine_v2 {
 
     def combineInt(i: Int) = EInt(i)
     def combineMap(m: MultiMapExpr) = createEM(m.reduce)
-    override def combineOther(m: MultiSetExpr) = m.value.reduce
-
+    override def combineOther(m: MultiSetExpr): MultiSetExpr = m match {
+      case t: Trace => t.value.reduce
+      case _ => rebuild(m)
+    }
     def bindings = arg1.bindings
 
     def asString =  arg1.asString + " $"
@@ -867,9 +868,6 @@ object Engine_v2 {
     def bindings = arg1.bindings
     def combineInt(i: Int) = createEM(createMap(MMapPair(EInt(0),EInt(i))))
     def combineMap(m: MultiMapExpr) = createEM(createMap(MMapPair(EInt(0),createEM(m))))
-    override def combineOther(m: MultiSetExpr) = {
-      createEM(createMap(MMapPair(EInt(0),m)))
-    }
     override def reduce= {
       val ra1 = arg1.reduce
 
@@ -938,7 +936,10 @@ object Engine_v2 {
 
     def combineInt(i: Int) = EInt(i)
     def combineMap(m: MultiMapExpr) = createEM(m.wipe)
-    override def combineOther(m: MultiSetExpr) = m.wipe
+    override def combineOther(m: MultiSetExpr): MultiSetExpr = m match {
+      case t: Trace => t.wipe
+      case _ => rebuild(m)
+    }
 
     override def reduce= {
       val ra1 = arg1.reduce
@@ -1571,6 +1572,7 @@ object Engine_v2 {
     case s: ESymbol => s.asString
     case a: Alternatives => s.asString
     case t: Trace => t.asString
+    case EFold => EFold.asString
     case c: EChar => c.asString
     case m: EEMap => m.asString
     case EExpr => EExpr.asString
@@ -1582,6 +1584,7 @@ object Engine_v2 {
     case s: ESymbol => s.asString
     case a: Alternatives => s.asString
     case t: Trace => t.asString
+    case EFold => EFold.asString
     case c: EConcat => c.asString
     case c: EChar => c.asString
     case m: EEMap => m.asString
@@ -1595,6 +1598,7 @@ object Engine_v2 {
     case a: Alternatives => s.asString
     case t: Trace => t.asString
     case c: EChar => c.asString
+    case EFold => EFold.asString
     case EEMap(x: EMap) => {
       if (x.isString) EEMap(x).asString
       else if (x.isSequence) "(" + x.asString + ")"

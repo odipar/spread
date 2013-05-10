@@ -66,7 +66,7 @@ object Parser {
 
     trait Operator extends Term
 
-    object Fold extends Atom {
+    case object Fold extends Atom {
       def toSpread = EFold
     }
 
@@ -282,10 +282,10 @@ object Parser {
     lazy val program = expr2 <~ ret ^^ { case e => e }
     lazy val expr2: Parser[E] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => E(l) }
     lazy val expr: Parser[E] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => E(l) }
-    lazy val elem: Parser[Term] =  labeled | concat | sequence | atom | fold | operator
+    lazy val elem: Parser[Term] =  concat | labeled | sequence | atom | operator
     lazy val trelem = '=' ~> '>' ^^ { case e => }
     lazy val trace: Parser[T] = '(' ~> repsep(expr,trelem) <~ ')' ^^ { case l => T(l) }
-    lazy val atom: Parser[Atom] = alternatives | spreadsheet | trace | number | symbol | string
+    lazy val atom: Parser[Atom] = alternatives | spreadsheet | fold | trace | number | symbol | string
     lazy val alternatives: Parser[A] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l =>  A(l) }
     lazy val spreadsheet: Parser[M] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => M(l) }
     lazy val number = posnumber | negnumber
@@ -302,7 +302,7 @@ object Parser {
     lazy val labeled = alabeled | nlabeled
     lazy val satom: Parser[AsSpread] = sequence | atom
     lazy val clist: Parser[List[AsSpread]] = repsep(satom,';') ^^ { case l => l }
-    lazy val concat: Parser[AsSpread] = satom ~ ';' ~! clist ^^ { case e1 ~ ';' ~ e2 => Concat(List(e1) ++ e2)}
+    lazy val concat: Parser[AsSpread] = satom ~ ';' ~ clist ^^ { case e1 ~ ';' ~ e2 => Concat(List(e1) ++ e2)}
     lazy val mappair = meqpair | spair
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SPair(E(List(Number(1))),l) }

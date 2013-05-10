@@ -1,12 +1,5 @@
 package spread
 
-/**
- * Created with IntelliJ IDEA.
- * User: rapido
- * Date: 5/3/13
- * Time: 9:27 PM
- * To change this template use File | Settings | File Templates.
- */
 import javax.swing._
 import javax.swing.text._
 import java.awt._
@@ -91,9 +84,7 @@ object SpreadREPL extends JTextPane() {
           {
             case _ =>
             {
-              println("start parsing")
               val pi = parse(br)
-              println("done parsing")
               pi match
               {
                 case Success(term, remainder) =>
@@ -117,7 +108,7 @@ object SpreadREPL extends JTextPane() {
           case e: Throwable =>
           {
             e.printStackTrace(System.out)
-            appendString("\n " + e.getStackTrace.toList)
+            appendString("\n " + e.toString)
             one = true
           }
         }
