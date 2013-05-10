@@ -492,15 +492,13 @@ object Engine_v2 {
   def createMap(e: MapPair): MultiMapExpr = EMap(emptyMap.put(e))
   def createAlt(e: SetPair): MultiSetExpr = Alternatives(noAlternatives.put(e))
   def createAlt3(e: MultiSetExpr): MultiSetExpr = {
-    /*if (e.isEmpty) e
+    if (e.isEmpty) e
     val (l,ee,r) = e.split(e.some.get)
     if (l.isEmpty && r.isEmpty) {
       if (MSOrdering.compare(ee.get.label,EInt(1)) == 0) {  ee.get.target }
       else e
-      //createAlt4(ee.get.asInstanceOf[SetPair])
     }
-    else e   */
-    e
+    else e
   }
 
   /*def createAlt2(e: MST): MultiSetExpr = {
@@ -518,7 +516,9 @@ object Engine_v2 {
       }
       else Alternatives(e)
     }
+    Alternatives(e)
   }
+
   def domul(a1: MultiSetExpr, a2: MultiSetExpr): MultiSetExpr =
   {
     a1 match {
@@ -842,7 +842,7 @@ object Engine_v2 {
     def bind(b: MapPair) = EUnPack(arg1.bind(b))
 
     def bindings = arg1.bindings
-    def combineInt(i: Int) = EInt(i)
+    def combineInt(i: Int) = combineMap(makeMap(i))
     def combineMap(m: MultiMapExpr) = {
       var mm = noAlternatives
       var im = m
@@ -1046,7 +1046,11 @@ object Engine_v2 {
   case class EAdd(arg1: MultiSetExpr, arg2: MultiSetExpr) extends BinOp {
     def rebuild(arg1: MultiSetExpr,arg2: MultiSetExpr) = EAdd(arg1,arg2)
 
-    def bind(b: MapPair) = EAdd(arg1.bind(b),arg2.bind(b))
+    def bind(b: MapPair) = {
+      println("arg1: " + arg1.asString)
+      println("arg2: " + arg2.asString)
+      EAdd(arg1.bind(b),arg2.bind(b))
+    }
 
     def wipe = EAdd(arg1.wipe,arg2.wipe)
 
@@ -1128,10 +1132,13 @@ object Engine_v2 {
   }
 
   def makeMap(i: Int): MultiMapExpr = {
-    val sp = createSetP(EInt(i),EInt(0))
-    val mp = MMapPair(EInt(0),createAlt(sp))
-    val m = emptyMap put mp
-    EMap(m)
+    if (i == 0) EMap(emptyMap)
+    else {
+      val sp = createSetP(EInt(i),EInt(0))
+      val mp = MMapPair(EInt(0),createAlt(sp))
+      val m = emptyMap put mp
+      EMap(m)
+    }
   }
 
   case class EConcat(arg1: MultiSetExpr, arg2: MultiSetExpr) extends BinOp {
@@ -1217,7 +1224,7 @@ object Engine_v2 {
       var e3 = a
       while (e3.first != None) {
         val v = e3.first.get
-        val np = MMapPair(l,createAlt(v.asInstanceOf[SetPair]))
+        val np = MMapPair(l,createAlt3(createAlt(v.asInstanceOf[SetPair])))
         m3 = m3 multiAdd m4.bind(np)
         e3 = e3.split(e3.first.get)._3
       }
@@ -1282,7 +1289,7 @@ object Engine_v2 {
       }
       if (found) {
         val e = t.last.get
-        createTrace(createMap(e.bindPair(b).asInstanceOf[MapPair]))
+        e.target.bind(b)
       }
       else this
     }

@@ -279,22 +279,22 @@ object Parser {
     lazy val wse = sp | ret
     lazy val ws = rep(wse)
     lazy val ws2 = rep(sp)
-    lazy val program = expr2 ~ ret ^^ { case e ~ r => e }
-    lazy val expr2: Parser[E] = ws2 ~ repsep(elem,ws) ~ ws2 ^^ { case w1 ~ l ~ w2  => E(l) }
-    lazy val expr: Parser[E] = ws ~ repsep(elem,ws) ~ ws ^^ { case w1 ~ l ~ w2  => E(l) }
+    lazy val program = expr2 <~ ret ^^ { case e => e }
+    lazy val expr2: Parser[E] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => E(l) }
+    lazy val expr: Parser[E] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => E(l) }
     lazy val elem: Parser[Term] =  labeled | concat | sequence | atom | fold | operator
-    lazy val trelem = '=' ~ '>' ^^ { case e => }
-    lazy val trace: Parser[T] = '(' ~ repsep(expr,trelem) ~ ')' ^^ { case '(' ~ l ~ ')' => T(l) }
+    lazy val trelem = '=' ~> '>' ^^ { case e => }
+    lazy val trace: Parser[T] = '(' ~> repsep(expr,trelem) <~ ')' ^^ { case l => T(l) }
     lazy val atom: Parser[Atom] = alternatives | spreadsheet | trace | number | symbol | string
-    lazy val alternatives: Parser[A] = '{' ~ repsep(setpair,',') ~ '}' ^^ { case '{' ~ l ~ '}' =>  A(l) }
-    lazy val spreadsheet: Parser[M] = '[' ~ repsep(mappair,',') ~ ']' ^^ { case '[' ~ l ~ ']' => M(l) }
+    lazy val alternatives: Parser[A] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l =>  A(l) }
+    lazy val spreadsheet: Parser[M] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => M(l) }
     lazy val number = posnumber | negnumber
     lazy val posnumber = rep1(digit) ^^ { i => Number(makeInt(buildString(i))) }
-    lazy val negnumber = '_' ~ rep1(digit) ^^ { case l ~ i => Number(-makeInt(buildString(i))) }
+    lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => Number(-makeInt(buildString(i))) }
     lazy val digit = elem("digit", isDigit) ^^ {c => c}
     lazy val letter = elem("letter", isLetter) ^^ {c => c}
     lazy val character = chrExcept('\"')
-    lazy val string = '\"' ~ rep1(character) ~ '\"' ^^ { case '\"' ~ s ~ '\"' => Str(s) }
+    lazy val string = '\"' ~> rep1(character) <~ '\"' ^^ { case s => Str(s) }
     lazy val symbol: Parser[Atom] = rep1(letter) ^^ { t => MSymbol(buildString(t)) }
     lazy val operator = special | unary | binary
     lazy val special = traceo
@@ -302,17 +302,17 @@ object Parser {
     lazy val labeled = alabeled | nlabeled
     lazy val satom: Parser[AsSpread] = sequence | atom
     lazy val clist: Parser[List[AsSpread]] = repsep(satom,';') ^^ { case l => l }
-    lazy val concat: Parser[AsSpread] = satom ~ ';' ~ clist ^^ { case e1 ~ ';' ~ e2 => Concat(List(e1) ++ e2)}
+    lazy val concat: Parser[AsSpread] = satom ~ ';' ~! clist ^^ { case e1 ~ ';' ~ e2 => Concat(List(e1) ++ e2)}
     lazy val mappair = meqpair | spair
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SPair(E(List(Number(1))),l) }
-    lazy val msetpair = expr ~ ':' ~ expr ^^ { case m ~ ':' ~ l => SPair(m,l) }
+    lazy val msetpair = expr ~ ':' ~! expr ^^ { case m ~ ':' ~ l => SPair(m,l) }
     lazy val path: Parser[List[Atom]] = repsep(atom,'.') ^^ { case l => l }
-    lazy val sequence: Parser[AsSpread] = atom ~ '.' ~ path ^^ { case e1 ~ '.' ~ e2 => Sequence(List(e1) ++ e2)}
+    lazy val sequence: Parser[AsSpread] = atom ~ '.' ~! path ^^ { case e1 ~ '.' ~ e2 => Sequence(List(e1) ++ e2)}
     lazy val spair = expr ^^ {case e => MPair(e,e) }
-    lazy val meqpair = expr ~ '=' ~ expr ^^ {case e1 ~ '=' ~ e2 => MPair(e1,e2)}
-    lazy val nlabeled = (sequence | atom) ~ '\'' ^^ { case e1 ~ '\'' => Labeled(E(List(e1)),E(List())) }
-    lazy val alabeled = (sequence | atom) ~ '\'' ~ (sequence | atom) ^^ { case e1 ~ '\'' ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
+    lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MPair(e1,e2)}
+    lazy val nlabeled = satom <~ '\'' ^^ { case e1 => Labeled(E(List(e1)),E(List())) }
+    lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
     lazy val binary = add | subtract | mul | max | min | bind | order
     lazy val wipe = '#' ^^ { case o => Wipe }
     lazy val fold = '.' ^^ { case o => Fold }
@@ -330,8 +330,8 @@ object Parser {
     lazy val bind = '!' ^^ { case o => Bind }
     lazy val lift = '^' ^^ { case o => Lift }
     lazy val iota = '~' ^^ { case o => Iota }
-    lazy val traceo = '/' ~ 't' ^^ { case o => OTrace }
-    lazy val bindings = '/' ~ 'b' ^^ { case o => Bindings }
+    lazy val traceo = '/' ~> 't' ^^ { case o => OTrace }
+    lazy val bindings = '/' ~> 'b' ^^ { case o => Bindings }
 
   }
 }
