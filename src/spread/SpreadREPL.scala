@@ -8,7 +8,7 @@ import Parser.SpreadParser._
 import scala.util.parsing.combinator.PackratParsers
 import scala.util.parsing.input.CharSequenceReader
 
-object SpreadREPL extends JTextPane() {
+class SpreadREPL extends JTextPane() {
   var position : Position = document.getEndPosition
 
   final def document = getDocument
@@ -26,6 +26,16 @@ object SpreadREPL extends JTextPane() {
     StyleConstants.setFontFamily(l, "monospaced");
     StyleConstants.setFontSize(l, 14);
     StyleConstants.setForeground(l, new Color(0,0,255));
+    l
+  }
+
+  var outputAttr2 : SimpleAttributeSet =
+  {
+    var l = new SimpleAttributeSet
+    StyleConstants.setFontFamily(l, "monospaced");
+    StyleConstants.setFontSize(l, 14);
+    StyleConstants.setForeground(l, new Color(0,0,255));
+    l.addAttribute("FIX","ME")
     l
   }
 
@@ -50,7 +60,13 @@ object SpreadREPL extends JTextPane() {
   def appendString(s: String)
   {
     position = document.createPosition(document.getLength - 1)
-    document.insertString(document.getLength, s, outputAttr)
+    var i = 0
+    while (i < s.length) {
+      var a = outputAttr
+      if ((i % 2) == 0) { a = outputAttr2 }
+      document.insertString(document.getLength, "" + s.charAt(i),a)
+      i = i + 1
+    }
     setCaretPosition(document.getLength)
   }
 

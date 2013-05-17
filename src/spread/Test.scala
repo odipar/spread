@@ -1,9 +1,4 @@
 package spread
-
-import scala.language.implicitConversions
-import spread.Engine_v2._
-import spread.Engine_v2.EInt
-
 /*
 
 a'      unbound label
@@ -74,27 +69,28 @@ BINARY:
  */
 
 object Test {
-  import java.io._
-  import javax.swing._
-  import javax.swing.text._
-  import java.awt._
-  import java.awt.event._
+  import Engine_v3._
+  import scala.collection.immutable.SortedMap
 
   final def main(args: Array[String]): Unit = {}
   {
-    var f = new EnchiladaFrame
-    f.setVisible(true)
-  }
+    var m: CEX = emptyExpr
+    m = m put CP(EInt(0),EInt(1))
+    m = m put CP(EInt(1),EInt(2))
+    m = m put CP(EInt(2),EAdd)
+    m = m put CP(EInt(3),EInt(3))
+    m = m put CP(EInt(30),EInt(3))
+    m = m put CP(EInt(40),EInt(4))
+    m = m put CP(EInt(50),EAdd)
+    m = m put CP(EInt(60),EMul)
+    m = m put CP(EInt(61),EAdd)
 
-  class EnchiladaFrame extends JFrame
-  {
-    var textPane = SpreadREPL
-    var scrollPane = new JScrollPane(textPane)
+    val e: Expr = ECompoundExpr(m)
+    println(e.asString)
+    println(e.reduce.asString)
+    println(e.reduce.reduce.asString)
+    println(e.reduce.reduce.reduce.asString)
 
-    {
-      setLayout(new BorderLayout)
-      setSize(640, 400);
-      getContentPane().add(scrollPane,BorderLayout.CENTER)
-    }
+    //println(e.reduce.reduce.asString)
   }
 }

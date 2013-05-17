@@ -2,26 +2,36 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" afterPath="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Application.scala" afterPath="$PROJECT_DIR$/src/spread/Application.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala" afterPath="$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/OrderedTreapSet.scala" afterPath="$PROJECT_DIR$/src/spread/OrderedTreapSet.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Parser.scala" afterPath="$PROJECT_DIR$/src/spread/Parser.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/SpreadApplet.scala" afterPath="$PROJECT_DIR$/src/spread/SpreadApplet.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/SpreadREPL.scala" afterPath="$PROJECT_DIR$/src/spread/SpreadREPL.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368222574194" ignored="false" />
+    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368811229917" ignored="false" />
     <file path="/AbstractImmutableSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356697865904" ignored="false" />
-    <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699173307" ignored="false" />
+    <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368648634496" ignored="false" />
     <file path="/RationalWheel.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699332927" ignored="false" />
-    <file path="/Test.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1367955322676" ignored="false" />
-    <file path="/AbstractImmutableOrderedSet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1367700424649" ignored="false" />
+    <file path="/Test.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368825685544" ignored="false" />
+    <file path="/AbstractImmutableOrderedSet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368815257233" ignored="false" />
     <file path="/package.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1365964284374" ignored="false" />
     <file path="/Engine.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1366625884287" ignored="false" />
     <file path="/a.dummy" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1367744774841" ignored="false" />
     <file path="/Engine_v2.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368216991319" ignored="false" />
     <file path="/Terms.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1366799310121" ignored="false" />
-    <file path="/Parser.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368216908165" ignored="false" />
-    <file path="/OrderedSetImplementation.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1367577225525" ignored="false" />
-    <file path="/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368222384497" ignored="false" />
-    <file path="/Application.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368220019646" ignored="false" />
-    <file path="/SpreadApplet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368222549538" ignored="false" />
+    <file path="/Parser.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368299625143" ignored="false" />
+    <file path="/OrderedSetImplementation.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368823760262" ignored="false" />
+    <file path="/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368298452696" ignored="false" />
+    <file path="/Application.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368298774834" ignored="false" />
+    <file path="/SpreadApplet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368295718063" ignored="false" />
+    <file path="/Engine_v3.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368825538524" ignored="false" />
+    <file path="/OrderedTreapSet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368649800466" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,6 +83,7 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </line_breakpoints>
+    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -109,7 +120,25 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <method_breakpoints>
+      <breakpoint url="file://$PROJECT_DIR$/src/spread/Engine_v3.scala" line="40" class="spread.Engine_v3.Triple" package="spread">
+        <option name="WATCH_ENTRY" value="true" />
+        <option name="WATCH_EXIT" value="true" />
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </method_breakpoints>
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -119,37 +148,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="SpreadREPL.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/SpreadREPL.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="108" column="38" selection-start="3139" selection-end="3139" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Engine_v2.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1600" column="24" selection-start="48756" selection-end="48756" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LinearSeqLike.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/LinearSeqLike.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="61" column="0" selection-start="2411" selection-end="2411" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Test.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Test.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="90" column="29" selection-start="2551" selection-end="2551" vertical-scroll-proportion="0.0">
+            <state line="88" column="0" selection-start="2635" selection-end="2635" vertical-scroll-proportion="0.5398773">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OrderedTreapSet.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/OrderedTreapSet.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="100" column="64" selection-start="3949" selection-end="3949" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -158,47 +169,65 @@
       <file leaf-file-name="Parser.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Parser.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="249" column="23" selection-start="7042" selection-end="7042" vertical-scroll-proportion="0.0">
+            <state line="15" column="7" selection-start="528" selection-end="528" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OrderedSetImplementation.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="32" column="15" selection-start="1191" selection-end="1198" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Engine_v2.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1744" column="16" selection-start="49036" selection-end="54732" vertical-scroll-proportion="0.0">
               <folding>
-                <element signature="e#16#48#0" expanded="true" />
+                <element signature="e#170#203#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SpreadApplet.scala" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/spread/SpreadApplet.scala">
+      <file leaf-file-name="Hashing.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="19" selection-start="340" selection-end="340" vertical-scroll-proportion="0.4066265">
+            <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnchiladaREPL.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/EnchiladaREPL.scala">
+      <file leaf-file-name="AbstractImmutableSequence.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2" column="12" selection-start="26" selection-end="31" vertical-scroll-proportion="0.0">
+            <state line="11" column="18" selection-start="403" selection-end="403" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnchiladaApplet.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/EnchiladaApplet.scala">
+      <file leaf-file-name="AbstractImmutableOrderedSet.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="653" vertical-scroll-proportion="0.0">
+            <state line="103" column="0" selection-start="5215" selection-end="5215" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Application.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/Application.scala">
+      <file leaf-file-name="Engine_v3.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Engine_v3.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2" column="7" selection-start="26" selection-end="26" vertical-scroll-proportion="0.0">
+            <state line="173" column="49" selection-start="4949" selection-end="4949" vertical-scroll-proportion="0.0">
               <folding>
-                <element signature="e#19#42#0" expanded="true" />
+                <element signature="e#143#176#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -207,10 +236,8 @@
       <file leaf-file-name="Application.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Application.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="29" selection-start="274" selection-end="274" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="e#16#56#0" expanded="true" />
-              </folding>
+            <state line="15" column="7" selection-start="303" selection-end="303" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -234,22 +261,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/spread/Integer.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Natural.scala" />
         <option value="$PROJECT_DIR$/src/spread/Rational.scala" />
         <option value="$PROJECT_DIR$/src/spread/Types.scala" />
         <option value="$PROJECT_DIR$/src/spread/RationalWheel.scala" />
         <option value="$PROJECT_DIR$/src/spread/package.scala" />
         <option value="$PROJECT_DIR$/src/spread/Engine.scala" />
         <option value="$USER_HOME$/IdeaProjects/oer/src/oer/Terms.scala" />
-        <option value="$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala" />
-        <option value="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" />
         <option value="$PROJECT_DIR$/src/spread/Engine_v2.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Parser.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Application.scala" />
-        <option value="$PROJECT_DIR$/src/spread/SpreadREPL.scala" />
         <option value="$PROJECT_DIR$/src/spread/SpreadApplet.scala" />
+        <option value="$PROJECT_DIR$/src/spread/SpreadREPL.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Application.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Parser.scala" />
+        <option value="$PROJECT_DIR$/src/spread/OrderedTreapSet.scala" />
+        <option value="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" />
+        <option value="$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Engine_v3.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
       </list>
     </option>
   </component>
@@ -386,23 +413,23 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="90" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="93" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="95" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="92" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="Repository.Attach.JavaDocs" value="false" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="92" />
-    <property name="MemberChooser.sorted" value="false" />
-    <property name="recentsLimit" value="5" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
+    <property name="recentsLimit" value="5" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="95" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/enchilada/src/enchilada/EnchiladaApplet.scala" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="101" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="891" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="890" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="97" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="93" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/enchilada/src/enchilada/expression/Evaluator.scala" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="105" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="894" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="893" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="101" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="96" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
@@ -410,18 +437,19 @@
     <property name="MemberChooser.showClasses" value="true" />
     <property name="FullScreen" value="false" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="Downloaded.Files.Path" value="$PROJECT_DIR$/lib" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
+    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
     <property name="options.lastSelected" value="org.jetbrains.plugins.scala.compiler.ScalacConfigurable" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="options.searchVisible" value="true" />
+    <property name="restartRequiresConfirmation" value="true" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -445,6 +473,19 @@
       <option name="SHMEM_ADDRESS" value="javadebug" />
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
@@ -472,19 +513,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -831,7 +859,11 @@
       <created>1368222576321</created>
       <updated>1368222576322</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary="Applet">
+      <created>1368222589847</created>
+      <updated>1368222589847</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -851,8 +883,8 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.6672474" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.265625" sideWeight="0.6672474" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33275262" sideWeight="0.87828946" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.265625" sideWeight="0.6567944" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.34320557" sideWeight="0.87828946" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32752612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -950,120 +982,114 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/spread/Rational.scala">
+    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/core/SSBranch.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="0" selection-start="861" selection-end="861" vertical-scroll-proportion="0.0">
+        <state line="2" column="12" selection-start="36" selection-end="36" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/core/Branch.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/core/FirstLastMixin.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/expression/Evaluator.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadREPL.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="95" column="37" selection-start="2519" selection-end="2519" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadApplet.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="18" selection-start="613" selection-end="613" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="116" column="23" selection-start="3592" selection-end="3592" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/Parser.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="118" column="23" selection-start="4468" selection-end="4468" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/awt/DefaultKeyboardFocusManager.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="88" column="36" selection-start="4126" selection-end="4126" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Natural.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="7" selection-start="96" selection-end="96" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/Iterator.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="0" selection-start="1586" selection-end="1586" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/LinearSeqLike.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="0" selection-start="2411" selection-end="2411" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/Application.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="7" selection-start="26" selection-end="26" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#19#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="90" column="29" selection-start="2551" selection-end="2551" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Application.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="29" selection-start="274" selection-end="274" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#16#56#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1600" column="24" selection-start="48756" selection-end="48756" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/SpreadREPL.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="108" column="38" selection-start="3139" selection-end="3139" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/EnchiladaREPL.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="12" selection-start="26" selection-end="31" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/EnchiladaApplet.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="653" vertical-scroll-proportion="0.0">
+        <state line="11" column="18" selection-start="403" selection-end="403" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Parser.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="249" column="23" selection-start="7042" selection-end="7042" vertical-scroll-proportion="0.0">
+        <state line="15" column="7" selection-start="528" selection-end="528" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/OrderedTreapSet.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="100" column="64" selection-start="3949" selection-end="3949" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="15" selection-start="1191" selection-end="1198" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="103" column="0" selection-start="5215" selection-end="5215" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Application.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="7" selection-start="303" selection-end="303" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1744" column="16" selection-start="49036" selection-end="54732" vertical-scroll-proportion="0.0">
           <folding>
-            <element signature="e#16#48#0" expanded="true" />
+            <element signature="e#170#203#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/SpreadApplet.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="19" selection-start="340" selection-end="340" vertical-scroll-proportion="0.4066265">
+        <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Engine_v3.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="173" column="49" selection-start="4949" selection-end="4949" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#143#176#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="0" selection-start="2635" selection-end="2635" vertical-scroll-proportion="0.5398773">
           <folding />
         </state>
       </provider>

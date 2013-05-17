@@ -12,9 +12,12 @@ object OrderedSetImplementation {
     def c: CC // returns the concrete SISetContext
 
     def create(x: X):SIS = put(x)
+    def create(l: SIS, e: Option[X], r: SIS) = construct(c.create(l.s,e,r.s))
     def construct(ss: (SS,CC)): SIS
     def first = s.first(c)
     def last = s.last(c)
+    def first2 = s.first2(c)
+    def last2 = s.last2(c)
     def isEmpty = s.isEmpty
     def some = s.some
     def measure = s.measure(c)

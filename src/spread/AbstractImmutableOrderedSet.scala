@@ -33,7 +33,7 @@ object AbstractImmutableOrderedSet {
     def create(l: SS, x: Option[X], r: SS): (SS,CC) // returns the Set containing l,x and r - must be O(1)
     def join(s1: SS, s2: SS): (SS,CC) // returns the join of two disjoint Sets, must be O(max(log(size(this)),log(size(c))))
     def compareOrder(c: X, o: X): Int // compares two elements, to order them in the Set - must be O(1)
-    def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] // returns measure on l,x and r - must be O(1)
+    def measure(l: SS, x: Option[X], r: SS): Option[M] // returns measure on l,x and r - must be O(1)
   }
 
   trait SISetImpl[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]] extends SISet[X,M,SS,CC] {
@@ -41,6 +41,15 @@ object AbstractImmutableOrderedSet {
 
     def first(implicit c: CC): Option[X] = if (left.isEmpty) some ; else c.first(left) // returns the first element
     def last(implicit c: CC): Option[X] = if (right.isEmpty) some ; else c.last(right) // returns the last element
+    def first2(implicit c: CC): Option[X] = {  // returns the second element
+      if (left.isEmpty) { if (right.isEmpty) None ; else c.first(right) }
+      else c.first2(left) match { case None => some ; case x => x }
+    }
+
+    def last2(implicit c: CC): Option[X] = {  // returns the second element
+      if (right.isEmpty) {  if (left.isEmpty) None ; else c.last(left) }
+      else c.last2(right) match {  case None => some ; case x => x }
+    }
 
     def split(x: X)(implicit c: CC): (SS,Option[X],SS,CC) = some match { // returns the split, given x -  O(log(size(s))
       case Some(e) => {
@@ -103,8 +112,10 @@ object AbstractImmutableOrderedSet {
 
     def first(s: SS): Option[X] = s.first // returns the first element - O(log(size(s))
     def last(s: SS): Option[X] = s.last // returns the last element - O(log(size(s))
+    def first2(s: SS): Option[X] = s.first2 // returns the first element - O(log(size(s))
+    def last2(s: SS): Option[X] = s.last2 // returns the last element - O(log(size(s))
     def split(s: SS, x: X): (SS,Option[X],SS,CC) = s.split(x) // returns the split, given x - O(log(size(s))
-    def measure(l: Option[M], x: Option[X], r: Option[M]): Option[M] = None // returns measure on l,x and r - must be O(1)
+    def measure(l: SS, x: Option[X], r: SS): Option[M] = None // returns measure on l,x and r - must be O(1)
     def join(s1: SS, s2: SS): (SS,CC) = s1.join(s2) // returns the join, must be O(max(log(size(this)),log(size(c))))
 
     val maximumV: SetOperation[X,M,SS,CC] = LeftSetUnion() // construct once, to avoid excessive allocations
@@ -158,14 +169,22 @@ object AbstractImmutableOrderedSet {
   trait LeftIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s1,c)
-    def combineEqualElements(x1: X, x2: X): Option[X] = Some(x1)
+    def combineEqualElements(x1: X, x2: X): Option[X] = {
+      println("x1!" + x1)
+      println("x2:" + x2)
+      Some(x1)
+    }
   }
 
   // common implementation for (right) Intersection and Union operation
   trait RightIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s2,c)
-    def combineEqualElements(x1: X, x2: X): Option[X] = Some(x2)
+    def combineEqualElements(x1: X, x2: X): Option[X] = {
+      println("x1:" + x1)
+      println("x2!" + x2)
+      Some(x2)
+    }
   }
 
   case class LeftSetUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]()

@@ -52,13 +52,13 @@ object OrderedTreapSet {
   trait STreapContextImpl[X,M,P] extends STreapContext[X,M,P] {  // Default Set Treap constructors
     val emptyC: MM = EmptySTreap()
     def empty = (emptyC,this)
-    def create(x: X) = measure(None,Some(x),None) match {
+    def create(x: X) = measure(emptyC,Some(x),emptyC) match {
       case None => (VLeafSTreap(x),this)
       case Some(m) => (MLeafSTreap(x,m),this)
     }
     def create(l: MM, x: Option[X], r: MM) = x match {
       case None => empty
-      case Some(xx) => measure(l.measure,x,r.measure) match {
+      case Some(xx) => measure(l,x,r) match {
         case None => (VBinSTreap(l,xx,r),this)
         case Some(m) => (MBinSTreap(l,xx,m,r),this)
       }
@@ -81,7 +81,7 @@ object OrderedTreapSet {
     def some = None
     def left(implicit c: CC) = c.empty._1
     def right(implicit c: CC) = c.empty._1
-    def measure(implicit c: CC) =  c.measure(None,None,None)
+    def measure(implicit c: CC) =  None
   }
 
   trait NonEmptyTreap[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC]  {

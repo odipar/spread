@@ -169,22 +169,28 @@ object Parser {
             case c: Concat => s = s push c.toSpread
             case a: Atom => s = s push a.toSpread
             case u: UnaryOp => {
-              val arg1 = s.top
-              s = s.pop
-              s = s push u.toSpread(arg1)
+              try {
+                val arg1 = s.top
+                s = s.pop
+                s = s push u.toSpread(arg1)
+              }
+              catch { case t: Throwable => throw new RuntimeException("parse error: unary operator " + u.toString + " needs 1 argument") }
             }
             case b: BinaryOp => {
-              val arg2 = s.top
-              s = s.pop
-              val arg1 = s.top
-              s = s.pop
-               s = s push b.toSpread(arg1,arg2)
+              try {
+                val arg2 = s.top
+                s = s.pop
+                val arg1 = s.top
+                s = s.pop
+                s = s push b.toSpread(arg1,arg2)
+              }
+              catch { case t: Throwable => throw new RuntimeException("parse error: binary operator " + b.toString + " needs 2 arguments") }
             }
           }
         }
         if (s.size == 0) EExpr
         else if (s.size == 1) s.top
-        else sys.error("parse error: expressions is unbalanced: " + s)
+        else sys.error("parse error: expression stack does not reduce to a value: " + s.toList.toString)
       }
     }
     case class T(l: List[E]) extends Atom {
