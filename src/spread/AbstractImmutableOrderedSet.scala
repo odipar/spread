@@ -31,6 +31,7 @@ object AbstractImmutableOrderedSet {
     def empty: (SS,CC) // returns the empty Set - must be O(1)
     def create(x: X): (SS,CC) // returns the Set with single x - must be O(1)
     def create(l: SS, x: Option[X], r: SS): (SS,CC) // returns the Set containing l,x and r - must be O(1)
+    def createNM(l: SS, x: Option[X], r: SS): (SS,CC)  // returns the Set containing l,x and r with no measure
     def join(s1: SS, s2: SS): (SS,CC) // returns the join of two disjoint Sets, must be O(max(log(size(this)),log(size(c))))
     def compareOrder(c: X, o: X): Int // compares two elements, to order them in the Set - must be O(1)
     def measure(l: SS, x: Option[X], r: SS): Option[M] // returns measure on l,x and r - must be O(1)
@@ -169,22 +170,14 @@ object AbstractImmutableOrderedSet {
   trait LeftIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s1,c)
-    def combineEqualElements(x1: X, x2: X): Option[X] = {
-      println("x1!" + x1)
-      println("x2:" + x2)
-      Some(x1)
-    }
+    def combineEqualElements(x1: X, x2: X): Option[X] = Some(x1)
   }
 
   // common implementation for (right) Intersection and Union operation
   trait RightIntersectUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends SetOperationImpl[X,M,SS,CC] {
     def combineEqual(s1: SS, s2: SS)(implicit c: CC): (SS,CC) = (s2,c)
-    def combineEqualElements(x1: X, x2: X): Option[X] = {
-      println("x1:" + x1)
-      println("x2!" + x2)
-      Some(x2)
-    }
+    def combineEqualElements(x1: X, x2: X): Option[X] = Some(x2)
   }
 
   case class LeftSetUnion[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]()

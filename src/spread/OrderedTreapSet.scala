@@ -63,6 +63,10 @@ object OrderedTreapSet {
         case Some(m) => (MBinSTreap(l,xx,m,r),this)
       }
     }
+    def createNM(l: MM, x: Option[X], r: MM) = x match {
+      case None => empty
+      case Some(xx) => (VBinSTreap(l,xx,r),this)
+    }
   }
 
   trait EmptyMeasure[X,M,P,SS <: Treap[X,M,P,SS,CC], CC <: TreapContext[X,M,P,SS,CC]] extends Treap[X,M,P,SS,CC] {

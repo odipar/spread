@@ -75,22 +75,37 @@ object Test {
   final def main(args: Array[String]): Unit = {}
   {
     var m: CEX = emptyExpr
+    var m1: CEX = emptyExpr
+    var m2: CEX = emptyExpr
+    var m3: CEX = emptyExpr
+
+    m = m put CP(EInt(-2),EInt(-2))
+    m = m put CP(EInt(-1),EInt(-1))
+
     m = m put CP(EInt(0),EInt(1))
     m = m put CP(EInt(1),EInt(2))
-    m = m put CP(EInt(2),EAdd)
-    m = m put CP(EInt(3),EInt(3))
-    m = m put CP(EInt(30),EInt(3))
-    m = m put CP(EInt(40),EInt(4))
-    m = m put CP(EInt(50),EAdd)
-    m = m put CP(EInt(60),EMul)
-    m = m put CP(EInt(61),EAdd)
+    m1 = m1 put CP(EInt(0),EInt(3))
+    m1 = m1 put CP(EInt(1),EInt(4))
+    m1 = m1 put CP(EInt(2),EMul)
+    m1 = m1 put CP(EInt(3),EAdd)
+    m2 = m2 put CP(EInt(0),EAdd)
+    m2 = m2 put CP(EInt(1),EAdd)
+    m = m put CP(EInt(2),ECompoundExpr(m1))
+    m = m put CP(EInt(3),EAdd)
+    m1 = m1 put CP(EInt(4),EInt(5))
+    m = m put CP(EInt(4),ECompoundExpr(m1))
+    m = m put CP(EInt(5),EInt(5))
+    m = m put CP(EInt(6),EMul)
+    m = m put CP(EInt(7),ECompoundExpr(m2))
 
-    val e: Expr = ECompoundExpr(m)
+    var e: ECompoundExpr = ECompoundExpr(m)
+
+
+    while(e.isRedex) {
+      println(e.asString)
+      e = e.reduce
+    }
     println(e.asString)
-    println(e.reduce.asString)
-    println(e.reduce.reduce.asString)
-    println(e.reduce.reduce.reduce.asString)
 
-    //println(e.reduce.reduce.asString)
   }
 }
