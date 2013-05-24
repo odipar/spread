@@ -1,4 +1,7 @@
 package spread
+
+import scala.util.parsing.input.CharSequenceReader
+
 /*
 
 a'      unbound label
@@ -71,39 +74,19 @@ BINARY:
 object Test {
   import Engine_v3._
   import scala.collection.immutable.SortedMap
+  import Parser_v3.SpreadParser._
 
   final def main(args: Array[String]): Unit = {}
   {
-    var m: CEX = emptyExpr
-    var m1: CEX = emptyExpr
-    var m2: CEX = emptyExpr
-    var m3: CEX = emptyExpr
+    val r = ""
+    var reader = new CharSequenceReader(r.trim + "\n")
+    var e = parse(new PackratReader(reader)).get
 
-    m = m put CP(EInt(-2),EInt(-2))
-    m = m put CP(EInt(-1),EInt(-1))
-
-    m = m put CP(EInt(0),EInt(1))
-    m = m put CP(EInt(1),EInt(2))
-    m1 = m1 put CP(EInt(0),EInt(3))
-    m1 = m1 put CP(EInt(1),EInt(4))
-    m1 = m1 put CP(EInt(2),EMul)
-    m1 = m1 put CP(EInt(3),EAdd)
-    m2 = m2 put CP(EInt(0),EAdd)
-    m2 = m2 put CP(EInt(1),EAdd)
-    m = m put CP(EInt(2),ECompoundExpr(m1))
-    m = m put CP(EInt(3),EAdd)
-    m1 = m1 put CP(EInt(4),EInt(5))
-    m = m put CP(EInt(4),ECompoundExpr(m1))
-    m = m put CP(EInt(5),EInt(5))
-    m = m put CP(EInt(6),EMul)
-    m = m put CP(EInt(7),ECompoundExpr(m2))
-
-    var e: ECompoundExpr = ECompoundExpr(m)
-
-
+    var i = 0
     while(e.isRedex) {
       println(e.asString)
       e = e.reduce
+      i = i + 1
     }
     println(e.asString)
 

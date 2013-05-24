@@ -4,8 +4,7 @@ import javax.swing._
 import javax.swing.text._
 import java.awt._
 import java.awt.event._
-import Parser.SpreadParser._
-import scala.util.parsing.combinator.PackratParsers
+import Parser_v3.SpreadParser._
 import scala.util.parsing.input.CharSequenceReader
 
 class SpreadREPL extends JTextPane() {
@@ -105,8 +104,14 @@ class SpreadREPL extends JTextPane() {
               {
                 case Success(term, remainder) =>
                 {
+                  var t = term
+                  while (t.isRedex) {
+                    appendString("\n")
+                    appendString(t.asString)
+                    t = t.reduce
+                  }
                   appendString("\n")
-                  appendString(term.toSpread.reduce.topString)
+                  appendString(t.asString)
                   br = remainder.asInstanceOf[PackratReader[Char]]
                   appendString("\n")
                 }

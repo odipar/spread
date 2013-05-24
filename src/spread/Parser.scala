@@ -310,13 +310,13 @@ object Parser {
     lazy val clist: Parser[List[AsSpread]] = repsep(satom,';') ^^ { case l => l }
     lazy val concat: Parser[AsSpread] = satom ~ ';' ~ clist ^^ { case e1 ~ ';' ~ e2 => Concat(List(e1) ++ e2)}
     lazy val mappair = meqpair | spair
+    lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MPair(e1,e2)}
+    lazy val spair = expr ^^ {case e => MPair(e,e) }
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SPair(E(List(Number(1))),l) }
     lazy val msetpair = expr ~ ':' ~! expr ^^ { case m ~ ':' ~ l => SPair(m,l) }
     lazy val path: Parser[List[Atom]] = repsep(atom,'.') ^^ { case l => l }
     lazy val sequence: Parser[AsSpread] = atom ~ '.' ~! path ^^ { case e1 ~ '.' ~ e2 => Sequence(List(e1) ++ e2)}
-    lazy val spair = expr ^^ {case e => MPair(e,e) }
-    lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MPair(e1,e2)}
     lazy val nlabeled = satom <~ '\'' ^^ { case e1 => Labeled(E(List(e1)),E(List())) }
     lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => Labeled(E(List(e1)),E(List(e2))) }
     lazy val binary = add | subtract | mul | max | min | bind | order
