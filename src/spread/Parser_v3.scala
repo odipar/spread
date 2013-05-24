@@ -87,13 +87,16 @@ object Parser_v3 {
     lazy val program: Parser[Expr] = expr2 <~ ret ^^ { case e => e }
     lazy val expr: Parser[Atom] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
     lazy val expr2: Parser[Atom] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
-    lazy val elem: Parser[Atom] =  labeled | alternatives | atom
-    lazy val atom: Parser[Atom] =  number | subexpr | map | operator | symbol
+    lazy val elem: Parser[Atom] =  labeled |  atom
+    lazy val atom: Parser[Atom] =  alternatives | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
     lazy val unary = dup
-    lazy val binary = add | mul | swap
+    lazy val binary = add | mul | max | min | sub | swap
     lazy val add = '+' ^^ { case a => EAdd }
     lazy val mul = '*' ^^ { case a => EMul }
+    lazy val max = '|' ^^ { case a => EMax }
+    lazy val min = '&' ^^ { case a => EMin }
+    lazy val sub = '-' ^^ { case a => ESub }
     lazy val swap = '\\' ^^ { case a => ESwap }
     lazy val dup = '`' ^^ { case a => EDup }
     lazy val setpair = msetpair | ssetpair
@@ -105,7 +108,7 @@ object Parser_v3 {
     lazy val posnumber = rep1(digit) ^^ { i => EInt(makeInt(buildString(i))) }
     lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(-makeInt(buildString(i))) }
     lazy val symbol: Parser[Atom] = rep1(letter) ^^ { t => Symbol(buildString(t)) }
-    lazy val satom: Parser[Atom] =  atom
+    lazy val satom: Parser[Atom] =  atom | alternatives
     lazy val labeled = alabeled | nlabeled
     lazy val nlabeled = satom <~ '\'' ^^ { case e1 => ELabeledExpr(e1,Empty) }
     lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => ELabeledExpr(e1,e2)}

@@ -15,7 +15,7 @@ class SpreadREPL extends JTextPane() {
   {
     var rkey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Event.SHIFT_MASK);
     getInputMap.put(rkey, RunAction)
-    appendString("SPREAD REPL v0.1.\nUse Shift+Enter to rewrite expressions.\n")
+    appendString("SPREAD REPL v0.2.\nUse Shift+Enter to rewrite expressions.\n")
     startInput
   }
 
