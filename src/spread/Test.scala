@@ -78,17 +78,14 @@ object Test {
 
   final def main(args: Array[String]): Unit = {}
   {
-    val r = ""
+    val r = "(((((1 2) 3) 4) 5) 6)"
     var reader = new CharSequenceReader(r.trim + "\n")
     var e = parse(new PackratReader(reader)).get
+    var ee = e.asInstanceOf[ECompoundExpr]
 
-    var i = 0
-    while(e.isRedex) {
-      println(e.asString)
-      e = e.reduce
-      i = i + 1
-    }
-    println(e.asString)
+    println(ee.asString)
 
+    val f = ee.cex.measure.get.flattened.measure.get
+    println("reducible: " + f)
   }
 }

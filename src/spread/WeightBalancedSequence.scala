@@ -91,7 +91,7 @@ object WeightBalancedSequence {
     def create(l: MM, r: MM) = {
       val ss = c.sizing
       val ns = ss.add(l.size,r.size)
-      measure(l.measure,r.measure) match {
+      measure(l,r) match {
         case None => (VBinWBTree(l,ns,r),this)
         case Some(m) => (MBinWBTree(l,ns,m,r),this)
       }
@@ -108,6 +108,7 @@ object WeightBalancedSequence {
   }
 
   trait EmptyWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC] {
+    def isEmpty = true
     def first(implicit c: CC): Option[X] = None
     def last(implicit c: CC): Option[X] = None
     def size(implicit c: CC) = c.sizing.zero
@@ -116,7 +117,9 @@ object WeightBalancedSequence {
     def measure(implicit c: CC) =  c.measure(None)
   }
 
-  trait NonEmptyWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC]
+  trait NonEmptyWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends WBTree[N,X,M,SS,CC] {
+    def isEmpty = false
+  }
 
   trait LeafWBTree[N,X,M,SS <: WBTree[N,X,M,SS,CC], CC <: WBTreeContext[N,X,M,SS,CC]] extends NonEmptyWBTree[N,X,M,SS,CC] {
     def x: X
@@ -132,7 +135,7 @@ object WeightBalancedSequence {
     def r: SS
     def s: N
     def first(implicit c: CC): Option[X] = l.first
-    def last(implicit c: CC): Option[X] = l.last
+    def last(implicit c: CC): Option[X] = r.last
     def left(implicit c: CC) = l
     def right(implicit c: CC) = r
     def size(implicit c: CC) = s
@@ -150,9 +153,12 @@ object WeightBalancedSequence {
   case class VBinWBTree[N,X,M](l: IWBTree[N,X,M], s: N, r: IWBTree[N,X,M]) extends BinIWBTree[N,X,M] with EMS[N,X,M]
   case class MBinWBTree[N,X,M](l: IWBTree[N,X,M], s: N, m: M, r: IWBTree[N,X,M]) extends BinIWBTree[N,X,M] with LMS[N,X,M]
 
-  object IntNum extends Num[Int] {
+  trait IntNum extends Num[Int]
+
+  object IntNum extends IntNum {
     def zero = 0
     def one = 1
+    def two = 2
 
     def add(n1: Int, n2: Int) = n1 + n2
     def sub(n1: Int, n2: Int) = n1 - n2
@@ -162,14 +168,8 @@ object WeightBalancedSequence {
     def compare(n1: Int, n2: Int) = n1 compare n2
   }
 
- implicit val intNum: Num[Int] = IntNum
+  implicit val intNum: Num[Int] = IntNum
 
-  case class DepthMeasuringContext[N,X]()(implicit csc: IWBTreeContextImpl[N,X,Any]) extends IWBTreeContextImpl[N,X,Int] {
-    def sizing = csc.sizing
-    def compareOrder(x1: X, x2: X) = csc.compareOrder(x1,x2)
-    override def measure(x: Option[X]) = Some(1)
-    override def measure(m1: Option[Int], m2: Option[Int]) = Some((m1.get max m2.get) + 1)
-  }
   case class DefaultIWBTreeContext[X](implicit n: Num[Int], o: Ordering[X]) extends IWBTreeContextImpl[Int,X,Any] {
     def sizing = n
     def compareOrder(x1: X, x2: X): Int = o.compare(x1,x2)

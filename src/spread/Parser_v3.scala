@@ -74,7 +74,13 @@ object Parser_v3 {
         e = e put CP(EInt(ii),a)
         ii = ii + 1
       }
-      if (e.left.isEmpty && e.right.isEmpty) e.some.get.second
+      if (e.left.isEmpty && e.right.isEmpty) {
+        ECompoundExpr(e)
+        /*e.some.get match {
+          case CP(_,e: ELabeledExpr) => e
+          case p => p.second
+        } */
+      }
       else ECompoundExpr(e)
     }
     def str(l: List[Char]): Atom = {
@@ -114,10 +120,11 @@ object Parser_v3 {
     lazy val program: Parser[Expr] = expr2 <~ ret ^^ { case e => e }
     lazy val expr: Parser[Atom] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
     lazy val expr2: Parser[Atom] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
-    lazy val elem: Parser[Atom] =  concat | labeled | sequence | atom
+    lazy val elem: Parser[Atom] =  fold | concat | labeled | sequence | atom
     lazy val atom: Parser[Atom] =  alternatives | string | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
     lazy val unary = dup | iota
+    lazy val fold = '%' ~> satom ^^ { case e => EFold(e)}
     lazy val dup = '`' ^^ { case a => EDup }
     lazy val iota = '~' ^^ { case a => EIota }
     lazy val binary = add | mul | max | min | sub | swap
@@ -138,7 +145,7 @@ object Parser_v3 {
     lazy val posnumber = rep1(digit) ^^ { i => EInt(makeInt(buildString(i))) }
     lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(-makeInt(buildString(i))) }
     lazy val symbol: Parser[Atom] = rep1(letter) ^^ { t => Symbol(buildString(t)) }
-    lazy val satom: Parser[Atom] =  atom | sequence | alternatives
+    lazy val satom: Parser[Atom] =  atom | sequence
     lazy val labeled = alabeled | nlabeled
     lazy val nlabeled = satom <~ '\'' ^^ { case e1 => ELabeledExpr(e1,Empty) }
     lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => ELabeledExpr(e1,e2)}

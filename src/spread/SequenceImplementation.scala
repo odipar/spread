@@ -12,12 +12,15 @@ object SequenceImplementation {
 
     def construct(ss: (SS,CC)): SIS
     def create(x: X): SIS = construct(c.create(x))
+    def add(x: X): SIS = this append create(x)
     def append(o: SIS): SIS = construct(s.append(o.s)(c))
     def compare(o: SIS): Int = s.compare(o.s)(c)
     def measure: Option[M] = s.measure(c)
     def size: N = s.size(c)
     def first: Option[X] = s.first(c)
     def last: Option[X] = s.last(c)
+    def first2: Option[X] = s.first2(c)
+    def last2: Option[X] = s.last2(c)
     def left: SIS = construct((s.left(c),c))
     def right: SIS = construct((s.right(c),c))
     def split(n: N) = {

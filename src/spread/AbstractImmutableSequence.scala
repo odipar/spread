@@ -15,6 +15,9 @@ object AbstractImmutableSequence {
     def first(implicit c: CC): Option[X]
     def last(implicit c: CC): Option[X]
 
+    def first2(implicit c: CC): Option[X]
+    def last2(implicit c: CC): Option[X]
+
     def left(implicit c: CC): SS
     def right(implicit c: CC): SS
 
@@ -38,7 +41,7 @@ object AbstractImmutableSequence {
     def append(s1: SS, s2: SS): (SS,CC)
 
     def measure(x: Option[X]): Option[M]
-    def measure(l: Option[M],r: Option[M]): Option[M]
+    def measure(l: SS,r: SS): Option[M]
 
     def compareOrder(x1: X, x2: X): Int
 
@@ -48,6 +51,7 @@ object AbstractImmutableSequence {
   trait Num[N] {
     def zero: N
     def one: N
+    def two: N
 
     def add(n1: N, n2: N): N
     def sub(n1: N, n2: N): N
@@ -58,6 +62,26 @@ object AbstractImmutableSequence {
   }
 
   trait ISeqImpl[N,X,M,SS <: ISeqImpl[N,X,M,SS,CC], CC <: ISeqContextImpl[N,X,M,SS,CC]] extends ISeq[N,X,M,SS,CC] {
+    def isEmpty: Boolean
+
+    def last2(implicit c: CC): Option[X] = {
+      if (c.sizing.compare(size,c.sizing.two) == 0) first
+      else {
+        val r = right
+        if (c.sizing.compare(r.size,c.sizing.one) <= 0) left.last
+        else r.last2
+      }
+    }
+
+    def first2(implicit c: CC): Option[X] = {
+      if (c.sizing.compare(size,c.sizing.two) == 0) last
+      else {
+        val l = left
+        if (c.sizing.compare(l.size,c.sizing.one) <= 0) right.first
+        else l.first2
+      }
+    }
+
     def split(n: N)(implicit c: CC): (SS,SS,CC) = {
       val s = c.sizing
       if (s.compare(n,s.zero) <= 0) (c.empty._1,self,c)
@@ -110,7 +134,7 @@ object AbstractImmutableSequence {
 
   trait ISeqContextImpl[N,X,M,SS <: ISeqImpl[N,X,M,SS,CC], CC <: ISeqContextImpl[N,X,M,SS,CC]] extends ISeqContext[N,X,M,SS,CC] {
     def measure(x: Option[X]): Option[M] = None
-    def measure(l: Option[M], r: Option[M]): Option[M] = None
+    def measure(l: SS, r: SS): Option[M] = None
     def append(s1: SS, s2: SS): (SS,CC) = s1.append(s2)
     def split(s: SS, n: N): (SS,SS,CC) = s.split(n)
     def compare(s1: SS, s2: SS): Int = s1.compare(s2)

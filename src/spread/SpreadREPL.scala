@@ -99,7 +99,10 @@ class SpreadREPL extends JTextPane() {
           {
             case _ =>
             {
+              println("p: " + Engine_v3.p)
               val pi = parse(br)
+              println("p: " + Engine_v3.p)
+
               pi match
               {
                 case Success(term, remainder) =>
