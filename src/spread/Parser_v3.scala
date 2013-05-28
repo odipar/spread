@@ -75,11 +75,10 @@ object Parser_v3 {
         ii = ii + 1
       }
       if (e.left.isEmpty && e.right.isEmpty) {
-        ECompoundExpr(e)
-        /*e.some.get match {
+        e.some.get match {
           case CP(_,e: ELabeledExpr) => e
           case p => p.second
-        } */
+        }
       }
       else ECompoundExpr(e)
     }
@@ -120,11 +119,12 @@ object Parser_v3 {
     lazy val program: Parser[Expr] = expr2 <~ ret ^^ { case e => e }
     lazy val expr: Parser[Atom] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
     lazy val expr2: Parser[Atom] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
-    lazy val elem: Parser[Atom] =  fold | concat | labeled | sequence | atom
+    lazy val elem: Parser[Atom] =  fold | foreach | concat | labeled | sequence | atom
     lazy val atom: Parser[Atom] =  alternatives | string | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
     lazy val unary = dup | iota
     lazy val fold = '%' ~> satom ^^ { case e => EFold(e)}
+    lazy val foreach = '@' ~> satom ^^ { case e => EForeach(e) }
     lazy val dup = '`' ^^ { case a => EDup }
     lazy val iota = '~' ^^ { case a => EIota }
     lazy val binary = add | mul | max | min | sub | swap
