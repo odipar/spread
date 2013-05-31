@@ -18,21 +18,12 @@ object Parser_v3 {
       else s.toInt
     }
 
-    final def buildString(l: scala.List[Char]) : String =
-    {
-      if (l.isEmpty) ""
-      else l.head.toString + buildString(l.tail)
+    final def buildString(l: scala.List[Char]) : String = {
+      if (l.isEmpty) "" ; else l.head.toString + buildString(l.tail)
     }
 
-    final def getReadLine(input: PackratReader[Char]) : ParseResult[Expr] =
-    {
-      program(input)
-    }
-
-    final def parse(input: PackratReader[Char]) : ParseResult[Expr] =
-    {
-      program(input)
-    }
+    final def getReadLine(input: PackratReader[Char]) : ParseResult[Expr] = program(input)
+    final def parse(input: PackratReader[Char]) : ParseResult[Expr] =  program(input)
 
     final val eolc = (13:Int).toChar
     final val lfdc = (10:Int).toChar
@@ -42,7 +33,7 @@ object Parser_v3 {
 
     def chrExcept(cs: Char*) = elem("", ch => (cs forall (ch !=)))
 
-    def createMSet(ll: List[SetP]): Atom  = {
+    def createMSet(ll: List[SetP]): Expr  = {
       val l = ll.reverse
       var e = emptyMSet
       var i = l.iterator
@@ -54,7 +45,7 @@ object Parser_v3 {
       }
       MSet(e)
     }
-    def createMMap(l: List[MapP]): Atom  = {
+    def createMMap(l: List[MapP]): Expr  = {
       var e = emptyMMap
       var i = l.iterator
       var ii = 0
@@ -65,7 +56,7 @@ object Parser_v3 {
       }
       MMap(e)
     }
-    def createExpr(l: List[Atom]): Atom  = {
+    def createExpr(l: List[Expr]): Expr  = {
       var e = emptyExpr
       var i = l.iterator
       var ii = 0
@@ -82,7 +73,7 @@ object Parser_v3 {
       }
       else ECompoundExpr(e)
     }
-    def str(l: List[Char]): Atom = {
+    def str(l: List[Char]): Expr = {
       if (l.size == 1) EChar(l.head)
       else {
         val it = l.iterator
@@ -97,7 +88,7 @@ object Parser_v3 {
       }
     }
 
-    def seq(l: List[Atom]): Atom = {
+    def seq(l: List[Expr]): Expr = {
       var i = l.iterator
       var ii = 0
       var em = emptyMMap
@@ -117,44 +108,50 @@ object Parser_v3 {
     lazy val ws = rep(wse)
     lazy val ws2 = rep(sp)
     lazy val program: Parser[Expr] = expr2 <~ ret ^^ { case e => e }
-    lazy val expr: Parser[Atom] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
-    lazy val expr2: Parser[Atom] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
-    lazy val elem: Parser[Atom] =  fold | foreach | concat | labeled | sequence | atom
-    lazy val atom: Parser[Atom] =  alternatives | string | number | subexpr | map | operator | symbol
+    lazy val expr: Parser[Expr] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
+    lazy val expr2: Parser[Expr] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
+    lazy val elem: Parser[Expr] =  fold | foreach | labeled | sequence | atom
+    lazy val atom: Parser[Expr] =  alternatives | string | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
-    lazy val unary = dup | iota
-    lazy val fold = '%' ~> satom ^^ { case e => EFold(e)}
+    lazy val unary = dup | pack | drop | iota | split
+    lazy val fold = afold | efold
+    lazy val afold = '.' ~> satom ^^ { case e => EFold(e)}
+    lazy val efold = '.' ^^ { case e => EFold(Empty) }
     lazy val foreach = '@' ~> satom ^^ { case e => EForeach(e) }
-    lazy val dup = '`' ^^ { case a => EDup }
+    lazy val dup = '>' ^^ { case a => EDup }
+    lazy val pack = '^' ^^ { case a => EPack }
+    lazy val drop = '<' ^^ { case a => EDrop }
     lazy val iota = '~' ^^ { case a => EIota }
-    lazy val binary = add | mul | max | min | sub | swap
+    lazy val binary = add | mul | max | min | sub | swap | concat | bind
     lazy val add = '+' ^^ { case a => EAdd }
     lazy val mul = '*' ^^ { case a => EMul }
     lazy val max = '|' ^^ { case a => EMax }
     lazy val min = '&' ^^ { case a => EMin }
     lazy val sub = '-' ^^ { case a => ESub }
-    lazy val concat = ';' ^^ { case a => EConcat }
+    lazy val bind = '!' ^^ { case a => EBind }
+    lazy val split = '/' ^^ { case a => ESplit }
+    lazy val concat = ';' ~> '+' ^^ { case a => EConcat }
     lazy val swap = '\\' ^^ { case a => ESwap }
     lazy val string = '\"' ~> rep1(character) <~ '\"' ^^ { case s => str(s) }
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SetP(EInt(1),l) }
     lazy val msetpair = expr ~ ':' ~! expr ^^ { case m ~ ':' ~ l => SetP(m,l) }
-    lazy val alternatives: Parser[Atom] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l => createMSet(l) }
+    lazy val alternatives: Parser[Expr] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l => createMSet(l) }
     lazy val subexpr = '(' ~> expr2 <~ ')' ^^  { case e => e }
     lazy val number = posnumber | negnumber
     lazy val posnumber = rep1(digit) ^^ { i => EInt(makeInt(buildString(i))) }
     lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(-makeInt(buildString(i))) }
-    lazy val symbol: Parser[Atom] = rep1(letter) ^^ { t => Symbol(buildString(t)) }
-    lazy val satom: Parser[Atom] =  atom | sequence
+    lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => Symbol(buildString(t)) }
+    lazy val satom: Parser[Expr] =  atom | sequence
     lazy val labeled = alabeled | nlabeled
     lazy val nlabeled = satom <~ '\'' ^^ { case e1 => ELabeledExpr(e1,Empty) }
     lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => ELabeledExpr(e1,e2)}
-    lazy val map: Parser[Atom] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => createMMap(l) }
+    lazy val map: Parser[Expr] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => createMMap(l) }
     lazy val mappair = meqpair | spair
     lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MapP(e1,e2)}
     lazy val spair = expr ^^ {case e => MapP(e,e) }
-    lazy val path: Parser[List[Atom]] = repsep(atom,'.') ^^ { case l => l }
-    lazy val sequence = atom ~ '.' ~! path ^^ { case e1 ~ '.' ~ e2 => seq(List(e1) ++ e2)}
+    lazy val path: Parser[List[Expr]] = rep1sep(atom,'.') ^^ { case l => l }
+    lazy val sequence = atom ~ '.' ~ path ^^ { case e1 ~ '.' ~ e2 => seq(List(e1) ++ e2)}
 
   }
 }
