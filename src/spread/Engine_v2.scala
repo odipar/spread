@@ -246,7 +246,7 @@ object Engine_v2 {
     //def one: Int  // (the base case: later stage, MultiMapExpr)
 
     def bindings: MultiMapExpr // maximum of all bindings found in all Pairs in all subexpressions
-    def labels: MultiSetExpr // maximum of all (unboud) labels found in all Pairs in all subexpressions
+    def labels: MultiSetExpr // maximum of all (unboud) dependencies found in all Pairs in all subexpressions
     def bind(b: MapPair): EXPR
     def wipe: EXPR
     def value: EXPR

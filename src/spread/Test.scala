@@ -32,7 +32,7 @@ UNARY:
 REFLECTION:
  backquery: [(1 2 +,3)] /t                   => [(1 2 +).3]
  bindings:  [a=x'(b'1 c'2 +)] /b             => [a=x`,x=b` c` +,b=1,c=1]
- labels:
+ dependencies:
 
  // [1,2,3] <\~\ => [[0=1],[0=2],[0=3]]
 
@@ -78,15 +78,14 @@ object Test {
 
   final def main(args: Array[String]): Unit = {}
   {
-    val r = "1 2 3 4 5 6 7"
+    val r = "(a'2 1) +"
     var reader = new CharSequenceReader(r.trim + "\n")
     var e = parse(new PackratReader(reader)).get
-    var ee = e.asInstanceOf[ECompoundExpr]
+    var ee = e
 
-    val (ll,eee,rr) = ee.split(-2)
-    println("ll: " + ll.asString)
-    println("rr: " + rr.asString)
-    println("eee: " + eee.get)
+    val z = fullReduce(ee)
+    println("z: " + z.asString)
+    println("z: " + MSet(emptySet,z.dependencies).asString)
 
   }
 }
