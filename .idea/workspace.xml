@@ -4,12 +4,11 @@
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Engine_v3.scala" afterPath="$PROJECT_DIR$/src/spread/Engine_v3.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Parser_v3.scala" afterPath="$PROJECT_DIR$/src/spread/Parser_v3.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370363743214" ignored="false" />
+    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370373865335" ignored="false" />
     <file path="/AbstractImmutableSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369644654728" ignored="false" />
     <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370268002697" ignored="false" />
     <file path="/RationalWheel.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699332927" ignored="false" />
@@ -25,9 +24,9 @@
     <file path="/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369558204897" ignored="false" />
     <file path="/Application.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368298774834" ignored="false" />
     <file path="/SpreadApplet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368295718063" ignored="false" />
-    <file path="/Engine_v3.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370370834613" ignored="false" />
+    <file path="/Engine_v3.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370375483865" ignored="false" />
     <file path="/OrderedTreapSet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1368991841623" ignored="false" />
-    <file path="/Parser_v3.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370293435058" ignored="false" />
+    <file path="/Parser_v3.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1370375680794" ignored="false" />
     <file path="/test.xslt.xsl" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369220537688" ignored="false" />
     <file path="/WeightBalancedSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369645233467" ignored="false" />
     <file path="/SequenceImplementation.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369607152761" ignored="false" />
@@ -153,15 +152,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Option.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/Option.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="310" column="0" selection-start="10828" selection-end="10828" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="SequenceImplementation.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/SequenceImplementation.scala">
           <provider selected="true" editor-type-id="text-editor">
@@ -192,17 +182,21 @@
       <file leaf-file-name="Engine_v2.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1198" column="35" selection-start="37283" selection-end="37283" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="969" column="13" selection-start="30593" selection-end="30593" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#170#203#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Engine_v3.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Engine_v3.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Engine_v3.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="401" column="13" selection-start="12488" selection-end="12488" vertical-scroll-proportion="-50.907692">
-              <folding />
+            <state line="558" column="32" selection-start="16834" selection-end="16834" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#37#73#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -225,10 +219,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Parser_v3.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Parser_v3.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Parser_v3.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="117" column="54" selection-start="3414" selection-end="3419" vertical-scroll-proportion="0.0">
+            <state line="49" column="47" selection-start="1428" selection-end="1428" vertical-scroll-proportion="1.6863905">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SpreadApplet.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/SpreadApplet.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="6" column="6" selection-start="88" selection-end="88" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -266,9 +269,9 @@
         <option value="$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala" />
         <option value="$PROJECT_DIR$/src/spread/Engine_v2.scala" />
         <option value="$PROJECT_DIR$/src/spread/SpreadREPL.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Parser_v3.scala" />
         <option value="$PROJECT_DIR$/src/spread/Test.scala" />
         <option value="$PROJECT_DIR$/src/spread/Engine_v3.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Parser_v3.scala" />
       </list>
     </option>
   </component>
@@ -907,7 +910,11 @@
       <created>1370291024475</created>
       <updated>1370291024477</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <task id="LOCAL-00077" summary="better trace handling">
+      <created>1370373868016</created>
+      <updated>1370373868016</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -978,7 +985,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="added dependency tracking" />
+    <option name="LAST_COMMIT_MESSAGE" value="better trace handling" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -992,7 +999,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="first cut - new engine" />
     <MESSAGE value="more elaborate example" />
     <MESSAGE value="more elaborate example (fixed)" />
     <MESSAGE value="very rough cut with an example&#10;" />
@@ -1017,6 +1023,7 @@
     <MESSAGE value="engine v3" />
     <MESSAGE value="clean-up + additional ops implementation such as bind" />
     <MESSAGE value="added dependency tracking" />
+    <MESSAGE value="better trace handling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1026,11 +1033,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/core/Branch.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Downloads/enchilada/src/enchilada/core/FirstLastMixin.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="0" selection-start="184" selection-end="538" vertical-scroll-proportion="0.0" />
@@ -1100,13 +1102,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1198" column="35" selection-start="37283" selection-end="37283" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="89" column="39" selection-start="2625" selection-end="2625" vertical-scroll-proportion="0.0">
@@ -1114,16 +1109,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Parser_v3.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Engine_v2.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="54" selection-start="3414" selection-end="3419" vertical-scroll-proportion="0.0">
+        <state line="969" column="13" selection-start="30593" selection-end="30593" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#170#203#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadApplet.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="6" selection-start="88" selection-end="88" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Engine_v3.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="401" column="13" selection-start="12488" selection-end="12488" vertical-scroll-proportion="-50.907692">
+        <state line="558" column="32" selection-start="16834" selection-end="16834" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#37#73#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Parser_v3.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="49" column="47" selection-start="1428" selection-end="1428" vertical-scroll-proportion="1.6863905">
           <folding />
         </state>
       </provider>

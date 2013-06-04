@@ -7,6 +7,7 @@ object Engine_v3 {
   import OrderedTreapSet._
   import WeightBalancedSequence._
   import Hashing._
+  import java.math.BigInteger
 
   lazy val emptySet = emptyMSet
 
@@ -220,10 +221,10 @@ object Engine_v3 {
     def bind(label: Expr, value: Expr) = this
    }
 
-  lazy val zero: Number = EInt(emptySet,0)
-  lazy val one: Number = EInt(emptySet,1)
-  lazy val two: Number = EInt(emptySet,2)
-  lazy val three: Number = EInt(emptySet,3)
+  lazy val zero: Number = EInt(emptySet,BigInteger.valueOf(0))
+  lazy val one: Number = EInt(emptySet,BigInteger.valueOf(1))
+  lazy val two: Number = EInt(emptySet,BigInteger.valueOf(2))
+  lazy val three: Number = EInt(emptySet,BigInteger.valueOf(3))
 
   case class SetP(first: Expr, second: Expr) extends MultiSetPair {
     def op(o: MPair[Expr,Expr], bo: BinaryOperator) = {
@@ -549,24 +550,24 @@ object Engine_v3 {
     }
   }
 
-  case class EInt(d: MST, i: Int) extends Number with Arg with NoBind {
+  case class EInt(d: MST, i: BigInteger) extends Number with Arg with NoBind {
     def dependencies = d
     def addDependencies(dd: MST): Expr = create(dd,i)
-    def create(i: Int): Number = create(d,i)
-    def create(dd: MST, i: Int): Number = EInt(d maximum dd,i)
-    def zero: Number = create(0)
-    def one: Number = create(1)
-    def incr: Number = create(i+1)
-    def decr: Number = create(i-1)
-    def split2: Number = create(i/2)
-    def add(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i + n2) }
-    def mul(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i * n2) }
+    def create(i: BigInteger): Number = create(d,i)
+    def create(dd: MST, i: BigInteger): Number = EInt(d maximum dd,i)
+    def zero: Number = create(BigInteger.valueOf(0))
+    def one: Number = create(BigInteger.valueOf(1))
+    def incr: Number = this add one
+    def decr: Number = this sub one
+    def split2: Number = create(i shiftRight(2))
+    def add(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i add n2) }
+    def mul(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i multiply n2) }
     def min(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i min n2) }
     def max(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i max n2) }
-    def sub(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i - n2) }
-    def compare(n: Number): Int = n match { case EInt(_,n2) => i - n2 }
+    def sub(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i subtract n2) }
+    def compare(n: Number): Int = n match { case EInt(_,n2) => i.compareTo(n2) }
     def asString = {
-      if (i<0) "_" + (-i).toString
+      if (i.signum < 0) "_" + (i.negate).toString
       else i.toString
     }
   }
@@ -614,6 +615,38 @@ object Engine_v3 {
     }
 
     def asString = "/"
+  }
+
+
+  case class ETurn(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
+    def recreate(d: MST) = ETurn(d)
+    def reduceNumber(i: Number) = i
+    def reduceMap(arg1: MMap) = arg1 match {
+      case MMap(d,m) => {
+        var nm = emptyMMap
+        var mm = m
+        while (mm.first != None) {
+          val p = mm.first.get
+          p.second match {
+            case MSet(d1,s) => {
+              var ss = s
+              while (ss.first != None) {
+                val sp = ss.first.get
+                if (ExprOrdering.compare(sp.first,one) == 0) { nm = nm put MapP(ss.first.get.second,p.first) }
+                else { nm = nm put MapP(sp.second,MSet(d1,emptySet put SetP(sp.first,p.first))) }
+                ss = ss.split(ss.first.get)._3
+              }
+            }
+            case _ => {
+              nm = nm put MapP(p.second,p.first)
+            }
+          }
+          mm = mm.split(mm.first.get)._3
+        }
+        MMap(d,nm)
+      }
+    }
+    def asString = "~"
   }
 
   case class EIota(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
@@ -1332,7 +1365,7 @@ object Engine_v3 {
     import Hashing.jenkinsHash
     def hash(s1: Expr): Int = s1 match {
       case Empty => jenkinsHash(0)
-      case EInt(_,i) => jenkinsHash(jenkinsHash(i)^i)
+      case EInt(_,i) => jenkinsHash(jenkinsHash(i.hashCode))
       case MSet(_,m) => jenkinsHash(m.hashCode + -398127)
       case MMap(_,m) => jenkinsHash(m.hashCode + 1283173)
       case Symbol(_,s) => jenkinsHash(s.hashCode)

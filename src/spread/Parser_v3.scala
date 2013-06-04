@@ -13,9 +13,9 @@ object Parser_v3 {
 
     import Engine_v3._
 
-    def makeInt(s: String): Int = {
-      if (s.startsWith("_")) (-s.split("_")(1).toInt)
-      else s.toInt
+    def makeInt(s: String): java.math.BigInteger = {
+      if (s.startsWith("_")) new java.math.BigInteger(s.split("_")(1)).negate
+      else new java.math.BigInteger(s)
     }
 
     final def buildString(l: scala.List[Char]) : String = {
@@ -113,12 +113,13 @@ object Parser_v3 {
     lazy val elem: Parser[Expr] =  fold | foreach | labeled | sequence | atom
     lazy val atom: Parser[Expr] =  alternatives | string | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
-    lazy val unary = dup | pack | iota | reduce | split
+    lazy val unary = dup | pack | iota | reduce | split | turn
     lazy val fold = afold | efold
     lazy val afold = '.' ~> satom ^^ { case e => EFold(emptySet,e)}
     lazy val efold = '.' ^^ { case e => EFold(emptySet,Empty) }
     lazy val foreach = '@' ~> satom ^^ { case e => EForeach(emptySet,e) }
     lazy val dup = '>' ^^ { case a => EDup(emptySet) }
+    lazy val turn = '%' ^^ { case a => ETurn(emptySet) }
     lazy val pack = '^' ^^ { case a => EPack(emptySet) }
     lazy val undup = '<' ~> satom ^^ { case e => EUnDup(emptySet,e) }
     lazy val reduce = '$' ^^ { case a => ERed(emptySet) }
@@ -141,7 +142,7 @@ object Parser_v3 {
     lazy val subexpr = '(' ~> expr2 <~ ')' ^^  { case e => e }
     lazy val number = posnumber | negnumber
     lazy val posnumber = rep1(digit) ^^ { i => EInt(emptySet,makeInt(buildString(i))) }
-    lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(emptySet,-makeInt(buildString(i))) }
+    lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(emptySet,makeInt(buildString(i)).negate) }
     lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => Symbol(emptySet,buildString(t)) }
     lazy val satom: Parser[Expr] =  atom | sequence
     lazy val labeled = alabeled | nlabeled
