@@ -349,16 +349,24 @@ object Engine_v3 {
 
   trait CompoundPairImpl extends CompoundPair {
     def add(o: EP): Option[EP] = {
-      (second,o.second) match {
-        case (e1: ECompoundExpr, e2: ECompoundExpr) => {
-          val c = e1 concat e2
-          if (c.isEmpty) None ; else Some(CP(first,c))
+      (this,o) match {
+        case (CP(f1,s1: ETrace),CP(f2,s2: ETrace)) => Some(this)
+        case _ => {
+          val ts = second
+          val os = o.second
+          (ts,os) match {
+            case (e1: ECompoundExpr, e2: ECompoundExpr) => {
+              val c = e1 concat e2
+              if (c.isEmpty) None ; else Some(CP(first,c))
+              //Some(CP(first,c))
+            }
+            case (Empty,_) => None
+            case (_,Empty) => None
+            case (e1: ECompoundExpr, _) => if (e1.isEmpty) None ; else Some(o)
+            case (_,e2: ECompoundExpr) =>  Some(o)
+            case _ => Some(o)
+          }
         }
-        case (Empty,_) => None
-        case (_,Empty) => None
-        case (e1: ECompoundExpr, _) => if (e1.isEmpty) None ;  else Some(o)
-        case (_,e2: ECompoundExpr) =>  if (e2.isEmpty) None ; Some(o)
-        case _ => Some(o)
       }
     }
     def subtract(o: EP): Option[EP] = not_yet
@@ -369,6 +377,8 @@ object Engine_v3 {
 
   def not_yet = sys.error("not yet")
 
+  var lll = 0
+
   case class CP(f: Number, s: Expr) extends CompoundPairImpl {
     def bind(label: Expr, value: Expr) = CP(f,s.bind(label,value))
     def first = f
@@ -377,7 +387,11 @@ object Engine_v3 {
         if (ExprOrdering.compare(e.second, Empty) == 0) s
         else e.second.addDependencies(emptySet put SetP(one,e.first)).addDependencies(e.dependencies).addDependencies(e.first.dependencies)
       }
-      case l: ETrace => l.t.last.get.second
+      case l: ETrace => {
+        lll = lll + 1
+        //if (lll == 2) sys.error("no")
+        l.t.last.get.second
+      }
       case _ => s
     }
     def second = labeledValue
@@ -448,8 +462,11 @@ object Engine_v3 {
         var nm = emptyMMap
         while (mm.first != None) {
           val p = mm.first.get
-          val np = MapP(p.first,fullReduce2(p.second))
-          nm = nm put np
+          if (p.second.isRedex) {
+            val np = MapP(p.first,fullReduce2(p.second))
+            nm = nm put np
+          }
+          else nm = nm put p
           mm = mm.split(mm.first.get)._3
         }
         MMap(d,nm)
@@ -489,7 +506,25 @@ object Engine_v3 {
     def recreate(d: MST) = EFold(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
     def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) => val (f,_) = fold(m,zero) ; fullReduce(ece(d,f))
+      case MMap(d,m) => {
+        if (ExprOrdering.compare(a,Empty) == 0) ece(d,fold2(m))
+        else {
+          val (f,_) = fold(m,zero)
+          fullReduce(ece(d,f))
+        }
+      }
+    }
+    def fold2(m: MMT): CEX = {
+      var e = emptyExpr
+      var mm = m
+      var i = zero
+      while (mm.first != None) {
+        val p = mm.first.get
+        e = e put CP(i,p.second)
+        mm = mm.split(mm.first.get)._3
+        i = i.incr
+      }
+      e
     }
     def fold(m: MMT,i: Number): (CEX, Number) = {
       val s = sizem(m)
@@ -548,11 +583,10 @@ object Engine_v3 {
     def asString = ">"
   }
 
-  case class EUnDup(dependencies: MST) extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = EUnDup(d)
-    def reduceNumber(arg1: Number, arg2: Number) = arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg2
-    def asString = "<"
+  case class EUnDup(dependencies: MST, a: Expr) extends UnaryOperator with NormalExpr {
+    def addDependencies(d: MST) = EUnDup(d maximum dependencies,a)
+    def reduce(arg1: Expr) = EPair(a,Empty)
+    def asString = "<" + subexpr(a)
   }
 
 
@@ -901,45 +935,60 @@ object Engine_v3 {
       }
     }
 
-    def mconcat(a: Expr, b: Expr): Expr = (a,b) match {
-      case (MSet(d1,as), MSet(d2,bs)) => {
-        var a = as
-        var e: MST = emptyMSet
-        while (a.first != None) {
-          var b = bs
-          while (b.first != None) {
-            val p1: SP = a.first.get
-            val p2: SP = b.first.get
-            val ec = econcat(p1.second,p2.second)
-            val m = ece(emptySet,emptyExpr put CP(zero,p1.first) put CP(one,p2.first) put CP(two,EMul(emptySet)))
-            e = e put SetP(fullReduce(m),fullReduce(ec))
-            b = b.split(b.first.get)._3
+    /*
+        def reduce(first: Option[EP], second: Option[EP], third: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
+      val f = first.flatMap(l => Some(l.second))
+      val s = second.flatMap(l => Some(l.second))
+      val t = third.flatMap(l => Some(l.second))
+
+      (flatten(f),flatten(s),flatten(t))
+     */
+
+    def mconcat(first: Option[EP], second: Option[EP]): Expr = {
+      def f = first.flatMap(l => Some(l.second))
+      def s = second.flatMap(s => Some(s.second))
+
+      (flatten(f),flatten(s)) match {
+        case (Some(MSet(d1,as)), Some(MSet(d2,bs))) => {
+          var a = as
+          var e: MST = emptyMSet
+          while (a.first != None) {
+            var b = bs
+            while (b.first != None) {
+              val p1: SP = a.first.get
+              val p2: SP = b.first.get
+              val ec = econcat(p1.second,p2.second)
+              val m = ece(emptySet,emptyExpr put CP(zero,p1.first) put CP(one,p2.first) put CP(two,EMul(emptySet)))
+              e = e put SetP(fullReduce(m),fullReduce(ec))
+              b = b.split(b.first.get)._3
+            }
+            a = a.split(a.first.get)._3
           }
-          a = a.split(a.first.get)._3
+          MSet(d1 maximum d2,e)
         }
-        MSet(d1 maximum d2,e)
-      }
-      case (MSet(d1,as), b) => {
-        var a = as
-        var e: MST = emptyMSet
-        while (a.first != None) {
-          val p: SP = a.first.get
-          val ec = econcat(p.second,b)
-          e = e put SetP(p.first,fullReduce(ec))
-          a = a.split(a.first.get)._3
+        case (Some(MSet(d1,as)), Some(b)) => {
+          var a = as
+          var e: MST = emptyMSet
+          while (a.first != None) {
+            val p: SP = a.first.get
+            val ec = econcat(p.second,b)
+            e = e put SetP(p.first,fullReduce(ec))
+            a = a.split(a.first.get)._3
+          }
+          MSet(d1,e)
         }
-        MSet(d1,e)
-      }
-      case (b, MSet(d1,as)) => {
-        var a = as
-        var e: MST = emptyMSet
-        while (a.first != None) {
-          val p: SP = a.first.get
-          val ec = econcat(b,fullReduce(p.second))
-          e = e put SetP(p.first,ec)
-          a = a.split(a.first.get)._3
+        case (Some(b), Some(MSet(d1,as))) => {
+          var a = as
+          var e: MST = emptyMSet
+          while (a.first != None) {
+            val p: SP = a.first.get
+            val ec = econcat(b,fullReduce(p.second))
+            e = e put SetP(p.first,ec)
+            a = a.split(a.first.get)._3
+          }
+          MSet(d1,e)
         }
-        MSet(d1,e)
+        case _ => sys.error("illegal state")
       }
     }
 
@@ -956,14 +1005,14 @@ object Engine_v3 {
           if (mredexp(l.last,x)) {
             val ll = l.last
             val l_n = (l put CP(ll.get.first,Empty)).reduce
-            val x_n = CP(x.get.first,mconcat(ll.get.second,x.get.second))
+            val x_n = CP(x.get.first,mconcat(ll,x))
             val r_n = r.reduce
             l_n put x_n concat r_n
           }
           else if (mredexp(x,r.first)) {
             val rf = r.first
             val l_n = l.reduce
-            val x_n = CP(x.get.first,mconcat(x.get.second,rf.get.second))
+            val x_n = CP(x.get.first,mconcat(x,rf))
             val r_n = (r put CP(rf.get.first,Empty)).reduce
             l_n put x_n concat r_n
           }
@@ -991,7 +1040,7 @@ object Engine_v3 {
     def asString = asString(cex)
 
     def asString(c: CEX): String = {
-      if (c.isEmpty) "empty"
+      if (c.isEmpty) "(empty)"
       else {
         val l = { if (c.left.isEmpty) "" ; else asString(c.left) + " " }
         val r = { if (c.right.isEmpty) "" ; else " " + asString(c.right) }
@@ -1255,6 +1304,9 @@ object Engine_v3 {
     def flattened(p: Expr): SEQ = p match {
       case e: ECompoundExpr =>  e.cex.measure.get.flattened
       case e: ELabeledExpr => flattened(e.second)
+      case e: ETrace => {
+        flattened(e.t.last.get.second)
+      }
       case s => emptyExprSeq add s
     }
 

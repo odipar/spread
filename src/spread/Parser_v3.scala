@@ -120,7 +120,7 @@ object Parser_v3 {
     lazy val foreach = '@' ~> satom ^^ { case e => EForeach(emptySet,e) }
     lazy val dup = '>' ^^ { case a => EDup(emptySet) }
     lazy val pack = '^' ^^ { case a => EPack(emptySet) }
-    lazy val undup = '<' ^^ { case a => EUnDup(emptySet) }
+    lazy val undup = '<' ~> satom ^^ { case e => EUnDup(emptySet,e) }
     lazy val reduce = '$' ^^ { case a => ERed(emptySet) }
     lazy val iota = '~' ^^ { case a => EIota(emptySet) }
     lazy val binary = add | mul | max | min | sub | swap | concat | bind | undup
