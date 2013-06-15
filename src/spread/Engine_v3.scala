@@ -1,5 +1,7 @@
 package spread
 
+import javax.swing.table.AbstractTableModel
+
 object Engine_v3 {
   import AbstractImmutableOrderedSet._
   import OrderedSetImplementation._
@@ -11,7 +13,7 @@ object Engine_v3 {
 
   lazy val emptySet = emptyMSet
 
-  trait Expr {
+  trait Expr extends HTML {
     def bind(label: Expr, value: Expr): Expr
     def bindings: MultiMap
     def addDependencies(d: MST): Expr
@@ -20,16 +22,21 @@ object Engine_v3 {
     def wipe: Expr
     def isRedex: Boolean
     def asString: String
+    def asHTML: String = "<pre>" + asString + "</pre>"
   }
 
-  def ece(d: MST, c: CEX): ECompoundExpr = ECompoundExpr(d,c)
+  def ece(d: MST, c: CEX): Expr = {
+    if (c.isEmpty) Empty
+    else ECompoundExpr(d,c)
+  }
+  def ece2(d: MST, c: CEX): ECompoundExpr = ECompoundExpr(d,c)
 
   trait MultiContainer[M <: MultiContainer[M]] extends Expr {
-    def multiAdd(o: M): M
-    def multiSub(o: M): M
-    def multiMul(o: M): M
-    def multiMax(o: M): M
-    def multiMin(o: M): M
+    def multiAdd(o: M): Expr
+    def multiSub(o: M): Expr
+    def multiMul(o: M): Expr
+    def multiMax(o: M): Expr
+    def multiMin(o: M): Expr
   }
   trait MultiSet extends MultiContainer[MultiSet]
   trait MultiMap extends MultiContainer[MultiMap]
@@ -37,6 +44,37 @@ object Engine_v3 {
   trait IndexedExpr extends Expr
   trait CompoundExpr extends IndexedExpr with Expr
 
+  def tableModelToHTML(tm: TModel): String = {
+    var h = "<table>"
+    var c = tm.columnCount
+    var r = tm.rowCount
+
+    var rr = zero
+    while (rr.compare(r) < 0) {
+      var cc = zero
+      h = h + "<tr>"
+      while (cc.compare(c) < 0) {
+        tm.getValue(rr,cc) match {
+          case None => h = h + "<td class='mytd2'><pre> </pre></td>"
+          case Some(b: PosSymbol) => {
+            h = h + "<td class='mytd4'>"
+            h = h + b.asHTML
+            h = h + "</td>"
+          }
+          case Some(x) => {
+            h = h + "<td class='mytd'>"
+            h = h + x.asHTML
+            h = h + "</td>"
+          }
+        }
+        cc = cc.incr
+      }
+      h = h + "</tr>"
+      rr = rr.incr
+    }
+
+    h + "</table>"
+  }
   case class ETrace(d: MST, t: TTT) extends Trace {
     def dependencies = d
     def addDependencies(dd: MST) = ETrace(d maximum dd,t)
@@ -54,14 +92,38 @@ object Engine_v3 {
         l + c.some.get.asString + r
       }
     }
+    def maxPos(c: TTT): Number = {
+      if (c.isEmpty) zero
+      else {
+        val tp = c.some.get
+        val m: Number = tp.second match {
+          case e: ECompoundExpr => e.cex.last.get.first
+          case _ => zero
+        }
+        maxPos(c.left) max m max maxPos(c.right)
+      }
+    }
+    override def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='mytd4'>"
+      h = h + OpenBracket.asHTML
+      h = h + "</td>"
+      h = h + "<td class='mytd2'>"
+      h = h + tableModelToHTML(ETModel(this))
+      h = h + "</td>"
+      h = h + "<td class='mytd4'>"
+      h = h + CloseBracket.asHTML
+      h = h + "</td>"
+      h + "</tr></table>"
+    }
   }
 
   def mmp(d: MST, m: MMT): Expr = {
-    if (m.isEmpty) zero
+    if (m.isEmpty) zero.addDependencies(d)
     else MMap(d,m)
   }
 
-  case class MMap(d: MST, m: MMT) extends MultiMap {
+  case class MMap(d: MST, m: MMT) extends MultiMap with Arg {
     def dependencies = d
     def addDependencies(dd: MST) = MMap(d maximum dd,m)
     def bind(label: Expr, value: Expr) = {
@@ -69,7 +131,19 @@ object Engine_v3 {
       var mm = m
       while (mm.first != None) {
         var p = mm.first.get
-        nm = nm put MapP(p.first.bind(label,value),p.second.bind(label,value))
+        value match {
+          case MSet(d1,ms) => {
+            var mms = ms
+            while (mms.first != None) {
+              val ps = mms.first.get
+              nm = nm put MapP(p.first.bind(label,ps.second),p.second.bind(label,ps.second))
+              mms = mms.split(ps)._3
+            }
+          }
+          case _ => {
+            nm = nm put MapP(p.first.bind(label,value),p.second.bind(label,value))
+          }
+        }
         mm = mm.split(mm.first.get)._3
       }
       MMap(d,nm)
@@ -80,11 +154,11 @@ object Engine_v3 {
     def wipe = not_yet
     def isRedex = false
 
-    def multiAdd(o: MultiMap) = o match { case MMap(dd,mm) => MMap(d maximum dd,m add mm) }
-    def multiSub(o: MultiMap) = o match { case MMap(dd,mm) => MMap(d maximum dd,m subtract mm) }
-    def multiMul(o: MultiMap) = o match { case MMap(dd,mm) => MMap(d maximum dd,m multiply mm) }
-    def multiMax(o: MultiMap) = o match { case MMap(dd,mm) => MMap(d maximum dd,m maximum mm) }
-    def multiMin(o: MultiMap) = o match { case MMap(dd,mm) => MMap(d maximum dd,m minimum mm) }
+    def multiAdd(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m add mm) }
+    def multiSub(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m subtract mm) }
+    def multiMul(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m multiply mm) }
+    def multiMax(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m maximum mm) }
+    def multiMin(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m minimum mm) }
 
     def isString: Boolean = {
       var e1 = m
@@ -120,11 +194,77 @@ object Engine_v3 {
       case EChar(_,c) => c.toString
       case _ => e.asString
     }
+    def stringAsHTML = "<pre>"+asString+"</pre>"
 
+    def sequenceAsHTML = {
+      var s = "<table><tr>"
+      var mm = m
+      var i = 0
+      while (mm.first != None) {
+
+        var mp = mm.first.get
+        if (i > 0) {
+          s = s + "<td class='mytd3'>"
+          s = s + SemiColon.asHTML
+          s = s + "</td>"
+        }
+        s = s + "<td class='mytd3'>"
+        s = s + subhtml(mp.second)
+        s = s + "</td>"
+
+        mm = mm.split(mp)._3
+        i = i + 1
+      }
+      s + "</tr></table>"
+    }
+    def mapAsHTML = {
+      var s = "<table><tr>"
+      s = s + "<td class='mytd4'>"
+      s = s + SquareOpenBracket.asHTML
+      s = s + "</td>"
+      var mm = m
+      var i = 0
+      while (mm.first != None) {
+        var mp = mm.first.get
+        if (i > 0) {
+          s = s + "<td class='mytd3'>"
+          s = s + Comma.asHTML
+          s = s + "</td>"
+        }
+        if (ExprOrdering.compare(mp.first,mp.second) == 0) {
+          s = s + "<td class='mytd3'>"
+          s = s + mp.second.asHTML
+          s = s + "</td>"
+        }
+        else {
+          s = s + "<td class='mytd3'>"
+          s = s + mp.first.asHTML
+          s = s + "</td>"
+          s = s + "<td class='mytd3'>"
+          s = s + MEquals.asHTML
+          s = s + "</td>"
+          s = s + "<td class='mytd3'>"
+          s = s + mp.second.asHTML
+          s = s + "</td>"
+        }
+
+        mm = mm.split(mp)._3
+        i = i + 1
+      }
+      s = s + "<td class='mytd4'>"
+      s = s + SquareCloseBracket.asHTML
+      s = s + "</td>"
+      s + "</tr></table>"
+    }
+    override def asHTML = {
+      if (isString) stringAsHTML
+      else if (isSequence) sequenceAsHTML
+      else mapAsHTML
+    }
     def asString = {
       val (str,seq,el2,st,el,et) = {
         if (isString) (true,true,"","\"","","\"")
-        else if (isSequence) (false,true,"","",".","")
+        else if (isSequence) (false,true,"","",";","")
         else (false,false,"=","[",",","]")
       }
       var e1 = m
@@ -159,7 +299,7 @@ object Engine_v3 {
       var mm = m
       while (nm.first == None) {
         var p = mm.first.get
-        nm = nm put SetP(p.first.bind(label,value),p.second.bind(label,value))
+        nm = nm put SetP(fullReduce(p.first.bind(label,value)),p.second.bind(label,value))
         mm = mm.split(nm.first.get)._3
       }
       MSet(d,nm)
@@ -186,6 +326,46 @@ object Engine_v3 {
     def multiMul(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m multiply mm) }
     def multiMax(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m maximum mm) }
     def multiMin(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m minimum mm) }
+
+    override def asHTML = {
+      var s = "<table><tr>"
+      s = s + "<td class='mytd4'>"
+      s = s + CurlyOpenBracket.asHTML
+      s = s + "</td>"
+      var mm = m
+      var i = 0
+      while (mm.first != None) {
+        var mp = mm.first.get
+        if (i > 0) {
+          s = s + "<td class='mytd3'>"
+          s = s + Comma.asHTML
+          s = s + "</td>"
+        }
+        if (ExprOrdering.compare(mp.first,one) == 0) {
+          s = s + "<td class='mytd3'>"
+          s = s + mp.second.asHTML
+          s = s + "</td>"
+        }
+        else {
+          s = s + "<td class='mytd3'>"
+          s = s + mp.first.asHTML
+          s = s + "</td>"
+          s = s + "<td class='mytd3'>"
+          s = s + Colon.asHTML
+          s = s + "</td>"
+          s = s + "<td class='mytd3'>"
+          s = s + mp.second.asHTML
+          s = s + "</td>"
+        }
+
+        mm = mm.split(mp)._3
+        i = i + 1
+      }
+      s = s + "<td class='mytd4'>"
+      s = s + CurlyCloseBracket.asHTML
+      s = s + "</td>"
+      s + "</tr></table>"
+    }
   }
 
   trait Pair[A <: Expr, B <: Expr] {
@@ -219,8 +399,13 @@ object Engine_v3 {
   trait TracePair extends MPair[Number,Expr]
   trait Operator extends Expr {
     def bind(label: Expr, value: Expr) = this
-   }
+  }
 
+  lazy val _five: Number = EInt(emptySet,BigInteger.valueOf(-5))
+  lazy val _four: Number = EInt(emptySet,BigInteger.valueOf(-4))
+  lazy val _three: Number = EInt(emptySet,BigInteger.valueOf(-3))
+  lazy val _two: Number = EInt(emptySet,BigInteger.valueOf(-2))
+  lazy val _one: Number = EInt(emptySet,BigInteger.valueOf(-1))
   lazy val zero: Number = EInt(emptySet,BigInteger.valueOf(0))
   lazy val one: Number = EInt(emptySet,BigInteger.valueOf(1))
   lazy val two: Number = EInt(emptySet,BigInteger.valueOf(2))
@@ -228,7 +413,7 @@ object Engine_v3 {
 
   case class SetP(first: Expr, second: Expr) extends MultiSetPair {
     def op(o: MPair[Expr,Expr], bo: BinaryOperator) = {
-      val i = emptyExpr put CP(zero,first) put CP(one,o.first) put CP(three,bo)
+      val i = emptyExpr put CP(zero,first) put CP(one,o.first) put CP(two,bo)
       val e = fullReduce(ece(emptySet,i))
       if (ExprOrdering.compare(e,zero) == 0) None
       else Some(SetP(e,second))
@@ -301,19 +486,34 @@ object Engine_v3 {
         mmp(d1 maximum d2,s1 maximum s2)
       }
     }
-    def asString = ";+"
+    def asString = "`+"
   }
 
   case class ELabeledExpr(d: MST, first: Expr, second: Expr) extends LabeledExpr with NormalExpr {
+    override def isRedex = second.isRedex
+    override def reduce: Expr = ECompoundExpr(emptySet,emptyExpr put CP(zero,second.addDependencies(first.dependencies).addDependencies(emptySet put SetP(one,first))))
     def dependencies = d
     def addDependencies(dd: MST) = ELabeledExpr(d maximum dd,first,second)
     def bind(label: Expr, value: Expr) = {
       if (ExprOrdering.compare(first,label) == 0) ELabeledExpr(d,first,value)
-      else ELabeledExpr(d,first.bind(label,value),second.bind(label,value))
+      else ELabeledExpr(d,fullReduce(first.bind(label,value)),fullReduce(second.bind(label,value)))
     }
     def asString = {
       if (second == Empty) lsubexpr(first) + "'"
       else lsubexpr(first) + "'" + lsubexpr(second)
+    }
+    override def asHTML = {
+      var h = "<table><tr>"
+      if (second == Empty) {
+        h = h + "<td class='mytd3'>" + lsubhtml(first) + "</td>"
+        h = h + "<td class='mytd3'>" + Quote.asHTML + "</td>"
+      }
+      else {
+        h = h + "<td class='mytd3'>" + lsubhtml(first) + "</td>"
+        h = h + "<td class='mytd3'>" + Quote.asHTML + "</td>"
+        h = h + "<td class='mytd3'>" + lsubhtml(second) + "</td>"
+      }
+      h +  "</tr></table>"
     }
   }
 
@@ -333,7 +533,7 @@ object Engine_v3 {
 
   trait NormalExpr extends Expr {
     def bindings = not_yet
-    def reduce = this
+    def reduce: Expr = this
     def wipe = this
     def isRedex = false
   }
@@ -358,8 +558,8 @@ object Engine_v3 {
           (ts,os) match {
             case (e1: ECompoundExpr, e2: ECompoundExpr) => {
               val c = e1 concat e2
-              if (c.isEmpty) None ; else Some(CP(first,c))
-              //Some(CP(first,c))
+              if (c.isEmpty) None
+              else Some(CP(first,c))
             }
             case (Empty,_) => None
             case (_,Empty) => None
@@ -409,7 +609,7 @@ object Engine_v3 {
     def asString = s
   }
 
-  trait Arg extends NormalExpr
+  trait Arg extends Expr
 
   case class EChar(d: MST, c: Char) extends NoBind {
     def dependencies = d
@@ -425,7 +625,7 @@ object Engine_v3 {
     case e: ECompoundExpr => {
       if (e.left.isEmpty && e.right.isEmpty) {
         e.some match {
-          case None => ee
+          case None => Empty
           case Some(CP(_,e: ELabeledExpr)) => e
           case Some(p) => simplify(p.second)
         }
@@ -442,16 +642,23 @@ object Engine_v3 {
   }
 
   def fullReduce2(e: Expr): Expr = {
-    var ee = e
-    var t = emptyTrace
-    var i = zero
-    while (ee.isRedex) {
-      t = t put TraceP(i,ee)
-      i = i.incr
-      ee = ee.reduce
+    if (e.isRedex) {
+      var ee = e
+      var t = emptyTrace
+      var i = zero
+      while (ee.isRedex) {
+        t = t put TraceP(i,ee)
+        i = i.incr
+        ee = ee.reduce
+      }
+      val s = simplify(ee)
+      if (ExprOrdering.compare(s,Empty) == 0) Empty
+      else {
+        t = t put TraceP(i,ee)
+        ETrace(emptySet,t)
+      }
     }
-    t = t put TraceP(i,simplify(ee))
-    ETrace(emptySet,t)
+    else e
   }
 
   case class ERed(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
@@ -464,37 +671,72 @@ object Engine_v3 {
         while (mm.first != None) {
           val p = mm.first.get
           if (p.second.isRedex) {
-            val np = MapP(p.first,fullReduce2(p.second))
-            nm = nm put np
+            val r = fullReduce2(p.second)
+            if (ExprOrdering.compare(r,Empty) != 0) {
+              val np = MapP(p.first,r)
+              nm = nm put np
+            }
           }
           else nm = nm put p
           mm = mm.split(mm.first.get)._3
         }
-        MMap(d,nm)
+        mmp(d,nm)
       }
     }
     def asString = "$"
   }
   case class EForeach(dependencies: MST, a: Expr) extends UnaOpImp with UnaryOperator {
+    override def bind(label: Expr, value: Expr) = EForeach(dependencies,a.bind(label,value))
     def recreate(d: MST) = EForeach(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
     def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) =>  MMap(d,foreach(m))
+      case MMap(d,m) =>  {
+        a match {
+          case Empty => mmp(d,foreach2(m))
+          case _ => mmp(d,foreach(m))
+        }
+      }
+    }
+    def foreach2(m: MMT): MMT = {
+      if (m.isEmpty) m
+      else {
+        val e = m.some.get
+        val c1 = fullReduce(e.second)
+        if (ExprOrdering.compare(c1,Empty) != 0) foreach2(m.left) put MapP(e.first,c1) add foreach2(m.right)
+        else foreach2(m.left) add foreach2(m.right)
+      }
     }
     def foreach(m: MMT): MMT = {
       if (m.isEmpty) m
       else {
         val e = m.some.get
-        val c = emptyCompound put CP(zero,e.second) put CP(one,a)
+        val c = ece(emptySet,emptyExpr put CP(zero,e.second) put CP(one,a))
         val c1 = fullReduce(c)
-        foreach(m.left) put MapP(e.first,c1) add foreach(m.right)
+        if (ExprOrdering.compare(c1,Empty) != 0) foreach(m.left) put MapP(e.first,c1) add foreach(m.right)
+        else foreach(m.left) add foreach(m.right)
       }
     }
     def bindings = not_yet
     def reduce = this
     def wipe = this
     def isRedex = false
-    def asString = "@" + subexpr(a)
+    def asString = a match {
+      case Empty => "@"
+      case _ => "@" + ssubexpr(a)
+    }
+    override def asHTML = a match {
+      case Empty => "<pre>@</pre>"
+      case _ => {
+        var s = "<table><tr>"
+        s = s + "<td class='mytd4'>"
+        s = s + "<pre>@</pre>"
+        s = s + "</td>"
+        s = s + "<td class='mytd4'>"
+        s = s + subhtml(a)
+        s = s + "</td>"
+        s + "</tr></table>"
+      }
+    }
   }
 
   def log2(i: Int): Int = {
@@ -504,6 +746,7 @@ object Engine_v3 {
   }
 
   case class EFold(dependencies: MST, a: Expr) extends UnaOpImp with UnaryOperator {
+    override def bind(label: Expr, value: Expr) = EFold(dependencies,a.bind(label,value))
     def recreate(d: MST) = EFold(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
     def reduceMap(arg1: MMap) = arg1 match {
@@ -546,11 +789,24 @@ object Engine_v3 {
     def isRedex = false
     def asString = a match {
       case Empty => "."
-      case _ => "." + subexpr(a)
+      case _ => "." + ssubexpr(a)
+    }
+    override def asHTML = a match {
+      case Empty => "<pre>.</pre>"
+      case _ => {
+        var s = "<table><tr>"
+        s = s + "<td class='mytd4'>"
+        s = s + "<pre>.</pre>"
+        s = s + "</td>"
+        s = s + "<td class='mytd4'>"
+        s = s + subhtml(a)
+        s = s + "</td>"
+        s + "</tr></table>"
+      }
     }
   }
 
-  case class EInt(d: MST, i: BigInteger) extends Number with Arg with NoBind {
+  case class EInt(d: MST, i: BigInteger) extends Number with NormalExpr with Arg with NoBind {
     def dependencies = d
     def addDependencies(dd: MST): Expr = create(dd,i)
     def create(i: BigInteger): Number = create(d,i)
@@ -559,7 +815,7 @@ object Engine_v3 {
     def one: Number = create(BigInteger.valueOf(1))
     def incr: Number = this add one
     def decr: Number = this sub one
-    def split2: Number = create(i shiftRight(2))
+    def split2: Number = create(i divide BigInteger.valueOf(2))
     def add(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i add n2) }
     def mul(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i multiply n2) }
     def min(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i min n2) }
@@ -567,29 +823,18 @@ object Engine_v3 {
     def sub(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i subtract n2) }
     def compare(n: Number): Int = n match { case EInt(_,n2) => i.compareTo(n2) }
     def asString = {
-      if (i.signum < 0) "_" + (i.negate).toString
-      else i.toString
+      val s = { if (i.signum < 0) "_" + (i.negate).toString ; else i.toString }
+      s
+      //if (d.isEmpty) s
+      //else MSet(emptySet,d).asString + "`" + s
     }
   }
 
   case class EPack(dependencies: MST) extends UnaryOperator with NormalExpr {
     def addDependencies(d: MST) = EPack(d maximum dependencies)
-    def reduce(arg1: Expr) = EPair(Empty,MMap(emptySet,emptyMMap put MapP(arg1,arg1)))
+    def reduce(arg1: Expr) = EPair(Empty,MMap(emptySet,emptyMMap put MapP(zero,arg1)))
     def asString = "^"
   }
-
-  case class EDup(dependencies: MST) extends UnaryOperator with NormalExpr {
-    def addDependencies(d: MST) = EDup(d maximum dependencies)
-    def reduce(arg1: Expr) = EPair(arg1,arg1)
-    def asString = ">"
-  }
-
-  case class EUnDup(dependencies: MST, a: Expr) extends UnaryOperator with NormalExpr {
-    def addDependencies(d: MST) = EUnDup(d maximum dependencies,a)
-    def reduce(arg1: Expr) = EPair(a,Empty)
-    def asString = "<" + subexpr(a)
-  }
-
 
   case class EDrop(dependencies: MST) extends UnaryOperator with NormalExpr {
     def addDependencies(d: MST) = EDrop(d maximum dependencies)
@@ -597,8 +842,8 @@ object Engine_v3 {
     def asString = "<"
   }
 
-  case class ESplit(dependencies: MST) extends UnaryOperator with NormalExpr {
-    def addDependencies(d: MST) = ESplit(d maximum dependencies)
+  case class ECut(dependencies: MST) extends UnaryOperator with NormalExpr {
+    def addDependencies(d: MST) = ECut(d maximum dependencies)
     def reduce(arg1: Expr) = arg1 match {
       case MMap(d,m) => {
         val s = sizem(m)
@@ -614,7 +859,7 @@ object Engine_v3 {
       }
     }
 
-    def asString = "/"
+    def asString = "/cut"
   }
 
 
@@ -646,7 +891,7 @@ object Engine_v3 {
         MMap(d,nm)
       }
     }
-    def asString = "~"
+    def asString = "%"
   }
 
   case class EIota(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
@@ -761,7 +1006,7 @@ object Engine_v3 {
     def asString = "-"
   }
 
-  lazy val emptyCompound = ece(emptySet,emptyExpr)
+  lazy val emptyCompound = ece2(emptySet,emptyExpr)
 
   def sizem(mmt: MMT): Int = mmt.measure match {
     case None => 0
@@ -822,7 +1067,7 @@ object Engine_v3 {
     def concat(e: ECompoundExpr): ECompoundExpr = {
       if (e.cex.isEmpty) this
       else if (isEmpty) e
-      else ece(dependencies maximum e.dependencies,cex add e.cex)
+      else ece2(dependencies maximum e.dependencies,cex add e.cex)
     }
     def put(e: Option[EP]): ECompoundExpr = e match {
       case None => this
@@ -831,18 +1076,18 @@ object Engine_v3 {
 
     def split(n: Int): (ECompoundExpr,Option[EP],ECompoundExpr) = {
       val (l,e,r) = splite(n,cex)
-      (ece(dependencies,l),e,ece(dependencies,r))
+      (ece2(dependencies,l),e,ece2(dependencies,r))
     }
-    def put(x: EP): ECompoundExpr =  ece(dependencies,cex add (emptyExpr put x))
+    def put(x: EP): ECompoundExpr =  ece2(dependencies,cex add (emptyExpr put x))
     lazy val left: ECompoundExpr = {
       val s = cex.some.flatMap(s => Some(s.second))
       s match {
         case Some(e: ECompoundExpr) => {
           val l = e.left
-          if (l.isEmpty) ece(dependencies,cex.left)
-          else ece(dependencies,cex.left put CP(cex.some.get.first,l))
+          if (l.isEmpty) ece2(dependencies,cex.left)
+          else ece2(dependencies,cex.left put CP(cex.some.get.first,l))
         }
-        case _ => ece(dependencies,cex.left)
+        case _ => ece2(dependencies,cex.left)
       }
     }
     lazy val right: ECompoundExpr = {
@@ -850,10 +1095,10 @@ object Engine_v3 {
       s match {
         case Some(e: ECompoundExpr) => {
           val r = e.right
-          if (r.isEmpty) ece(dependencies,cex.right)
-          else ece(dependencies,cex.right put CP(cex.some.get.first,r))
+          if (r.isEmpty) ece2(dependencies,cex.right)
+          else ece2(dependencies,cex.right put CP(cex.some.get.first,r))
         }
-        case _ => ece(dependencies,cex.right)
+        case _ => ece2(dependencies,cex.right)
       }
     }
     lazy val some: Option[EP] = {
@@ -887,7 +1132,13 @@ object Engine_v3 {
       case None => false
       case Some(x) => x.isRedex
     }
-    def reduce = reduce3
+
+    def reduce = {
+      val r = reduce3
+      //if (r.isEmpty) Empty
+      //else r
+      r
+    }
 
     def cp(i: Number, p: Expr): CompoundPair = CP(i,p)
 
@@ -913,31 +1164,71 @@ object Engine_v3 {
       }
     }
 
+    /*def mreduce(first: Option[EP], second: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
+      val f = first.flatMap(l => Some(l.second))
+      val s = second.flatMap(l => Some(l.second))
+      (flatten(f),flatten(s)) match {
+
+      }
+    } */
+    def reduce2(first: Option[EP], second: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
+      val f = first.flatMap(l => Some(l.second))
+      val s = second.flatMap(l => Some(l.second))
+
+      (flatten(f),flatten(s)) match {
+        case (Some(a1), Some(a2: MultiSet)) => {
+          val p = mconcat(Some(a1),Some(a2))
+          val c = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,p))
+          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
+          (r,c concat c)
+        }
+        case (Some(a1: MultiSet),Some(a2)) => {
+          val p = mconcat(Some(a1),Some(a2))
+          val c = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,p))
+          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
+          (r,c concat c)
+        }
+        case _ => sys.error("illegal state")
+      }
+    }
+
     def reduce(first: Option[EP], second: Option[EP], third: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
       val f = first.flatMap(l => Some(l.second))
       val s = second.flatMap(l => Some(l.second))
       val t = third.flatMap(l => Some(l.second))
 
       (flatten(f),flatten(s),flatten(t)) match {
-        case (a1,Some(u: UnaryOperator),_) => {
-          val p = u.reduce(a1.get)
-          val c = ece(emptySet,emptyExpr put re(first,p.first) put re(second,p.second))
-          val r = ece(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
+        case (Some(a1: Arg),Some(u: UnaryOperator),_) => {
+          val p = u.reduce(a1)
+          val c = ece2(emptySet,emptyExpr put re(first,p.first) put re(second,p.second))
+          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
           (r,c concat c)
         }
-        case (_,a1,Some(u: UnaryOperator)) => {
-          val p = u.reduce(a1.get)
-          val c = ece(emptySet,emptyExpr put re(second,p.first) put re(third,p.second))
-          val r = ece(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
+        case (_,Some(a1: Arg),Some(u: UnaryOperator)) => {
+          val p = u.reduce(a1)
+          val c = ece2(emptySet,emptyExpr put re(second,p.first) put re(third,p.second))
+          val r = ece2(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
           (r,c concat c)
         }
 
-        case (a1,a2,Some(u: BinaryOperator)) => {
-          val p = u.reduce(a1.get,a2.get)
-          val c = ece(emptySet,emptyExpr put re(first,p.first) put re(second,p.second) put re(third,p.third))
-          val r = ece(emptySet,emptyExpr put re(first,Empty) put re(second,Empty) put re(third,Empty))
+        case (Some(a1: Arg),Some(a2: Arg),Some(u: BinaryOperator)) => {
+          val p = u.reduce(a1,a2)
+          val c = ece2(emptySet,emptyExpr put re(first,p.first) put re(second,p.second) put re(third,p.third))
+          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty) put re(third,Empty))
           (r,c concat c)
         }
+        /*case (_,Some(a1: MultiSet),Some(a2)) => {
+          val p = mconcat(Some(a1),Some(a2))
+          val c = ece(emptySet,emptyExpr put re(second,p) put re(third,Empty))
+          val r = ece(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
+          (r,c concat c)
+        }
+        case (_,Some(a1), Some(a2: MultiSet)) => {
+          val p = mconcat(Some(a1),Some(a2))
+          val c = ece(emptySet,emptyExpr put re(second,Empty) put re(third,p))
+          val r = ece(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
+          (r,c concat c)
+        } */
         case _ => sys.error("illegal state")
       }
     }
@@ -977,9 +1268,7 @@ object Engine_v3 {
       (flatten(f),flatten(s),flatten(t))
      */
 
-    def mconcat(first: Option[EP], second: Option[EP]): Expr = {
-      def f = first.flatMap(l => Some(l.second))
-      def s = second.flatMap(s => Some(s.second))
+    def mconcat(f: Option[Expr], s: Option[Expr]): Expr = {
 
       (flatten(f),flatten(s)) match {
         case (Some(MSet(d1,as)), Some(MSet(d2,bs))) => {
@@ -1030,56 +1319,75 @@ object Engine_v3 {
     def reduce3: ECompoundExpr = cex.measure match {
       case None => this
       case Some(x) => {
-        if (x.isRedex) {
-          val l = left
+        if (1 == 1) { //x.isRedex) {
+        // TODO: optimize to cut and paste, given specific positions
+        val l = left
           val x = some
           val r = right
 
-          if (mredexp(l.last,x)) {
-            val ll = l.last
-            val l_n = (l put CP(ll.get.first,Empty)).reduce
-            val x_n = CP(x.get.first,mconcat(ll,x))
-            val r_n = r.reduce
-            l_n put x_n concat r_n
-          }
-          else if (mredexp(x,r.first)) {
-            val rf = r.first
-            val l_n = l.reduce
-            val x_n = CP(x.get.first,mconcat(x,rf))
-            val r_n = (r put CP(rf.get.first,Empty)).reduce
-            l_n put x_n concat r_n
-          }
-          else {
-            val (re1,re2) = {
-              if (qredexp(l.last2,l.last,x)) reduce(l.last2,l.last,x)
-              else if (qredexp(l.last,x,r.first)) reduce(l.last,x,r.first)
-              else if (qredexp(x,r.first,r.first2)) reduce(x,r.first,r.first2)
-              else (emptyCompound,emptyCompound)
-            }
+          val ll = l.last
+          var rf = r.first
+          val ll2 = l.last2
+          val rf2 = r.first2
 
-
-            val ll: ECompoundExpr = (l concat re1).reduce
-            val xx: ECompoundExpr = emptyCompound.put(x) concat re1
-            val rr: ECompoundExpr = (r concat re1).reduce
-            val p = ll concat xx concat rr
-
-            p concat re2
+          val (re1,re2) = {
+            if (qredexp(ll2,ll,x))reduce(ll2,ll,x)
+            else if (qredexp(ll,x,rf)) reduce(ll,x,rf)
+            else if (qredexp(x,rf,rf2)) reduce(x,rf,rf2)
+            else if (mredexp(ll,x)) reduce2(ll,x)
+            else if (mredexp(x,rf)) reduce2(x,rf)
+            else (emptyCompound,emptyCompound)
           }
+          val lll: ECompoundExpr = (l concat re1).reduce3
+          val xxx: ECompoundExpr = emptyCompound.put(x) concat re1
+          val rrr: ECompoundExpr = (r concat re1).reduce3
+          val p = lll concat xxx concat rrr
+
+          p concat re2
         }
         else this
       }
     }
 
+    override def asHTML = tableModelToHTML(ECTModel(this))
+
     def asString = asString(cex)
 
     def asString(c: CEX): String = {
-      if (c.isEmpty) "(empty)"
+      if (c.isEmpty) "(empty compound)"
       else {
         val l = { if (c.left.isEmpty) "" ; else asString(c.left) + " " }
         val r = { if (c.right.isEmpty) "" ; else " " + asString(c.right) }
         l + c.some.get.asString + r
       }
     }
+  }
+
+  def shtml(s: String): String = {
+    var r = "<table><tr>"
+    r = r + "<td class='mytd3'>"
+    r = r + OpenBracket.asHTML
+    r = r + "</td>"
+    r = r + "<td class='mytd3'>" + s + "</td>"
+    r = r + "<td class='mytd3'>"
+    r = r + CloseBracket.asHTML
+    r = r + "</td>"
+    r  + "</tr></table>"
+  }
+  def subhtml(o: Expr): String = o match {
+    case m: MMap => {
+      if (m.isSequence) shtml(m.asHTML)
+      else m.asHTML
+    }
+    case e: ELabeledExpr => shtml(o.asHTML)
+    case e: ECompoundExpr => shtml(o.asHTML)
+    case _ =>  o.asHTML
+  }
+
+  def lsubhtml(o: Expr): String = o match {
+    case e: ELabeledExpr => shtml(o.asHTML)
+    case e: ECompoundExpr => shtml(o.asHTML)
+    case _ =>  o.asHTML
   }
 
   def ssubexpr(o: Expr): String = o match {
@@ -1116,8 +1424,11 @@ object Engine_v3 {
   type MMT = ST[MP,MapMeasure,Int]
   type TTT = ST[TP,TraceMeasure,Int]
   type SEQ = SS[Int,Expr,ExprSeqMeasure]
+  type PAT = SS[Int,Path,AnyRef]
 
   val emptyExprSeq: SEQ = EmptySeqImpl(ExprSeqContext)
+  val emptyPath: PAT = EmptySeqImpl(PathContext)
+
   val emptyExpr: CEX = EmptyOrderedISet(ExprTreapContext)
   val emptyMSet: MST = EmptyOrderedISet(MSetTreapContext)
   val emptyMMap: MMT = EmptyOrderedISet(MMapTreapContext)
@@ -1158,6 +1469,8 @@ object Engine_v3 {
       case (ArgExpr,UnaExpr,_) => true
       case (_,ArgExpr,UnaExpr) => true
       case (ArgExpr,ArgExpr,BinExpr) => true
+      /*case (_,MultiExpr,s: SomeExpr) => true
+      case (_,s: SomeExpr, MultiExpr) => true*/
       case _ => false
     }
   }
@@ -1171,6 +1484,7 @@ object Engine_v3 {
   case object BinExpr extends ExprType with SomeExpr
   case object ArgExpr extends ExprType with SomeExpr
   case object MultiExpr extends ExprType with SomeExpr
+  case object SymbolExpr extends ExprType with SomeExpr
   case object NoArgExpr extends ExprType
 
   def typ(v: Expr): ExprType = v match {
@@ -1182,6 +1496,7 @@ object Engine_v3 {
     case t: ETrace => typ(t.t.last.get.second)
     case m: MSet => MultiExpr
     case a: Arg => ArgExpr
+    case s: Symbol => SymbolExpr
     case _ => NoArgExpr
   }
   def typ(v: Option[Expr]): ExprType = v match {
@@ -1279,6 +1594,13 @@ object Engine_v3 {
     case Some(e: ExprSeqMeasure) => e.isRedex
     case None => false
   }
+  object PathContext extends IWBTreeContextImpl[Int,Path,AnyRef] {
+    type SS = IWBTree[Int,Path,AnyRef]
+
+    def sizing = IntNum
+    def compareOrder(x1: Path, x2: Path): Int = not_yet
+  }
+
   object ExprSeqContext extends IWBTreeContextImpl[Int,Expr,ExprSeqMeasure] {
     type SS = IWBTree[Int,Expr,ExprSeqMeasure]
 
@@ -1290,7 +1612,7 @@ object Engine_v3 {
       val rr = isRedex2(r.measure)
       if (lr || rr) Some(RedexMeasure)
       else {
-        if (mredexa(l.last,r.first) | qredexa(l.last2,l.last,r.first) || qredexa(l.last,r.first,r.first2)) {
+        if (qredexa(l.last2,l.last,r.first) || qredexa(l.last,r.first,r.first2) | mredexa(l.last,r.first)) {
           Some(RedexMeasure)
         }
         else Some(NormalMeasure)
@@ -1335,7 +1657,10 @@ object Engine_v3 {
 
 
     def flattened(p: Expr): SEQ = p match {
-      case e: ECompoundExpr =>  e.cex.measure.get.flattened
+      case e: ECompoundExpr =>  e.cex.measure match {
+        case None => emptyExprSeq
+        case Some(x) => x.flattened
+      }
       case e: ELabeledExpr => flattened(e.second)
       case e: ETrace => {
         flattened(e.t.last.get.second)
@@ -1357,7 +1682,7 @@ object Engine_v3 {
 
     val ms = MSetOperations[Number,Expr]()
 
-    val addV: SetOperation[EP,ExprMeasure,STreap[EP,ExprMeasure,Int],STreapContext[EP,ExprMeasure,Int]] = ms.LeftMultiSetSumUnion()  
+    val addV: SetOperation[EP,ExprMeasure,STreap[EP,ExprMeasure,Int],STreapContext[EP,ExprMeasure,Int]] = ms.LeftMultiSetSumUnion()
     override def add = addV
   }
 
@@ -1613,4 +1938,413 @@ object Engine_v3 {
       lazy val swap: MultiSetOperation[M,SS,CC] = LeftMultiSetDifference()
     }
   }
+
+  trait HTML {
+    def asHTML: String
+  }
+
+  trait TModel {
+    def columnCount: Number
+    def rowCount: Number
+    def getValue(row: Number, col: Number): Option[HTML]
+  }
+
+  /*case class MTModel(m: MMap) extends TModel {
+    def size(m: MMT): Number = {
+      if (m.isEmpty) zero
+      else size(m.left) add one add size(m.right)
+    }
+    val columnCount = size(m.m)
+    val rowCount = one
+  } */
+  case class CTModel(c: ECompoundExpr) extends TModel {
+    val columnCount = c.cex.last.get.first.incr
+    val rowCount = one
+    def getValue(row: Number, col: Number) = {
+      c.cex.get(CP(col,Empty)) match {
+        case None => None
+        case Some(a) => Some(a.second)
+      }
+    }
+  }
+
+  trait PosSymbol extends HTML
+
+  case object Colon extends PosSymbol {
+    def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='comma'><pre>"
+      h = h + ":"
+      h = h + "</pre></td>"
+      h + "</tr></table>"
+    }
+  }
+
+  case object SemiColon extends PosSymbol {
+    def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='comma'><pre>"
+      h = h + ";"
+      h = h + "</pre></td>"
+      h + "</tr></table>"
+    }
+  }
+
+  case object Comma extends PosSymbol {
+    def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='comma'><pre>"
+      h = h + ","
+      h = h + "</pre></td>"
+      h + "</tr></table>"
+    }
+  }
+
+  case object MEquals extends PosSymbol {
+    def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='equals'><pre>"
+      h = h + "="
+      h = h + "</pre></td>"
+      h + "</tr></table>"
+    }
+  }
+
+  case object Quote extends PosSymbol {
+    def asHTML = {
+      var h = "<table><tr>"
+      h = h + "<td class='quot'><pre>"
+      h = h + "'"
+      h = h + "</pre></td>"
+      h + "</tr></table>"
+    }
+  }
+
+
+  case object CurlyOpenBracket extends PosSymbol {
+    def asHTML = {
+      "<pre class='cbracket'>{</pre>"
+    }
+  }
+
+  case object CurlyCloseBracket extends PosSymbol {
+    def asHTML = {
+      "<pre class='cbracket'>}</pre>"
+    }
+  }
+
+  case object SquareOpenBracket extends PosSymbol {
+    def asHTML = {
+      "<pre class='sbracket'>[</pre>"
+    }
+  }
+
+  case object SquareCloseBracket extends PosSymbol {
+    def asHTML = {
+      "<pre class='sbracket'>]</pre>"
+    }
+  }
+
+  case object OpenBracket extends PosSymbol {
+    def asHTML = {
+      "<pre class='bracket'>(</pre>"
+    }
+  }
+  case object CloseBracket extends PosSymbol {
+    def asHTML = {
+       "<pre class='bracket'>)</pre>"
+    }
+  }
+  case object TraceStep extends PosSymbol {
+    def asHTML = {
+      "<pre class='tracestep'>=&gt;</pre>"
+    }
+  }
+  case class ECTModel(cc: ECompoundExpr) extends TModel {
+    def path(p: PAT, c: ECompoundExpr, i: Number): PAT = {
+      var pp = p
+      val cp = c.cex.get(CP(i,Empty))
+      cp match {
+        case Some(CP(_,ec: ECompoundExpr)) => {
+          val cp = (emptyPath add LeafPath(_three)) append path(ec) append (emptyPath add LeafPath(_four))
+          var in = 0
+          var s = cp.size
+          while (in<s) {
+            val (l,r) = cp.split(in)
+
+            r.first.get match {
+              case l: LeafPath => pp = pp add CompoundPath(emptyPath add LeafPath(i) add l)
+              case c: CompoundPath =>  {
+                pp = pp add CompoundPath((emptyPath add LeafPath(i)) append c.c)
+              }
+            }
+            in = in + 1
+          }
+        }
+        /*case Some(CP(_,t: ETrace)) => {
+          t.t.last.get.second match {
+            case ec: ECompoundExpr => {
+              val cp = (emptyPath add LeafPath(_two) add LeafPath(_five) add LeafPath(_three)) append path(ec) append (emptyPath add LeafPath(_four))
+              var in = 0
+              var s = cp.size
+              while (in<s) {
+                val (l,r) = cp.split(in)
+
+                r.first.get match {
+                  case l: LeafPath => pp = pp add CompoundPath(emptyPath add LeafPath(i) add l)
+                  case c: CompoundPath =>  {
+                    pp = pp add CompoundPath((emptyPath add LeafPath(i)) append c.c)
+                  }
+                }
+                in = in + 1
+              }
+            }
+            case _ =>  pp = pp add LeafPath(i)
+          }
+        }         */
+        case Some(CP(_,t: ELabeledExpr)) => {
+          println("t: " + t.asString)
+          t.second match {
+            case ec: ECompoundExpr => {
+              val cp = (emptyPath add LeafPath(_two) add LeafPath(_three)) append path(ec) append (emptyPath add LeafPath(_four))
+              var in = 0
+              var s = cp.size
+              while (in<s) {
+                val (l,r) = cp.split(in)
+
+                r.first.get match {
+                  case l: LeafPath => pp = pp add CompoundPath(emptyPath add LeafPath(i) add l)
+                  case c: CompoundPath =>  {
+                    pp = pp add CompoundPath((emptyPath add LeafPath(i)) append c.c)
+                  }
+                }
+                in = in + 1
+              }
+            }
+            case _ =>  pp = pp add LeafPath(i)
+          }
+        }
+        case _ => pp = pp add LeafPath(i)
+      }
+      pp
+    }
+
+    def path(c: ECompoundExpr): PAT  = {
+      if (c.isEmpty) emptyPath
+      else {
+        var pp = emptyPath
+        var i = zero
+        val ii = c.last.get.first
+        while (i.compare(ii) < 0) {
+          pp = path(pp,c,i)
+          i = i.incr
+        }
+        pp = path(pp,c,i)
+        pp
+      }
+    }
+    lazy val path: PAT = path(cc)
+    val columnCount = EInt(emptySet,BigInteger.valueOf(path.size))
+    val rowCount = one
+    def pathToElement(c: ECompoundExpr, p: Path): Option[HTML] = {
+      p match {
+        case l: LeafPath => {
+          var pi: LeafPath = l
+          if (pi.index.compare(_two) < 0) {
+            if (pi.index.compare(_three) == 0) Some(OpenBracket)
+            else if (pi.index.compare(_four) == 0) Some(CloseBracket)
+            else Some(TraceStep)
+          }
+          else {
+          c.cex.get(CP(pi.index,Empty)) match {
+            case Some(CP(_,t: ETrace)) => {
+              Some(t)
+            }
+            case Some(CP(_,e)) => Some(e)
+            case _ =>  None
+          }
+          }
+        }
+        case cp: CompoundPath => {
+          var pi: LeafPath = cp.c.first.get.asInstanceOf[LeafPath]
+          if (pi.index.compare(_two) < 0) {
+            if (pi.index.compare(_three) == 0) Some(OpenBracket)
+            else if (pi.index.compare(_four) == 0) Some(OpenBracket)
+            else Some(TraceStep)
+          }
+          else {
+
+            var e = c.cex.get(CP(pi.index,Empty))
+
+            e match {
+              case Some(CP(_,e: ECompoundExpr)) => {
+                val nc = cp.c.split(1)._2
+                if (nc.size == 1) {
+                  pathToElement(e,nc.last.get)
+                }
+                else pathToElement(e,CompoundPath(nc))
+              }
+              case Some(CP(_,e: ELabeledExpr)) => {
+                e.second match {
+                  case ee: ECompoundExpr => {
+                    val nc = cp.c.split(1)._2
+                    if (nc.size == 1) {
+                      val ii = nc.last.get
+                      ii match {
+                        case LeafPath(i) => {
+                          if (i.compare(_two) == 0) {
+                            Some(ELabeledExpr(emptySet,e.first,Empty))
+                          }
+                          else pathToElement(ee,nc.last.get)
+                        }
+                      }
+                    }
+                    else pathToElement(ee,CompoundPath(nc))
+                  }
+                  case _ => {
+                    val ll = cp.c.last.get.asInstanceOf[LeafPath]
+                    val nc = cp.c.split(1)._2
+                    if (iszeropath(nc)) Some(e)
+                    else None
+                  }
+                }
+              }
+              case Some(CP(_,t: ETrace)) => {
+                val ll = cp.c.last.get.asInstanceOf[LeafPath]
+                val nc = cp.c.split(1)._2
+                if (iszeropath(nc)) Some(t)
+                else None
+                /*t.t.last.get.second match {
+                  case ee: ECompoundExpr => {
+                    val nc = cp.c.split(1)._2
+                    if (nc.size == 1) {
+                      val ii = nc.last.get
+                      ii match {
+                        case LeafPath(i) => {
+                          if (i.compare(_two) == 0) {
+                            val nt = t.t.split(t.t.last.get)._1
+                            Some(ETrace(emptySet,nt))
+                          }
+                          else pathToElement(ee,nc.last.get)
+                        }
+                      }
+                    }
+                    else pathToElement(ee,CompoundPath(nc))
+                  }
+                  case _ => {
+                    val ll = cp.c.last.get.asInstanceOf[LeafPath]
+                    val nc = cp.c.split(1)._2
+                    if (iszeropath(nc)) Some(t)
+                    else None
+                  }
+                }     */
+              }
+              case Some(CP(_,e: Expr)) => {
+                val ll = cp.c.last.get.asInstanceOf[LeafPath]
+                val nc = cp.c.split(1)._2
+                if (iszeropath(nc)) Some(e)
+                else None
+              }
+              case _ => None
+            }
+          }
+        }
+      }
+    }
+
+    def iszeropath(p: PAT): Boolean = {
+      if (p.size == 1) p.first.get match {
+        case l: LeafPath => (l.index.compare(zero) == 0)
+        case _ => sys.error("illegal state")
+      }
+      else iszeropath(p.left) && iszeropath(p.right)
+    }
+    def getValue(c: ECompoundExpr, ii: Number) = {
+      val i: Int = asInt(ii)
+      val (l: PAT,r: PAT) = path.split(i)
+      pathToElement(c,r.first.get)
+    }
+    def getValue(row: Number, col: Number): Option[HTML] = getValue(cc,col)
+  }
+
+  case class ETModel(trace: ETrace) extends TModel {
+    lazy val cModel = {
+      var t = trace.t
+      t.first.get.second match {
+        case e: ECompoundExpr => {
+          var tm = ECTModel(e)
+          var max = zero
+          while (t.first != None) {
+            val tp = t.first.get
+            var ntm = ECTModel(tp.second.asInstanceOf[ECompoundExpr])
+            if (ntm.columnCount.compare(tm.columnCount) > 0) {
+              tm = ntm
+            }
+            t = t.split(tp)._3
+          }
+          tm
+        }
+        case ee => ECTModel(ECompoundExpr(emptySet,emptyExpr put CP(zero,ee)))
+      }
+
+    }
+    lazy val columnCount = cModel.columnCount.incr
+    lazy val rowCount = trace.t.last.get.first.incr
+    def getValue(row: Number, col: Number) = {
+      if (col.compare(columnCount.decr) == 0) {
+        if (row.compare(rowCount.decr) == 0) None
+        else Some(TraceStep)
+      }
+      else {
+
+      trace.t.get(TraceP(row,Empty)) match {
+        case None => None
+        case Some(x) => x.second match {
+          case l: ELabeledExpr => {
+            if (col.compare(zero) == 0) Some(ELabeledExpr(emptySet,l.first,Empty))
+            else cModel.getValue(ECompoundExpr(emptySet,emptyExpr put CP(zero,l.second)),col)
+          }
+          case c: ECompoundExpr => cModel.getValue(c,col)
+          case xx => Some(xx)
+        }
+      }
+      }
+    }
+  }
+
+  def asInt(n: Number): Int = {
+    n match {
+      case EInt(_,b: java.math.BigInteger) => b.toString.toInt
+      case _ => sys.error("illegal state")
+    }
+  }
+  trait Path {
+    def asString: String
+    def size: Int
+  }
+
+  case class LeafPath(index: Number) extends Path {
+    def asString = index.asString
+    def size = 1
+  }
+  case class CompoundPath(c: PAT) extends Path {
+    def size = c.size
+    def asString: String = {
+      "<" + asString(c) + ">"
+    }
+    def asString(e: PAT): String = {
+      if (e.size == 0) ""
+      else if (e.size == 1) { e.first.get.asString }
+      else {
+        val l = e.left
+        var r = e.right
+        if (l.size == 0) asString(r)
+        else {
+          if (r.size == 0) asString(l)
+          else asString(l) + "," + asString(r)
+        }
+      }
+    }
+  }
+
 }

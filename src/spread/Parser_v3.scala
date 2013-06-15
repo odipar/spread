@@ -110,29 +110,29 @@ object Parser_v3 {
     lazy val program: Parser[Expr] = expr2 <~ ret ^^ { case e => e }
     lazy val expr: Parser[Expr] = ws ~> rep1sep(elem,ws) <~ ws ^^ { case l  => createExpr(l) }
     lazy val expr2: Parser[Expr] = ws2 ~> rep1sep(elem,ws) <~ ws2 ^^ { case l  => createExpr(l) }
-    lazy val elem: Parser[Expr] =  fold | foreach | labeled | sequence | atom
+    lazy val elem: Parser[Expr] =  foreach | fold | labeled | sequence | atom
     lazy val atom: Parser[Expr] =  alternatives | string | number | subexpr | map | operator | symbol
     lazy val operator = unary | binary
-    lazy val unary = dup | pack | iota | reduce | split | turn
+    lazy val unary = pack | iota | reduce | split | turn
     lazy val fold = afold | efold
     lazy val afold = '.' ~> satom ^^ { case e => EFold(emptySet,e)}
     lazy val efold = '.' ^^ { case e => EFold(emptySet,Empty) }
-    lazy val foreach = '@' ~> satom ^^ { case e => EForeach(emptySet,e) }
-    lazy val dup = '>' ^^ { case a => EDup(emptySet) }
+    lazy val foreach = aforeach | eforeach
+    lazy val aforeach = '@' ~> satom ^^ { case e => EForeach(emptySet,e) }
+    lazy val eforeach = '@' ^^ { case e => EForeach(emptySet,Empty) }
     lazy val turn = '%' ^^ { case a => ETurn(emptySet) }
     lazy val pack = '^' ^^ { case a => EPack(emptySet) }
-    lazy val undup = '<' ~> satom ^^ { case e => EUnDup(emptySet,e) }
     lazy val reduce = '$' ^^ { case a => ERed(emptySet) }
     lazy val iota = '~' ^^ { case a => EIota(emptySet) }
-    lazy val binary = add | mul | max | min | sub | swap | concat | bind | undup
+    lazy val binary = add | mul | max | min | sub | swap | concat | bind
     lazy val add = '+' ^^ { case a => EAdd(emptySet) }
     lazy val mul = '*' ^^ { case a => EMul(emptySet) }
     lazy val max = '|' ^^ { case a => EMax(emptySet) }
     lazy val min = '&' ^^ { case a => EMin(emptySet) }
     lazy val sub = '-' ^^ { case a => ESub(emptySet) }
     lazy val bind = '!' ^^ { case a => EBind(emptySet) }
-    lazy val split = '/' ^^ { case a => ESplit(emptySet) }
-    lazy val concat = ';' ~> '+' ^^ { case a => EConcat(emptySet) }
+    lazy val split = '/' <~ 'c' <~ 'u' <~ 't' ^^ { case a => ECut(emptySet) }
+    lazy val concat = '`' ~> '+' ^^ { case a => EConcat(emptySet) }
     lazy val swap = '\\' ^^ { case a => ESwap(emptySet) }
     lazy val string = '\"' ~> rep1(character) <~ '\"' ^^ { case s => str(s) }
     lazy val setpair = msetpair | ssetpair
@@ -144,7 +144,7 @@ object Parser_v3 {
     lazy val posnumber = rep1(digit) ^^ { i => EInt(emptySet,makeInt(buildString(i))) }
     lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(emptySet,makeInt(buildString(i)).negate) }
     lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => Symbol(emptySet,buildString(t)) }
-    lazy val satom: Parser[Expr] =  atom | sequence
+    lazy val satom: Parser[Expr] =  sequence | atom
     lazy val labeled = alabeled | nlabeled
     lazy val nlabeled = satom <~ '\'' ^^ { case e1 => ELabeledExpr(emptySet,e1,Empty) }
     lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => ELabeledExpr(emptySet,e1,e2)}
@@ -152,8 +152,9 @@ object Parser_v3 {
     lazy val mappair = meqpair | spair
     lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MapP(e1,e2)}
     lazy val spair = expr ^^ {case e => MapP(e,e) }
-    lazy val path: Parser[List[Expr]] = rep1sep(atom,'.') ^^ { case l => l }
-    lazy val sequence = atom ~ '.' ~ path ^^ { case e1 ~ '.' ~ e2 => seq(List(e1) ++ e2)}
+    lazy val ssep = ws ~> ';' <~ ws
+    lazy val path: Parser[List[Expr]] = rep1sep(atom,ssep) ^^ { case l => l }
+    lazy val sequence = atom ~ ssep ~ path ^^ { case e1 ~ sep ~ e2 => seq(List(e1) ++ e2)}
 
   }
 }

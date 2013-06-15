@@ -19,18 +19,15 @@ class SpreadApplet extends JApplet
 
   def createGUI = {
     var textArea = new SpreadREPL
-    var scrollPane = new JScrollPane(textArea);
+    var scrollPane = new JScrollPane(textArea)
 
-    var content = new JPanel();
-    content.setLayout(new BorderLayout);
-    content.add(scrollPane, BorderLayout.CENTER);
+    var content = new JPanel
+    content.setLayout(new BorderLayout)
+    content.add(scrollPane, BorderLayout.CENTER)
 
-    setContentPane(content);
+    setContentPane(content)
+
+    textArea.input.requestFocusInWindow
+
   }
-
-  /*def runCode(s: String) : Unit =
-  {
-    repl.appendString(s)
-    repl.RunAction.actionPerformed(null)
-  } */
 }

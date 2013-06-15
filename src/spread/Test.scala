@@ -78,14 +78,13 @@ object Test {
 
   final def main(args: Array[String]): Unit = {}
   {
-    val r = "3"
+    val r = "1 2 ((3 4) 5) 6"
     var reader = new CharSequenceReader(r.trim + "\n")
     var e = parse(new PackratReader(reader)).get
-    var ee = e
+    var ee = e.asInstanceOf[ECompoundExpr]
 
-    val z = fullReduce(ee)
-    println("z: " + z.asString)
-    println("z: " + MSet(emptySet,z.dependencies).asString)
+    val z = ECTModel(ee)
+    println("e: " + tableModelToHTML(z))
 
   }
 }

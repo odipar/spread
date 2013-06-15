@@ -23,7 +23,7 @@ object SequenceImplementation {
     def last2: Option[X] = s.last2(c)
     def left: SIS = construct((s.left(c),c))
     def right: SIS = construct((s.right(c),c))
-    def split(n: N) = {
+    def split(n: N): (SIS,SIS) = {
       val (l,r,cc) = s.split(n)(c)
       (construct((l,cc)),construct((r,cc)))
     }

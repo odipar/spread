@@ -10,6 +10,7 @@ import javax.swing.text._
 import java.awt._
 import java.awt.event._
 import javax.swing._
+import javax.swing.text.html._
 import javax.swing.event._
 import javax.swing.text._
 
@@ -20,13 +21,12 @@ object Application
     var f = new JFrame()
     f.setLayout(new BorderLayout);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    var textPane = new SpreadREPL
-    var scrollPane = new JScrollPane(textPane)
-    //textPane.setPreferredSize(new Dimension(640, 400))
-    scrollPane.setPreferredSize(new Dimension(640, 400))
-    scrollPane.setMinimumSize(new Dimension(10, 10))
-    f.add(scrollPane, BorderLayout.CENTER);
+    var repl = new SpreadREPL
+    repl.setPreferredSize(new Dimension(800, 600))
+    repl.setMinimumSize(new Dimension(10, 10))
+    f.add(repl, BorderLayout.CENTER);
     f.pack
     f.setVisible(true)
+    repl.input.requestFocusInWindow
   }
 }
