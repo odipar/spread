@@ -43,7 +43,7 @@ object Parser_v3 {
         e = e put a
         ii = ii + 1
       }
-      MSet(emptySet,e)
+      makeMSet(emptySet,e)
     }
     def createMMap(l: List[MapP]): Expr  = {
       var e = emptyMMap
@@ -54,8 +54,9 @@ object Parser_v3 {
         e = e put a
         ii = ii + 1
       }
-      MMap(emptySet,e)
+      mmp(emptySet,e)
     }
+
     def createExpr(l: List[Expr]): Expr  = {
       var e = emptyExpr
       var i = l.iterator
@@ -67,24 +68,24 @@ object Parser_v3 {
       }
       if (e.left.isEmpty && e.right.isEmpty) {
         e.some.get match {
-          case CP(_,e: ELabeledExpr) => e
+          case CP(_,e: ELabeledExprImpl) => e
           case p => p.second
         }
       }
-      else ECompoundExpr(emptySet,e)
+      else ece(emptySet,e)
     }
     def str(l: List[Char]): Expr = {
-      if (l.size == 1) EChar(emptySet,l.head)
+      if (l.size == 1) makeChar(emptySet,l.head)
       else {
         val it = l.iterator
         var i = zero
         var m = emptyMMap
         while (it.hasNext) {
           val e = it.next
-          m = m put MapP(i,EChar(emptySet,e))
+          m = m put MapP(i,makeChar(emptySet,e))
           i = i.incr
         }
-        MMap(emptySet,m)
+        mmp(emptySet,m)
       }
     }
 
@@ -97,7 +98,7 @@ object Parser_v3 {
         em = em put MapP(ii,e)
         ii = ii.incr
       }
-      MMap(emptySet,em)
+      mmp(emptySet,em)
     }
 
     lazy val digit = elem("digit", isDigit) ^^ {c => c}
@@ -141,13 +142,13 @@ object Parser_v3 {
     lazy val alternatives: Parser[Expr] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l => createMSet(l) }
     lazy val subexpr = '(' ~> expr2 <~ ')' ^^  { case e => e }
     lazy val number = posnumber | negnumber
-    lazy val posnumber = rep1(digit) ^^ { i => EInt(emptySet,makeInt(buildString(i))) }
-    lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(emptySet,makeInt(buildString(i)).negate) }
-    lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => Symbol(emptySet,buildString(t)) }
+    lazy val posnumber = rep1(digit) ^^ { i => EInt(makeInt(buildString(i))) }
+    lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(makeInt(buildString(i)).negate) }
+    lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => msymbol(emptySet,buildString(t)) }
     lazy val satom: Parser[Expr] =  sequence | atom
     lazy val labeled = alabeled | nlabeled
-    lazy val nlabeled = satom <~ '\'' ^^ { case e1 => ELabeledExpr(emptySet,e1,Empty) }
-    lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => ELabeledExpr(emptySet,e1,e2)}
+    lazy val nlabeled = satom <~ '\'' ^^ { case e1 => makeLabeledExpr(emptySet,e1,Empty) }
+    lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => makeLabeledExpr(emptySet,e1,e2)}
     lazy val map: Parser[Expr] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => createMMap(l) }
     lazy val mappair = meqpair | spair
     lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MapP(e1,e2)}

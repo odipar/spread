@@ -1,6 +1,5 @@
 package spread
 
-import javax.swing.table.AbstractTableModel
 
 object Engine_v3 {
   import AbstractImmutableOrderedSet._
@@ -27,9 +26,15 @@ object Engine_v3 {
 
   def ece(d: MST, c: CEX): Expr = {
     if (c.isEmpty) Empty
-    else ECompoundExpr(d,c)
+    else {
+      if (d.isEmpty) ECompoundExpr(c)
+      else DECompoundExpr(d,c)
+    }
   }
-  def ece2(d: MST, c: CEX): ECompoundExpr = ECompoundExpr(d,c)
+  def ece2(d: MST, c: CEX): ECompoundExprImpl = {
+    if (d.isEmpty) ECompoundExpr(c)
+    else DECompoundExpr(d,c)
+  }
 
   trait MultiContainer[M <: MultiContainer[M]] extends Expr {
     def multiAdd(o: M): Expr
@@ -97,7 +102,7 @@ object Engine_v3 {
       else {
         val tp = c.some.get
         val m: Number = tp.second match {
-          case e: ECompoundExpr => e.cex.last.get.first
+          case e: ECompoundExprImpl => e.cex.last.get.first
           case _ => zero
         }
         maxPos(c.left) max m max maxPos(c.right)
@@ -120,20 +125,30 @@ object Engine_v3 {
 
   def mmp(d: MST, m: MMT): Expr = {
     if (m.isEmpty) zero.addDependencies(d)
-    else MMap(d,m)
+    else mmp2(d,m)
   }
 
-  case class MMap(d: MST, m: MMT) extends MultiMap with Arg {
-    def dependencies = d
-    def addDependencies(dd: MST) = MMap(d maximum dd,m)
+  def mmp2(d: MST, m: MMT): MMapImpl = {
+    if (d.isEmpty) MMap(m)
+    else DMMap(d,m)
+  }
+
+  case class DMMap(dependencies: MST, m: MMT) extends MMapImpl
+  case class MMap(m: MMT) extends MMapImpl {
+    def dependencies = emptySet
+  }
+
+  trait MMapImpl extends MultiMap with Arg {
+    def m: MMT
+    def addDependencies(dd: MST) = mmp(dependencies maximum dd,m)
     def bind(label: Expr, value: Expr) = {
       var nm = emptyMMap
       var mm = m
       while (mm.first != None) {
         var p = mm.first.get
         value match {
-          case MSet(d1,ms) => {
-            var mms = ms
+          case ms: MSetImpl => {
+            var mms = ms.m
             while (mms.first != None) {
               val ps = mms.first.get
               nm = nm put MapP(p.first.bind(label,ps.second),p.second.bind(label,ps.second))
@@ -146,7 +161,7 @@ object Engine_v3 {
         }
         mm = mm.split(mm.first.get)._3
       }
-      MMap(d,nm)
+      mmp(dependencies,nm)
     }
 
     def bindings = not_yet
@@ -154,11 +169,11 @@ object Engine_v3 {
     def wipe = not_yet
     def isRedex = false
 
-    def multiAdd(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m add mm) }
-    def multiSub(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m subtract mm) }
-    def multiMul(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m multiply mm) }
-    def multiMax(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m maximum mm) }
-    def multiMin(o: MultiMap) = o match { case MMap(dd,mm) => mmp(d maximum dd,m minimum mm) }
+    def multiAdd(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m add mm.m) }
+    def multiSub(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m subtract mm.m) }
+    def multiMul(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m multiply mm.m) }
+    def multiMax(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m maximum mm.m) }
+    def multiMin(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m minimum mm.m) }
 
     def isString: Boolean = {
       var e1 = m
@@ -168,7 +183,7 @@ object Engine_v3 {
       while ((e1.first != None) && seq && str) {
         seq = ExprOrdering.compare(e1.first.get.first,i) == 0
         str = e1.first.get.second match {
-          case e: EChar => true
+          case e: ECharImpl => true
           case _ => false
         }
         e1 = e1.split(e1.first.get)._3
@@ -191,7 +206,7 @@ object Engine_v3 {
     }
 
     def doChar(e: Expr): String = e match {
-      case EChar(_,c) => c.toString
+      case c: ECharImpl => c.c.toString
       case _ => e.asString
     }
     def stringAsHTML = "<pre>"+asString+"</pre>"
@@ -290,10 +305,21 @@ object Engine_v3 {
     }
   }
 
-  case class MSet(d: MST, m: MST) extends MultiSet {
+  case class MSet(m: MST) extends MSetImpl {
+    def dependencies = emptySet
+  }
+
+  case class DMSet(dependencies: MST, m: MST) extends MSetImpl
+
+  def makeMSet(d: MST, m: MST): MSetImpl = {
+    if (d.isEmpty) MSet(m)
+    else DMSet(d,m)
+  }
+
+  trait MSetImpl extends MultiSet {
+    def m: MST
     def isEmpty = m.isEmpty
-    def dependencies = d
-    def addDependencies(dd: MST): Expr = MSet(d maximum dd,m)
+    def addDependencies(dd: MST): Expr = makeMSet(dependencies maximum dd,m)
     def bind(label: Expr, value: Expr) = {
       var nm = emptyMSet
       var mm = m
@@ -302,7 +328,7 @@ object Engine_v3 {
         nm = nm put SetP(fullReduce(p.first.bind(label,value)),p.second.bind(label,value))
         mm = mm.split(nm.first.get)._3
       }
-      MSet(d,nm)
+      makeMSet(dependencies,nm)
     }
     def bindings = not_yet
     def reduce = not_yet
@@ -321,11 +347,11 @@ object Engine_v3 {
       }
       s +"}"
     }
-    def multiAdd(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m add mm) }
-    def multiSub(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m subtract mm) }
-    def multiMul(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m multiply mm) }
-    def multiMax(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m maximum mm) }
-    def multiMin(o: MultiSet) = o match { case MSet(dd,mm) => MSet(d maximum dd,m minimum mm) }
+    def multiAdd(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m add mm.m) }
+    def multiSub(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m subtract mm.m) }
+    def multiMul(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m multiply mm.m) }
+    def multiMax(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m maximum mm.m) }
+    def multiMin(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m minimum mm.m) }
 
     override def asHTML = {
       var s = "<table><tr>"
@@ -381,6 +407,7 @@ object Engine_v3 {
   case class ETriple[A <: Expr,B <: Expr, C <: Expr](first: A, second: B, third: C) extends Triple[A,B,C]
 
   trait MPair[A <: Expr, B <: Expr] extends Pair[A,B] {
+    def neg: Option[MPair[A,B]]
     def add(o: MPair[A,B]): Option[MPair[A,B]]
     def mul(o: MPair[A,B]): Option[MPair[A,B]]
     def max(o: MPair[A,B]): Option[MPair[A,B]]
@@ -401,15 +428,16 @@ object Engine_v3 {
     def bind(label: Expr, value: Expr) = this
   }
 
-  lazy val _five: Number = EInt(emptySet,BigInteger.valueOf(-5))
-  lazy val _four: Number = EInt(emptySet,BigInteger.valueOf(-4))
-  lazy val _three: Number = EInt(emptySet,BigInteger.valueOf(-3))
-  lazy val _two: Number = EInt(emptySet,BigInteger.valueOf(-2))
-  lazy val _one: Number = EInt(emptySet,BigInteger.valueOf(-1))
-  lazy val zero: Number = EInt(emptySet,BigInteger.valueOf(0))
-  lazy val one: Number = EInt(emptySet,BigInteger.valueOf(1))
-  lazy val two: Number = EInt(emptySet,BigInteger.valueOf(2))
-  lazy val three: Number = EInt(emptySet,BigInteger.valueOf(3))
+  //def createNumber: Number
+  lazy val _five: Number = EInt(BigInteger.valueOf(-5))
+  lazy val _four: Number = EInt(BigInteger.valueOf(-4))
+  lazy val _three: Number = EInt(BigInteger.valueOf(-3))
+  lazy val _two: Number = EInt(BigInteger.valueOf(-2))
+  lazy val _one: Number = EInt(BigInteger.valueOf(-1))
+  lazy val zero: Number = EInt(BigInteger.valueOf(0))
+  lazy val one: Number = EInt(BigInteger.valueOf(1))
+  lazy val two: Number = EInt(BigInteger.valueOf(2))
+  lazy val three: Number = EInt(BigInteger.valueOf(3))
 
   case class SetP(first: Expr, second: Expr) extends MultiSetPair {
     def op(o: MPair[Expr,Expr], bo: BinaryOperator) = {
@@ -418,6 +446,7 @@ object Engine_v3 {
       if (ExprOrdering.compare(e,zero) == 0) None
       else Some(SetP(e,second))
     }
+    def neg = op(SetP(zero,second),ESub(emptySet))
     def add(o: MPair[Expr,Expr]) = op(o,EAdd(emptySet))
     def mul(o: MPair[Expr,Expr]) = op(o,EMul(emptySet))
     def max(o: MPair[Expr,Expr]) = op(o,EMax(emptySet))
@@ -429,13 +458,13 @@ object Engine_v3 {
     }
   }
 
-  def asMSet(o: Expr): MSet = o match {
-    case m: MSet => m
-    case _ => MSet(o.dependencies,emptyMSet put SetP(one,o))
+  def asMSet(o: Expr): MSetImpl = o match {
+    case m: MSetImpl => m
+    case _ => makeMSet(o.dependencies,emptyMSet put SetP(one,o))
   }
 
   def mp(m: MapP): Option[MapP] = m.second match {
-    case ms: MSet => {
+    case ms: MSetImpl => {
       if (ms.isEmpty) None
       else Some(m)
     }
@@ -443,6 +472,7 @@ object Engine_v3 {
   }
 
   case class MapP(first: Expr, second: Expr) extends MultiMapPair {
+    def neg = not_yet // MapP(first, asMSet(second).neg)
     def add(o: MPair[Expr,Expr]) = mp(MapP(first,asMSet(second) multiAdd asMSet(o.second)))
     def mul(o: MPair[Expr,Expr]) = mp(MapP(first,asMSet(second) multiMul asMSet(o.second)))
     def max(o: MPair[Expr,Expr]) = mp(MapP(first,asMSet(second) multiMax asMSet(o.second)))
@@ -479,24 +509,35 @@ object Engine_v3 {
   case class EConcat(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EConcat(d)
     def reduceNumber(arg1: Number, arg2: Number) = reduceMap(makeMap(arg1),makeMap(arg2))
-    def reduceMap(arg1: MMap, arg2: MMap) = (arg1,arg2) match {
-      case (MMap(d1,m1),MMap(d2,m2)) => {
-        val (i,s1) = makeSeq(m1,zero)
-        val (i2,s2) = makeSeq(m2,i)
-        mmp(d1 maximum d2,s1 maximum s2)
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = (arg1,arg2) match {
+      case (m1: MMapImpl, m2: MMapImpl) => {
+        val (i,s1) = makeSeq(m1.m,zero)
+        val (i2,s2) = makeSeq(m2.m,i)
+        mmp(m1.dependencies maximum m2.dependencies,s1 maximum s2)
       }
     }
     def asString = "`+"
   }
 
-  case class ELabeledExpr(d: MST, first: Expr, second: Expr) extends LabeledExpr with NormalExpr {
+
+  case class ELabeledExpr(first: Expr, second: Expr) extends ELabeledExprImpl {
+    def dependencies = emptySet
+  }
+
+  case class DELabeledExpr(dependencies: MST, first: Expr, second: Expr) extends ELabeledExprImpl
+
+  def makeLabeledExpr(d: MST, first: Expr, second: Expr): ELabeledExprImpl = {
+    if (d.isEmpty) ELabeledExpr(first,second)
+    else DELabeledExpr(d,first,second)
+  }
+
+  trait ELabeledExprImpl extends LabeledExpr with NormalExpr {
     override def isRedex = second.isRedex
-    override def reduce: Expr = ECompoundExpr(emptySet,emptyExpr put CP(zero,second.addDependencies(first.dependencies).addDependencies(emptySet put SetP(one,first))))
-    def dependencies = d
-    def addDependencies(dd: MST) = ELabeledExpr(d maximum dd,first,second)
+    override def reduce: Expr = ece(emptySet,emptyExpr put CP(zero,second.addDependencies(first.dependencies).addDependencies(emptySet put SetP(one,first))))
+    def addDependencies(dd: MST) = makeLabeledExpr(dependencies maximum dd,first,second)
     def bind(label: Expr, value: Expr) = {
-      if (ExprOrdering.compare(first,label) == 0) ELabeledExpr(d,first,value)
-      else ELabeledExpr(d,fullReduce(first.bind(label,value)),fullReduce(second.bind(label,value)))
+      if (ExprOrdering.compare(first,label) == 0) makeLabeledExpr(dependencies,first,value)
+      else makeLabeledExpr(dependencies,fullReduce(first.bind(label,value)),fullReduce(second.bind(label,value)))
     }
     def asString = {
       if (second == Empty) lsubexpr(first) + "'"
@@ -556,20 +597,21 @@ object Engine_v3 {
           val ts = second
           val os = o.second
           (ts,os) match {
-            case (e1: ECompoundExpr, e2: ECompoundExpr) => {
+            case (e1: ECompoundExprImpl, e2: ECompoundExprImpl) => {
               val c = e1 concat e2
               if (c.isEmpty) None
               else Some(CP(first,c))
             }
             case (Empty,_) => None
             case (_,Empty) => None
-            case (e1: ECompoundExpr, _) => if (e1.isEmpty) None ; else Some(o)
-            case (_,e2: ECompoundExpr) =>  Some(o)
+            case (e1: ECompoundExprImpl, _) => if (e1.isEmpty) None ; else Some(o)
+            case (_,e2: ECompoundExprImpl) =>  Some(o)
             case _ => Some(o)
           }
         }
       }
     }
+    def neg = not_yet
     def subtract(o: EP): Option[EP] = not_yet
     def mul(o: EP): Option[EP] = not_yet
     def max(o: EP): Option[EP] = not_yet
@@ -584,7 +626,7 @@ object Engine_v3 {
     def bind(label: Expr, value: Expr) = CP(f,s.bind(label,value))
     def first = f
     def labeledValue = s match {
-      case e: ELabeledExpr => {
+      case e: ELabeledExprImpl => {
         if (ExprOrdering.compare(e.second, Empty) == 0) s
         else e.second.addDependencies(emptySet put SetP(one,e.first)).addDependencies(e.dependencies).addDependencies(e.first.dependencies)
       }
@@ -599,9 +641,20 @@ object Engine_v3 {
     def asString = subexpr(s)
   }
 
-  case class Symbol(d: MST, s: String) extends NoBind {
-    def dependencies = d
-    def addDependencies(dd: MST) = Symbol(d maximum dd,s)
+
+  case class Symbol(s: String) extends SymbolImpl {
+    def dependencies = emptySet
+  }
+  case class DSymbol(dependencies: MST, s: String) extends SymbolImpl
+
+  def msymbol(d: MST, s: String): SymbolImpl = {
+    if (d.isEmpty) Symbol(s)
+    else DSymbol(d,s)
+  }
+
+  trait SymbolImpl extends NoBind {
+    def s: String
+    def addDependencies(dd: MST) = msymbol(dependencies maximum dd,s)
     def bindings = not_yet
     def reduce = this
     def wipe = this
@@ -611,9 +664,19 @@ object Engine_v3 {
 
   trait Arg extends Expr
 
-  case class EChar(d: MST, c: Char) extends NoBind {
-    def dependencies = d
-    def addDependencies(dd: MST) = EChar(d maximum dd,c)
+  def makeChar(d: MST, c: Char): ECharImpl = {
+    if (d.isEmpty) EChar(c)
+    else DEChar(d,c)
+  }
+
+  case class EChar(c: Char) extends ECharImpl {
+    def dependencies = emptySet
+  }
+  case class DEChar(dependencies: MST, c: Char) extends ECharImpl
+
+  trait ECharImpl extends NoBind {
+    def c: Char
+    def addDependencies(dd: MST) = makeChar(dependencies maximum dd,c)
     def bindings = not_yet
     def reduce = this
     def wipe = this
@@ -622,11 +685,11 @@ object Engine_v3 {
   }
 
   def simplify(ee: Expr): Expr = ee match {
-    case e: ECompoundExpr => {
+    case e: ECompoundExprImpl => {
       if (e.left.isEmpty && e.right.isEmpty) {
         e.some match {
           case None => Empty
-          case Some(CP(_,e: ELabeledExpr)) => e
+          case Some(CP(_,e: ELabeledExprImpl)) => e
           case Some(p) => simplify(p.second)
         }
       }
@@ -664,9 +727,9 @@ object Engine_v3 {
   case class ERed(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
     def recreate(d: MST) = ERed(d)
     def reduceNumber(i: Number) = i
-    def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) =>  {
-        var mm = m
+    def reduceMap(arg1: MMapImpl) = arg1 match {
+      case m: MMapImpl =>  {
+        var mm = m.m
         var nm = emptyMMap
         while (mm.first != None) {
           val p = mm.first.get
@@ -680,7 +743,7 @@ object Engine_v3 {
           else nm = nm put p
           mm = mm.split(mm.first.get)._3
         }
-        mmp(d,nm)
+        mmp(m.dependencies,nm)
       }
     }
     def asString = "$"
@@ -689,11 +752,11 @@ object Engine_v3 {
     override def bind(label: Expr, value: Expr) = EForeach(dependencies,a.bind(label,value))
     def recreate(d: MST) = EForeach(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
-    def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) =>  {
+    def reduceMap(arg1: MMapImpl) = arg1 match {
+      case m: MMapImpl =>  {
         a match {
-          case Empty => mmp(d,foreach2(m))
-          case _ => mmp(d,foreach(m))
+          case Empty => mmp(m.dependencies,foreach2(m.m))
+          case _ => mmp(m.dependencies,foreach(m.m))
         }
       }
     }
@@ -749,12 +812,12 @@ object Engine_v3 {
     override def bind(label: Expr, value: Expr) = EFold(dependencies,a.bind(label,value))
     def recreate(d: MST) = EFold(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
-    def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) => {
-        if (ExprOrdering.compare(a,Empty) == 0) ece(d,fold2(m))
+    def reduceMap(arg1: MMapImpl) = arg1 match {
+      case m: MMapImpl=> {
+        if (ExprOrdering.compare(a,Empty) == 0) ece(m.dependencies,fold2(m.m))
         else {
-          val (f,_) = fold(m,zero)
-          fullReduce(ece(d,f))
+          val (f,_) = fold(m.m,zero)
+          fullReduce(ece(m.dependencies,f))
         }
       }
     }
@@ -806,33 +869,42 @@ object Engine_v3 {
     }
   }
 
-  case class EInt(d: MST, i: BigInteger) extends Number with NormalExpr with Arg with NoBind {
-    def dependencies = d
-    def addDependencies(dd: MST): Expr = create(dd,i)
-    def create(i: BigInteger): Number = create(d,i)
-    def create(dd: MST, i: BigInteger): Number = EInt(d maximum dd,i)
+  trait EIntImpl extends Number with NormalExpr with Arg with NoBind {
+    def integer: BigInteger
+    def addDependencies(dd: MST): Expr = create(dd,integer)
+    def create(i: BigInteger): Number = create(dependencies,i)
+    def create(dd: MST, i: BigInteger): Number = {
+      // TODO: Optimize
+      val nd = dependencies maximum dd
+      if (nd.isEmpty) EInt(i)
+      else DEInt(nd,i)
+    }
     def zero: Number = create(BigInteger.valueOf(0))
     def one: Number = create(BigInteger.valueOf(1))
     def incr: Number = this add one
     def decr: Number = this sub one
-    def split2: Number = create(i divide BigInteger.valueOf(2))
-    def add(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i add n2) }
-    def mul(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i multiply n2) }
-    def min(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i min n2) }
-    def max(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i max n2) }
-    def sub(n: Number): Number = n match { case EInt(dd,n2) => create(dd,i subtract n2) }
-    def compare(n: Number): Int = n match { case EInt(_,n2) => i.compareTo(n2) }
+    def split2: Number = create(integer divide BigInteger.valueOf(2))
+    def add(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer add n2.integer) }
+    def mul(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer multiply  n2.integer) }
+    def min(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer min n2.integer) }
+    def max(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer max n2.integer) }
+    def sub(n: Number): Number = n match{ case n2: EIntImpl => create(n2.dependencies,integer subtract n2.integer) }
+    def compare(n: Number): Int = n match { case n2: EIntImpl => integer.compareTo(n2.integer) }
     def asString = {
-      val s = { if (i.signum < 0) "_" + (i.negate).toString ; else i.toString }
-      s
-      //if (d.isEmpty) s
-      //else MSet(emptySet,d).asString + "`" + s
+      if (integer.signum < 0) "_" + (integer.negate).toString
+      else integer.toString
     }
   }
 
+  case class EInt(integer: BigInteger) extends EIntImpl {
+    def dependencies = emptySet
+  }
+
+  case class DEInt(dependencies: MST, integer: BigInteger) extends EIntImpl
+
   case class EPack(dependencies: MST) extends UnaryOperator with NormalExpr {
     def addDependencies(d: MST) = EPack(d maximum dependencies)
-    def reduce(arg1: Expr) = EPair(Empty,MMap(emptySet,emptyMMap put MapP(zero,arg1)))
+    def reduce(arg1: Expr) = EPair(Empty,mmp(emptySet,emptyMMap put MapP(zero,arg1)))
     def asString = "^"
   }
 
@@ -845,12 +917,12 @@ object Engine_v3 {
   case class ECut(dependencies: MST) extends UnaryOperator with NormalExpr {
     def addDependencies(d: MST) = ECut(d maximum dependencies)
     def reduce(arg1: Expr) = arg1 match {
-      case MMap(d,m) => {
-        val s = sizem(m)
+      case m: MMapImpl => {
+        val s = sizem(m.m)
         val l1 = s / 2
-        val (l,e,rr) = splitm(l1,m)
+        val (l,e,rr) = splitm(l1,m.m)
         val r = rr put e.get
-        EPair(mmp(d,l),mmp(d,r))
+        EPair(mmp(m.dependencies,l),mmp(m.dependencies,r))
       }
       case n: Number => {
         var i1 = n.split2
@@ -866,19 +938,19 @@ object Engine_v3 {
   case class ETurn(dependencies: MST) extends UnaryOperator with NormalExpr with UnaOpImp {
     def recreate(d: MST) = ETurn(d)
     def reduceNumber(i: Number) = i
-    def reduceMap(arg1: MMap) = arg1 match {
-      case MMap(d,m) => {
+    def reduceMap(arg1: MMapImpl) = arg1 match {
+      case m: MMapImpl => {
         var nm = emptyMMap
-        var mm = m
+        var mm = m.m
         while (mm.first != None) {
           val p = mm.first.get
           p.second match {
-            case MSet(d1,s) => {
-              var ss = s
+            case s: MSetImpl=> {
+              var ss = s.m
               while (ss.first != None) {
                 val sp = ss.first.get
                 if (ExprOrdering.compare(sp.first,one) == 0) { nm = nm put MapP(ss.first.get.second,p.first) }
-                else { nm = nm put MapP(sp.second,MSet(d1,emptySet put SetP(sp.first,p.first))) }
+                else { nm = nm put MapP(sp.second,makeMSet(s.dependencies,emptySet put SetP(sp.first,p.first))) }
                 ss = ss.split(ss.first.get)._3
               }
             }
@@ -888,7 +960,7 @@ object Engine_v3 {
           }
           mm = mm.split(mm.first.get)._3
         }
-        MMap(d,nm)
+        mmp(m.dependencies,nm)
       }
     }
     def asString = "%"
@@ -906,17 +978,17 @@ object Engine_v3 {
       }
       mmp(i.dependencies,m)
     }
-    def reduceMap(arg1: MMap) = not_yet
+    def reduceMap(arg1: MMapImpl) = not_yet
     def asString = "~"
   }
 
-  def makeMap(i: Number): MMap = {
-    if (i.compare(i.zero) == 0) MMap(i.dependencies,emptyMMap)
+  def makeMap(i: Number): MMapImpl = {
+    if (i.compare(i.zero) == 0) mmp2(i.dependencies,emptyMMap)
     else {
       val sp = SetP(i,i.zero)
-      val mp = MapP(i.zero,MSet(emptySet,emptyMSet put sp))
+      val mp = MapP(i.zero,makeMSet(emptySet,emptyMSet put sp))
       val m = emptyMMap put mp
-      MMap(i.dependencies,m)
+      mmp2(i.dependencies,m)
     }
   }
   case class ESwap(dependencies: MST) extends BinaryOperator with NormalExpr {
@@ -929,46 +1001,42 @@ object Engine_v3 {
     def recreate(d: MST): UnaOpImp
     def addDependencies(dd: MST) = recreate(dependencies maximum dd)
     def reduceNumber(arg1: Number): Expr
-    def reduceMap(arg1: MMap): Expr
+    def reduceMap(arg1: MMapImpl): Expr
     def reduce(arg1: Expr) = (arg1) match {
       //case (a1: ELabeledExpr) => reduce(a1.second)
       case (a1: Number) => EPair(Empty,reduceNumber(a1).addDependencies(dependencies))
-      case (a1: MMap) => EPair(Empty,reduceMap(a1).addDependencies(dependencies))
+      case (a1: MMapImpl) => EPair(Empty,reduceMap(a1).addDependencies(dependencies))
     }
   }
   trait BinOpImp extends BinaryOperator {
     def recreate(d: MST): BinOpImp
     def addDependencies(dd: MST) = recreate(dependencies maximum dd)
     def reduceNumber(arg1: Number, arg2: Number): Expr
-    def reduceMap(arg1: MMap, arg2: MMap): Expr
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl): Expr
     def reduce(arg1: Expr, arg2: Expr) = {
       ETriple(Empty,Empty,reduce2(arg1,arg2).addDependencies(dependencies))
     }
     def reduce2(arg1: Expr, arg2: Expr): Expr = (arg1,arg2) match {
-      /*case (a1: ELabeledExpr,a2) => reduce2(a1.second,a2)
-      case (a1, a2: ELabeledExpr) => reduce2(a1,a2.second)*/
-      /*case (a1: ETrace,a2) => reduce2(a1.t.last.get.second,a2)
-      case (a1,a2: ETrace) => reduce2(a1,a2.t.last.get.second)*/
       case (a1: Number,a2: Number) => reduceNumber(a1,a2)
-      case (a1: Number,a2: MMap) => reduce2(makeMap(a1),a2)
-      case (a1: MMap,a2: Number) => reduce2(a1,makeMap(a2))
-      case (a1: MMap,a2: MMap) => reduceMap(a1,a2)
+      case (a1: Number,a2: MMapImpl) => reduce2(makeMap(a1),a2)
+      case (a1: MMapImpl,a2: Number) => reduce2(a1,makeMap(a2))
+      case (a1: MMapImpl,a2: MMapImpl) => reduceMap(a1,a2)
     }
   }
 
   case class EBind(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EBind(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1
-    def reduceMap(arg1: MMap, arg2: MMap) = arg2 match {
-      case MMap(d,m) => {
-        var mm = m
-        var a: MMap = arg1
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg2 match {
+      case m: MMapImpl => {
+        var mm = m.m
+        var a: Expr = arg1
         while (mm.first != None) {
           val p = mm.first.get
           a = a.bind(p.first,p.second)
           mm = mm.split(mm.first.get)._3
         }
-        a.addDependencies(d)
+        a.addDependencies(m.dependencies)
       }
     }
     def asString = "!"
@@ -977,32 +1045,32 @@ object Engine_v3 {
   case class EAdd(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EAdd(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 add arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg1 multiAdd arg2
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiAdd arg2
     def asString = "+"
   }
 
   case class EMul(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EMul(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 mul arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg1 multiMul arg2
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMul arg2
     def asString = "*"
   }
   case class EMax(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EMax(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 max arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg1 multiMax arg2
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMax arg2
     def asString = "|"
   }
   case class EMin(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = EMin(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 min arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg1 multiMin arg2
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMin arg2
     def asString = "&"
   }
   case class ESub(dependencies: MST) extends BinOpImp with NormalExpr {
     def recreate(d: MST) = ESub(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 sub arg2
-    def reduceMap(arg1: MMap, arg2: MMap) = arg1 multiSub arg2
+    def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiSub arg2
     def asString = "-"
   }
 
@@ -1040,9 +1108,16 @@ object Engine_v3 {
     }
   }
 
-  case class ECompoundExpr(d: MST, cex: CEX) extends CompoundExpr {
-    def addDependencies(dd: MST) = ECompoundExpr(d maximum dd, cex)
-    def dependencies = d
+
+  case class DECompoundExpr(dependencies: MST, cex: CEX) extends ECompoundExprImpl
+
+  case class ECompoundExpr(cex: CEX) extends ECompoundExprImpl {
+    def dependencies = emptySet
+  }
+
+  trait ECompoundExprImpl extends CompoundExpr {
+    def cex: CEX
+    def addDependencies(dd: MST) = ece(dependencies maximum dd, cex)
     def bind(label: Expr, value: Expr) = {
       var nm = emptyExpr
       var mm = cex
@@ -1051,7 +1126,7 @@ object Engine_v3 {
         nm = nm put p.bind(label,value)
         mm = mm.split(mm.first.get)._3
       }
-      ece(d,nm)
+      ece(dependencies,nm)
     }
     def isEmpty = cex.isEmpty
     def first: Option[EP] = if (left.isEmpty) some ; else left.first
@@ -1064,25 +1139,25 @@ object Engine_v3 {
       if (right.isEmpty) {  if (left.isEmpty) None ; else left.last}
       else right.last2 match {  case None => some ; case x => x }
     }
-    def concat(e: ECompoundExpr): ECompoundExpr = {
+    def concat(e: ECompoundExprImpl): ECompoundExprImpl = {
       if (e.cex.isEmpty) this
       else if (isEmpty) e
       else ece2(dependencies maximum e.dependencies,cex add e.cex)
     }
-    def put(e: Option[EP]): ECompoundExpr = e match {
+    def put(e: Option[EP]): ECompoundExprImpl = e match {
       case None => this
       case Some(x) => put(x)
     }
 
-    def split(n: Int): (ECompoundExpr,Option[EP],ECompoundExpr) = {
+    def split(n: Int): (ECompoundExprImpl,Option[EP],ECompoundExprImpl) = {
       val (l,e,r) = splite(n,cex)
       (ece2(dependencies,l),e,ece2(dependencies,r))
     }
-    def put(x: EP): ECompoundExpr =  ece2(dependencies,cex add (emptyExpr put x))
-    lazy val left: ECompoundExpr = {
+    def put(x: EP): ECompoundExprImpl =  ece2(dependencies,cex add (emptyExpr put x))
+    lazy val left: ECompoundExprImpl = {
       val s = cex.some.flatMap(s => Some(s.second))
       s match {
-        case Some(e: ECompoundExpr) => {
+        case Some(e: ECompoundExprImpl) => {
           val l = e.left
           if (l.isEmpty) ece2(dependencies,cex.left)
           else ece2(dependencies,cex.left put CP(cex.some.get.first,l))
@@ -1090,10 +1165,10 @@ object Engine_v3 {
         case _ => ece2(dependencies,cex.left)
       }
     }
-    lazy val right: ECompoundExpr = {
+    lazy val right: ECompoundExprImpl = {
       val s = cex.some.flatMap(s => Some(s.second))
       s match {
-        case Some(e: ECompoundExpr) => {
+        case Some(e: ECompoundExprImpl) => {
           val r = e.right
           if (r.isEmpty) ece2(dependencies,cex.right)
           else ece2(dependencies,cex.right put CP(cex.some.get.first,r))
@@ -1104,7 +1179,7 @@ object Engine_v3 {
     lazy val some: Option[EP] = {
       val s = cex.some.flatMap(s => Some(s.second))
       s match {
-        case Some(e: ECompoundExpr) => {
+        case Some(e: ECompoundExprImpl) => {
           val nn = e.some
           nn match {
             case None => None
@@ -1143,10 +1218,10 @@ object Engine_v3 {
     def cp(i: Number, p: Expr): CompoundPair = CP(i,p)
 
     def flatten(a: Option[Expr]): Option[Expr] = a match {
-      case Some(ee: ECompoundExpr) => {
+      case Some(ee: ECompoundExprImpl) => {
         flatten(ee.first.flatMap(e => Some(e.second.addDependencies(ee.dependencies))))
       }
-      case Some(e: ELabeledExpr) => {
+      case Some(e: ELabeledExprImpl) => {
         flatten(Some(e.second.addDependencies(emptySet put SetP(one,e.first))))
       }
       case Some(e: ETrace) => flatten(e.t.last.flatMap(e => Some(e.second)))
@@ -1156,7 +1231,7 @@ object Engine_v3 {
     def re(e: Option[EP], n: Expr): EP = e match {
       case None => sys.error("illegal state")
       case Some(ep) => ep.second match {
-        case cc: ECompoundExpr => {
+        case cc: ECompoundExprImpl => {
           val k = ece(cc.dependencies,emptyExpr put re(cc.first,n))
           CP(ep.first,k)
         }
@@ -1164,14 +1239,7 @@ object Engine_v3 {
       }
     }
 
-    /*def mreduce(first: Option[EP], second: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
-      val f = first.flatMap(l => Some(l.second))
-      val s = second.flatMap(l => Some(l.second))
-      (flatten(f),flatten(s)) match {
-
-      }
-    } */
-    def reduce2(first: Option[EP], second: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
+    def reduce2(first: Option[EP], second: Option[EP]): (ECompoundExprImpl,ECompoundExprImpl) = {
       val f = first.flatMap(l => Some(l.second))
       val s = second.flatMap(l => Some(l.second))
 
@@ -1192,7 +1260,7 @@ object Engine_v3 {
       }
     }
 
-    def reduce(first: Option[EP], second: Option[EP], third: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
+    def reduce(first: Option[EP], second: Option[EP], third: Option[EP]): (ECompoundExprImpl,ECompoundExprImpl) = {
       val f = first.flatMap(l => Some(l.second))
       val s = second.flatMap(l => Some(l.second))
       val t = third.flatMap(l => Some(l.second))
@@ -1217,36 +1285,24 @@ object Engine_v3 {
           val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty) put re(third,Empty))
           (r,c concat c)
         }
-        /*case (_,Some(a1: MultiSet),Some(a2)) => {
-          val p = mconcat(Some(a1),Some(a2))
-          val c = ece(emptySet,emptyExpr put re(second,p) put re(third,Empty))
-          val r = ece(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
-          (r,c concat c)
-        }
-        case (_,Some(a1), Some(a2: MultiSet)) => {
-          val p = mconcat(Some(a1),Some(a2))
-          val c = ece(emptySet,emptyExpr put re(second,Empty) put re(third,p))
-          val r = ece(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
-          (r,c concat c)
-        } */
         case _ => sys.error("illegal state")
       }
     }
 
     def econcat(a: Expr, b: Expr): Expr = (a,b) match {
-      case (e1: ECompoundExpr, e2: ECompoundExpr) => {
+      case (e1: ECompoundExprImpl, e2: ECompoundExprImpl) => {
         val p1 = CP(zero,e1)
         val p2 = CP(one,e2)
         val e = emptyExpr put p1 put p2
         ece(e1.dependencies maximum e2.dependencies,e)
       }
 
-      case (e1: ECompoundExpr, a2: Expr) => {
+      case (e1: ECompoundExprImpl, a2: Expr) => {
         val p = e1.last.get
         val i = p.first.incr
         e1 put CP(i,a2)
       }
-      case (a1: Expr, e2: ECompoundExpr) => {
+      case (a1: Expr, e2: ECompoundExprImpl) => {
         val p = e2.first.get
         val i = p.first.decr
         e2 put CP(i,a1)
@@ -1259,23 +1315,14 @@ object Engine_v3 {
       }
     }
 
-    /*
-        def reduce(first: Option[EP], second: Option[EP], third: Option[EP]): (ECompoundExpr,ECompoundExpr) = {
-      val f = first.flatMap(l => Some(l.second))
-      val s = second.flatMap(l => Some(l.second))
-      val t = third.flatMap(l => Some(l.second))
-
-      (flatten(f),flatten(s),flatten(t))
-     */
-
     def mconcat(f: Option[Expr], s: Option[Expr]): Expr = {
 
       (flatten(f),flatten(s)) match {
-        case (Some(MSet(d1,as)), Some(MSet(d2,bs))) => {
-          var a = as
+        case (Some(as: MSetImpl), Some(bs: MSetImpl)) => {
+          var a = as.m
           var e: MST = emptyMSet
           while (a.first != None) {
-            var b = bs
+            var b = bs.m
             while (b.first != None) {
               val p1: SP = a.first.get
               val p2: SP = b.first.get
@@ -1286,10 +1333,10 @@ object Engine_v3 {
             }
             a = a.split(a.first.get)._3
           }
-          MSet(d1 maximum d2,e)
+          makeMSet(as.dependencies maximum bs.dependencies,e)
         }
-        case (Some(MSet(d1,as)), Some(b)) => {
-          var a = as
+        case (Some(as: MSetImpl), Some(b)) => {
+          var a = as.m
           var e: MST = emptyMSet
           while (a.first != None) {
             val p: SP = a.first.get
@@ -1297,10 +1344,10 @@ object Engine_v3 {
             e = e put SetP(p.first,fullReduce(ec))
             a = a.split(a.first.get)._3
           }
-          MSet(d1,e)
+          makeMSet(as.dependencies,e)
         }
-        case (Some(b), Some(MSet(d1,as))) => {
-          var a = as
+        case (Some(b), Some(as: MSetImpl)) => {
+          var a = as.m
           var e: MST = emptyMSet
           while (a.first != None) {
             val p: SP = a.first.get
@@ -1308,7 +1355,7 @@ object Engine_v3 {
             e = e put SetP(p.first,ec)
             a = a.split(a.first.get)._3
           }
-          MSet(d1,e)
+          makeMSet(as.dependencies,e)
         }
         case _ => sys.error("illegal state")
       }
@@ -1316,7 +1363,7 @@ object Engine_v3 {
 
     def typ2(e: Option[EP]) = e.flatMap(e => Some(e.second))
 
-    def reduce3: ECompoundExpr = cex.measure match {
+    def reduce3: ECompoundExprImpl = cex.measure match {
       case None => this
       case Some(x) => {
         if (1 == 1) { //x.isRedex) {
@@ -1338,9 +1385,9 @@ object Engine_v3 {
             else if (mredexp(x,rf)) reduce2(x,rf)
             else (emptyCompound,emptyCompound)
           }
-          val lll: ECompoundExpr = (l concat re1).reduce3
-          val xxx: ECompoundExpr = emptyCompound.put(x) concat re1
-          val rrr: ECompoundExpr = (r concat re1).reduce3
+          val lll: ECompoundExprImpl = (l concat re1).reduce3
+          val xxx: ECompoundExprImpl = emptyCompound.put(x) concat re1
+          val rrr: ECompoundExprImpl = (r concat re1).reduce3
           val p = lll concat xxx concat rrr
 
           p concat re2
@@ -1375,39 +1422,39 @@ object Engine_v3 {
     r  + "</tr></table>"
   }
   def subhtml(o: Expr): String = o match {
-    case m: MMap => {
+    case m: MMapImpl => {
       if (m.isSequence) shtml(m.asHTML)
       else m.asHTML
     }
-    case e: ELabeledExpr => shtml(o.asHTML)
-    case e: ECompoundExpr => shtml(o.asHTML)
+    case e: ELabeledExprImpl => shtml(o.asHTML)
+    case e: ECompoundExprImpl => shtml(o.asHTML)
     case _ =>  o.asHTML
   }
 
   def lsubhtml(o: Expr): String = o match {
-    case e: ELabeledExpr => shtml(o.asHTML)
-    case e: ECompoundExpr => shtml(o.asHTML)
+    case e: ELabeledExprImpl => shtml(o.asHTML)
+    case e: ECompoundExprImpl => shtml(o.asHTML)
     case _ =>  o.asHTML
   }
 
   def ssubexpr(o: Expr): String = o match {
-    case m: MMap => {
+    case m: MMapImpl => {
       if (m.isSequence) "(" + m.asString +")"
       else m.asString
     }
-    case e: ELabeledExpr => "(" + o.asString + ")"
-    case e: ECompoundExpr => "(" + o.asString + ")"
+    case e: ELabeledExprImpl => "(" + o.asString + ")"
+    case e: ECompoundExprImpl => "(" + o.asString + ")"
     case _ =>  o.asString
   }
 
   def lsubexpr(o: Expr): String = o match {
-    case e: ECompoundExpr => "(" + o.asString + ")"
-    case e: ELabeledExpr => "(" + o.asString + ")"
+    case e: ECompoundExprImpl => "(" + o.asString + ")"
+    case e: ELabeledExprImpl => "(" + o.asString + ")"
     case _ =>  o.asString
   }
 
   def subexpr(o: Expr): String = o match {
-    case e: ECompoundExpr => "(" + o.asString + ")"
+    case e: ECompoundExprImpl => "(" + o.asString + ")"
     case _ =>  o.asString
   }
 
@@ -1435,6 +1482,7 @@ object Engine_v3 {
   val emptyTrace: TTT = EmptyOrderedISet(TraceTreapContext)
 
   case class TraceP(first: Number, second: Expr) extends TP {
+    def neg = not_yet
     def add(o: TP): Option[TP] = not_yet
     def subtract(o: TP): Option[TP] = not_yet
     def mul(o: TP): Option[TP] = not_yet
@@ -1469,8 +1517,6 @@ object Engine_v3 {
       case (ArgExpr,UnaExpr,_) => true
       case (_,ArgExpr,UnaExpr) => true
       case (ArgExpr,ArgExpr,BinExpr) => true
-      /*case (_,MultiExpr,s: SomeExpr) => true
-      case (_,s: SomeExpr, MultiExpr) => true*/
       case _ => false
     }
   }
@@ -1490,13 +1536,13 @@ object Engine_v3 {
   def typ(v: Expr): ExprType = v match {
     case o: UnaryOperator => UnaExpr
     case b: BinaryOperator => BinExpr
-    case m: MMap => ArgExpr
-    case c: ECompoundExpr => typ(c.first.flatMap(f => Some(f.second)))
-    case l: ELabeledExpr => typ(l.second)
+    case m: MMapImpl => ArgExpr
+    case c: ECompoundExprImpl => typ(c.first.flatMap(f => Some(f.second)))
+    case l: ELabeledExprImpl => typ(l.second)
     case t: ETrace => typ(t.t.last.get.second)
-    case m: MSet => MultiExpr
+    case m: MSetImpl => MultiExpr
     case a: Arg => ArgExpr
-    case s: Symbol => SymbolExpr
+    case s: SymbolImpl => SymbolExpr
     case _ => NoArgExpr
   }
   def typ(v: Option[Expr]): ExprType = v match {
@@ -1657,11 +1703,11 @@ object Engine_v3 {
 
 
     def flattened(p: Expr): SEQ = p match {
-      case e: ECompoundExpr =>  e.cex.measure match {
+      case e: ECompoundExprImpl =>  e.cex.measure match {
         case None => emptyExprSeq
         case Some(x) => x.flattened
       }
-      case e: ELabeledExpr => flattened(e.second)
+      case e: ELabeledExprImpl => flattened(e.second)
       case e: ETrace => {
         flattened(e.t.last.get.second)
       }
@@ -1690,13 +1736,13 @@ object Engine_v3 {
     import Hashing.jenkinsHash
     def hash(s1: Expr): Int = s1 match {
       case Empty => jenkinsHash(0)
-      case EInt(_,i) => jenkinsHash(jenkinsHash(i.hashCode))
-      case MSet(_,m) => jenkinsHash(m.hashCode + -398127)
-      case MMap(_,m) => jenkinsHash(m.hashCode + 1283173)
-      case Symbol(_,s) => jenkinsHash(s.hashCode)
+      case i: EIntImpl => jenkinsHash(jenkinsHash(i.integer.hashCode))
+      case m: MSetImpl => jenkinsHash(m.m.hashCode + -398127)
+      case m: MMapImpl=> jenkinsHash(m.m.hashCode + 1283173)
+      case s: SymbolImpl => jenkinsHash(s.s.hashCode)
       case u: Operator => jenkinsHash(u.toString.hashCode)
-      case EChar(_,c) => jenkinsHash(c.toString.hashCode ^ 234091802)
-      case ECompoundExpr(_,c) => jenkinsHash(c.hashCode + 7124568)
+      case c: ECharImpl => jenkinsHash(c.c.toString.hashCode ^ 234091802)
+      case c: ECompoundExprImpl => jenkinsHash(c.cex.hashCode + 7124568)
       case l: LabeledExpr =>  jenkinsHash(hash(l.first) ^ hash(l.second))
       case ETrace(_,t) => jenkinsHash(t.hashCode ^ 94122681)
     }
@@ -1713,29 +1759,29 @@ object Engine_v3 {
     def order(v1: Expr): Int = v1 match {
       case Empty => -1
       case i: Number => 0
-      case c: EChar => 1
+      case c: ECharImpl => 1
       case u: UnaryOperator => 2
       case b: BinaryOperator => 3
       case c: CompoundExpr => 4
-      case l: Symbol => 5
-      case ms: MSet => 6
-      case mm: MMap => 7
-      case lb: ELabeledExpr => 8
+      case l: SymbolImpl => 5
+      case ms: MSetImpl => 6
+      case mm: MMapImpl => 7
+      case lb: ELabeledExprImpl => 8
       case t: ETrace => 9
     }
     def compareEqual(v1: Expr, v2: Expr) = (v1,v2) match {
       case (Empty,Empty) => 0
       case (n1: Number, n2: Number) => n1.compare(n2)
-      case (EChar(_,c1), EChar(_,c2)) => c1.compare(c2)
+      case (c1: ECharImpl, c2: ECharImpl) => c1.c.compare(c2.c)
       case (u1: Operator, u2: Operator) => u1.asString.compareTo(u2.asString)
-      case (Symbol(_,s1), Symbol(_,s2)) => s1.compareTo(s2)
-      case (ECompoundExpr(_,c1), ECompoundExpr(_,c2)) => compareCompoundExpr(c1,c2)
-      case (MSet(_,s1), MSet(_,s2)) => compareMSet(s1,s2)
-      case (MMap(_,m1), MMap(_,m2)) => compareMMap(m1,m2)
+      case (s1: SymbolImpl, s2: SymbolImpl) => s1.s.compareTo(s2.s)
+      case (e1: ECompoundExprImpl, e2: ECompoundExprImpl) => compareCompoundExpr(e1.cex,e2.cex)
+      case (s1: MSetImpl, s2: MSetImpl) => compareMSet(s1.m,s2.m)
+      case (m1: MMapImpl, m2: MMapImpl) => compareMMap(m1.m,m2.m)
       case (ETrace(_,t1), ETrace(_,t2)) => compareTrace(t1,t2)
-      case (ELabeledExpr(_,l1,e1), ELabeledExpr(_,l2,e2)) => {
-        val c = compare(l1,l2)
-        if (c == 0) compare(e1,e2) ; else c
+      case (l1: ELabeledExprImpl, l2: ELabeledExprImpl) => {
+        val c = compare(l1.first,l2.first)
+        if (c == 0) compare(l1.second,l2.second) ; else c
       }
     }
     def compareCompoundExpr(c1: CEX, c2: CEX): Int = {
@@ -1823,6 +1869,16 @@ object Engine_v3 {
           val (l,c1) = square(s.left)(c)
           val (r,c2) = square(s.right)(c1)
           val e = x mul x
+          if (e == None) l join r
+          else c2.create(l,e,r)
+        }
+      }
+      def neg(s: SS)(implicit c: CC): (SS,CC) = s.some match {
+        case None => (s,c)
+        case Some(x) => {
+          val (l,c1) = neg(s.left)(c)
+          val (r,c2) = neg(s.right)(c1)
+          val e = x.neg
           if (e == None) l join r
           else c2.create(l,e,r)
         }
@@ -1924,7 +1980,10 @@ object Engine_v3 {
     trait MultiSetDifference[M,SS <: SISetImpl[PP,M,SS,CC], CC <: SISetContextImpl[PP,M,SS,CC]]
       extends MultiSetOperationImpl[M,SS,CC] with DifferenceUnion[M,SS,CC] {
       def combineEqual(s1: SS,s2: SS)(implicit c: CC) = c.empty
-      def combineJoin(s1: SS, s2: SS)(implicit c: CC) = not_yet
+      def combineJoin(s1: SS, s2: SS)(implicit c: CC) = {
+        val (r,c1) = neg(s2)
+        s1.join(r)(c1)
+      }
       def combineEqualElements(x1: PP, x2: PP): Option[PP] =  x1 subtract x2
     }
 
@@ -1949,15 +2008,7 @@ object Engine_v3 {
     def getValue(row: Number, col: Number): Option[HTML]
   }
 
-  /*case class MTModel(m: MMap) extends TModel {
-    def size(m: MMT): Number = {
-      if (m.isEmpty) zero
-      else size(m.left) add one add size(m.right)
-    }
-    val columnCount = size(m.m)
-    val rowCount = one
-  } */
-  case class CTModel(c: ECompoundExpr) extends TModel {
+  case class CTModel(c: ECompoundExprImpl) extends TModel {
     val columnCount = c.cex.last.get.first.incr
     val rowCount = one
     def getValue(row: Number, col: Number) = {
@@ -2060,12 +2111,12 @@ object Engine_v3 {
       "<pre class='tracestep'>=&gt;</pre>"
     }
   }
-  case class ECTModel(cc: ECompoundExpr) extends TModel {
-    def path(p: PAT, c: ECompoundExpr, i: Number): PAT = {
+  case class ECTModel(cc: ECompoundExprImpl) extends TModel {
+    def path(p: PAT, c: ECompoundExprImpl, i: Number): PAT = {
       var pp = p
       val cp = c.cex.get(CP(i,Empty))
       cp match {
-        case Some(CP(_,ec: ECompoundExpr)) => {
+        case Some(CP(_,ec: ECompoundExprImpl)) => {
           val cp = (emptyPath add LeafPath(_three)) append path(ec) append (emptyPath add LeafPath(_four))
           var in = 0
           var s = cp.size
@@ -2102,10 +2153,9 @@ object Engine_v3 {
             case _ =>  pp = pp add LeafPath(i)
           }
         }         */
-        case Some(CP(_,t: ELabeledExpr)) => {
-          println("t: " + t.asString)
+        case Some(CP(_,t: ELabeledExprImpl)) => {
           t.second match {
-            case ec: ECompoundExpr => {
+            case ec: ECompoundExprImpl => {
               val cp = (emptyPath add LeafPath(_two) add LeafPath(_three)) append path(ec) append (emptyPath add LeafPath(_four))
               var in = 0
               var s = cp.size
@@ -2129,7 +2179,7 @@ object Engine_v3 {
       pp
     }
 
-    def path(c: ECompoundExpr): PAT  = {
+    def path(c: ECompoundExprImpl): PAT  = {
       if (c.isEmpty) emptyPath
       else {
         var pp = emptyPath
@@ -2144,9 +2194,9 @@ object Engine_v3 {
       }
     }
     lazy val path: PAT = path(cc)
-    val columnCount = EInt(emptySet,BigInteger.valueOf(path.size))
+    val columnCount = EInt(BigInteger.valueOf(path.size))
     val rowCount = one
-    def pathToElement(c: ECompoundExpr, p: Path): Option[HTML] = {
+    def pathToElement(c: ECompoundExprImpl, p: Path): Option[HTML] = {
       p match {
         case l: LeafPath => {
           var pi: LeafPath = l
@@ -2177,23 +2227,23 @@ object Engine_v3 {
             var e = c.cex.get(CP(pi.index,Empty))
 
             e match {
-              case Some(CP(_,e: ECompoundExpr)) => {
+              case Some(CP(_,e: ECompoundExprImpl)) => {
                 val nc = cp.c.split(1)._2
                 if (nc.size == 1) {
                   pathToElement(e,nc.last.get)
                 }
                 else pathToElement(e,CompoundPath(nc))
               }
-              case Some(CP(_,e: ELabeledExpr)) => {
+              case Some(CP(_,e: ELabeledExprImpl)) => {
                 e.second match {
-                  case ee: ECompoundExpr => {
+                  case ee: ECompoundExprImpl => {
                     val nc = cp.c.split(1)._2
                     if (nc.size == 1) {
                       val ii = nc.last.get
                       ii match {
                         case LeafPath(i) => {
                           if (i.compare(_two) == 0) {
-                            Some(ELabeledExpr(emptySet,e.first,Empty))
+                            Some(makeLabeledExpr(emptySet,e.first,Empty))
                           }
                           else pathToElement(ee,nc.last.get)
                         }
@@ -2259,7 +2309,7 @@ object Engine_v3 {
       }
       else iszeropath(p.left) && iszeropath(p.right)
     }
-    def getValue(c: ECompoundExpr, ii: Number) = {
+    def getValue(c: ECompoundExprImpl, ii: Number) = {
       val i: Int = asInt(ii)
       val (l: PAT,r: PAT) = path.split(i)
       pathToElement(c,r.first.get)
@@ -2271,12 +2321,12 @@ object Engine_v3 {
     lazy val cModel = {
       var t = trace.t
       t.first.get.second match {
-        case e: ECompoundExpr => {
+        case e: ECompoundExprImpl => {
           var tm = ECTModel(e)
           var max = zero
           while (t.first != None) {
             val tp = t.first.get
-            var ntm = ECTModel(tp.second.asInstanceOf[ECompoundExpr])
+            var ntm = ECTModel(tp.second.asInstanceOf[ECompoundExprImpl])
             if (ntm.columnCount.compare(tm.columnCount) > 0) {
               tm = ntm
             }
@@ -2284,7 +2334,7 @@ object Engine_v3 {
           }
           tm
         }
-        case ee => ECTModel(ECompoundExpr(emptySet,emptyExpr put CP(zero,ee)))
+        case ee => ECTModel(ece2(emptySet,emptyExpr put CP(zero,ee)))
       }
 
     }
@@ -2300,11 +2350,11 @@ object Engine_v3 {
       trace.t.get(TraceP(row,Empty)) match {
         case None => None
         case Some(x) => x.second match {
-          case l: ELabeledExpr => {
-            if (col.compare(zero) == 0) Some(ELabeledExpr(emptySet,l.first,Empty))
-            else cModel.getValue(ECompoundExpr(emptySet,emptyExpr put CP(zero,l.second)),col)
+          case l: ELabeledExprImpl => {
+            if (col.compare(zero) == 0) Some(makeLabeledExpr(emptySet,l.first,Empty))
+            else cModel.getValue(ece2(emptySet,emptyExpr put CP(zero,l.second)),col)
           }
-          case c: ECompoundExpr => cModel.getValue(c,col)
+          case c: ECompoundExprImpl => cModel.getValue(c,col)
           case xx => Some(xx)
         }
       }
@@ -2314,7 +2364,7 @@ object Engine_v3 {
 
   def asInt(n: Number): Int = {
     n match {
-      case EInt(_,b: java.math.BigInteger) => b.toString.toInt
+      case i: EIntImpl => i.integer.toString.toInt
       case _ => sys.error("illegal state")
     }
   }
