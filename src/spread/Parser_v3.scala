@@ -116,25 +116,25 @@ object Parser_v3 {
     lazy val operator = unary | binary
     lazy val unary = pack | iota | reduce | split | turn
     lazy val fold = afold | efold
-    lazy val afold = '.' ~> satom ^^ { case e => EFold(emptySet,e)}
-    lazy val efold = '.' ^^ { case e => EFold(emptySet,Empty) }
+    lazy val afold = '.' ~> satom ^^ { case e => makeFold(emptySet,e)}
+    lazy val efold = '.' ^^ { case e => makeFold(emptySet,Empty) }
     lazy val foreach = aforeach | eforeach
-    lazy val aforeach = '@' ~> satom ^^ { case e => EForeach(emptySet,e) }
-    lazy val eforeach = '@' ^^ { case e => EForeach(emptySet,Empty) }
-    lazy val turn = '%' ^^ { case a => ETurn(emptySet) }
-    lazy val pack = '^' ^^ { case a => EPack(emptySet) }
-    lazy val reduce = '$' ^^ { case a => ERed(emptySet) }
-    lazy val iota = '~' ^^ { case a => EIota(emptySet) }
+    lazy val aforeach = '@' ~> satom ^^ { case e => makeForeach(emptySet,e) }
+    lazy val eforeach = '@' ^^ { case e => makeForeach(emptySet,Empty) }
+    lazy val turn = '%' ^^ { case a => makeTurn(emptySet) }
+    lazy val pack = '^' ^^ { case a => makePack(emptySet) }
+    lazy val reduce = '$' ^^ { case a => makeRed(emptySet) }
+    lazy val iota = '~' ^^ { case a => makeIota(emptySet) }
     lazy val binary = add | mul | max | min | sub | swap | concat | bind
-    lazy val add = '+' ^^ { case a => EAdd(emptySet) }
-    lazy val mul = '*' ^^ { case a => EMul(emptySet) }
-    lazy val max = '|' ^^ { case a => EMax(emptySet) }
-    lazy val min = '&' ^^ { case a => EMin(emptySet) }
-    lazy val sub = '-' ^^ { case a => ESub(emptySet) }
-    lazy val bind = '!' ^^ { case a => EBind(emptySet) }
-    lazy val split = '/' <~ 'c' <~ 'u' <~ 't' ^^ { case a => ECut(emptySet) }
+    lazy val add = '+' ^^ { case a => makeAdd(emptySet) }
+    lazy val mul = '*' ^^ { case a => makeMul(emptySet) }
+    lazy val max = '|' ^^ { case a => makeMax(emptySet) }
+    lazy val min = '&' ^^ { case a => makeMin(emptySet) }
+    lazy val sub = '-' ^^ { case a => makeSub(emptySet) }
+    lazy val bind = '!' ^^ { case a => makeBind(emptySet) }
+    lazy val split = '/' <~ 'c' <~ 'u' <~ 't' ^^ { case a => makeCut(emptySet) }
     lazy val concat = '`' ~> '+' ^^ { case a => EConcat(emptySet) }
-    lazy val swap = '\\' ^^ { case a => ESwap(emptySet) }
+    lazy val swap = '\\' ^^ { case a => makeSwap(emptySet) }
     lazy val string = '\"' ~> rep1(character) <~ '\"' ^^ { case s => str(s) }
     lazy val setpair = msetpair | ssetpair
     lazy val ssetpair = expr ^^ { case l => SetP(one,l) }

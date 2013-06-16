@@ -48,9 +48,9 @@ class SpreadREPL extends JPanel {
       styleSheet.addRule("pre.equals { padding: 1px; background: #eeeeee; margin: 0; border-width: 0 0 0 0; border-style: solid; font-size: 8px; }");
       styleSheet.addRule("pre.tracestep { padding: 0px; background: #ffffff; margin: 2 0 0 0; border-width: 0 0 0 0; border-style: solid; font-size: 8px; }");
 
-      styleSheet.addRule("td.comma { padding: 0px; background: #f2f2f2; margin: 0; border-width: 0px 0px 0 0;font-size: 8px; }");
+      styleSheet.addRule("td.comma { padding: 1px; background: #f2f2f2; margin: 0; border-width: 0px 0px 0 0;font-size: 8px; }");
       styleSheet.addRule("td.bracket { padding: 0px; background: #bbbbbb; margin: 0; border-width: 0px 0px 0 0;font-size: 10px; }");
-      styleSheet.addRule("td.quot { padding: 0px; background: #eeeeee; margin: 0; border-width: 0 0 0 0;font-size: 10px; }");
+      styleSheet.addRule("td.quot { padding: 0px; background: #eeeeee; margin: 0; border-width: 0 0 0 0;font-size: 11px; }");
       styleSheet.addRule("td.labeltd { padding: 0px; background: #eeeeee; margin: 0; border-width: 0 0 0 0;font-size: 11px; }");
       styleSheet.addRule("td.equals { padding: 0px; background: #eeeeee; margin: 1px; border-width: 0 0 0 0; font-size: 8px; }");
 
@@ -188,9 +188,11 @@ class SpreadREPL extends JPanel {
                     var t = term
                     var r = fullReduce2(t)
                     //println(r.asHTML)
-                    output.appendHTML(r.asHTML)
+                    val html = HTMLOutput.toHTML(r)
+                    //println("html: " + HTMLOutput.toString(r))
+                    output.appendHTML(html.toString)
                     appendString("\n")
-                    appendString(r.asString)
+                    appendString(HTMLOutput.toString(r))
                     appendString("\n")
                     br = remainder.asInstanceOf[PackratReader[Char]]
                   }

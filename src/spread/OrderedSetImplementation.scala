@@ -2,7 +2,7 @@ package spread
 
 object OrderedSetImplementation {
   import AbstractImmutableOrderedSet._
-  import .SortedSet
+  import Types.SortedSet
 
   // OrderedISet combines a compatible SISetImpl and SISSetContextImpl into one coherent unit
   // and recasts the combination into a new Immutable Ordered Set

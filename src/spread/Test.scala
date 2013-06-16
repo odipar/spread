@@ -78,12 +78,13 @@ object Test {
 
   final def main(args: Array[String]): Unit = {}
   {
-    val r = "1 2 +"
+    val r = "{1,2}"
     var reader = new CharSequenceReader(r.trim + "\n")
     var e = parse(new PackratReader(reader)).get
     var ee = e
 
-    println(ee)
+    val html = HTMLOutput.toHTML(ee)
 
+    println("r: " + html)
   }
 }
