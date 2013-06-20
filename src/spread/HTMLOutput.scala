@@ -72,11 +72,11 @@ object HTMLOutput {
   def td4(o: Node): Node = <td class="mytd4">{o}</td>
 
   def tracestep = TraceSymbol(<pre class="tracestep">{"=>"}</pre>)
-  def semicolon = PosSymbol(<table><tr><td class="comma">{";"}</td></tr></table>)
-  def colon = PosSymbol(<table><tr><td class="comma">{":"}</td></tr></table>)
-  def mequals = PosSymbol(<table><tr><td class="equals">{"="}</td></tr></table>)
-  def quote = QuoteSymbol(<table><tr><td class="quot">{"'"}</td></tr></table>)
-  def comma = PosSymbol(<table><tr><td class="comma">{","}</td></tr></table>)
+  def semicolon = PosSymbol(<table><tr><td class="comma"><pre>{";"}</pre></td></tr></table>)
+  def colon = PosSymbol(<table><tr><td class="comma"><pre>{":"}</pre></td></tr></table>)
+  def mequals = PosSymbol(<table><tr><td class="equals"><pre>{"="}</pre></td></tr></table>)
+  def quote = QuoteSymbol(<table><tr><td class="quot"><pre>{"'"}</pre></td></tr></table>)
+  def comma = PosSymbol(<table><tr><td class="comma"><pre>{","}</pre></td></tr></table>)
   def openbracket = OpenSymbol(<pre class="bracket">{"("}</pre>)
   def closebracket = CloseSymbol(<pre class="bracket">{")"}</pre>)
   def curlyopenbracket = OpenSymbol(<pre class="cbracket">{"{"}</pre>)
@@ -114,8 +114,8 @@ object HTMLOutput {
 
       if (i > 0) ss = ss :+ td3(semicolon)
 
-      if (i == 0) ss = td3(subHTML(mp.second))
-      else ss = ss :+ td3(subHTML(mp.second))
+      if (i == 0) ss = td3(ssubHTML(mp.second))
+      else ss = ss :+ td3(ssubHTML(mp.second))
 
       mm = mm.split(mp)._3
       i = i + 1
@@ -128,10 +128,22 @@ object HTMLOutput {
     <table><tr>{td3(openbracket)}{td3(s)}{td3(closebracket)}</tr></table>
   }
 
-  def subHTML(o: Expr): Node = o match {
+  def ssubHTML(o: Expr): Node = o match {
     case m: MMapImpl => {
       if (m.isSequence) sHTML(toHTML(m))
       else toHTML(m)
+    }
+    case f: EForeachImpl => sHTML(toHTML(o))
+    case f: EFoldImpl => sHTML(toHTML(o))
+    case e: ELabeledExprImpl => sHTML(toHTML(o))
+    case e: ECompoundExprImpl => sHTML(toHTML(o))
+    case _ => toHTML(o)
+  }
+
+  def subHTML(o: Expr): Node = o match {
+    case m: MMapImpl => {
+      if (m.isSequence) toHTML(m)
+      else sHTML(toHTML(m))
     }
     case f: EForeachImpl => sHTML(toHTML(o))
     case f: EFoldImpl => sHTML(toHTML(o))
@@ -438,7 +450,7 @@ object HTMLOutput {
           case None => None
           case Some(x) => x.second match {
             case l: ELabeledExprImpl => {
-              if (col.compare(zero) == 0) Some(toHTML(l.first))
+              if (col.compare(zero) == 0) Some(subHTML(l.first))
               else if (col.compare(one) == 0) Some(quote)
               else cModel.getValue(ece2(emptySet,emptyExpr put CP(zero,l.second)),col)
             }

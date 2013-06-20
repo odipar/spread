@@ -186,7 +186,9 @@ class SpreadREPL extends JPanel {
                   case Success(term, remainder) =>
                   {
                     var t = term
+                    println("before: " + Engine_v3.pp)
                     var r = fullReduce2(t)
+                    println("after: " + Engine_v3.pp)
                     //println(r.asHTML)
                     val html = HTMLOutput.toHTML(r)
                     //println("html: " + HTMLOutput.toString(r))

@@ -955,7 +955,12 @@ object Engine_v3 {
   case class DECompoundExpr(dependencies: MST, cex: CEX) extends ECompoundExprImpl
   case class ECompoundExpr(cex: CEX) extends ECompoundExprImpl with NoDepedencies
 
+  var pp = 0
+
   trait ECompoundExprImpl extends CompoundExpr {
+    {
+      pp = pp + 1
+    }
     def cex: CEX
     def addDependencies(dd: MST) = ece(dependencies maximum dd, cex)
     def bind(label: Expr, value: Expr) = {
@@ -1130,28 +1135,11 @@ object Engine_v3 {
     }
 
     def econcat(a: Expr, b: Expr): Expr = (a,b) match {
-      case (e1: ECompoundExprImpl, e2: ECompoundExprImpl) => {
-        val p1 = CP(zero,e1)
-        val p2 = CP(one,e2)
-        val e = emptyExpr put p1 put p2
-        ece(e1.dependencies maximum e2.dependencies,e)
-      }
-
-      case (e1: ECompoundExprImpl, a2: Expr) => {
-        val p = e1.last.get
-        val i = p.first.incr
-        e1 put CP(i,a2)
-      }
-      case (a1: Expr, e2: ECompoundExprImpl) => {
-        val p = e2.first.get
-        val i = p.first.decr
-        e2 put CP(i,a1)
-      }
       case (e1,e2) => {
         val p1 = CP(zero,e1)
         val p2 = CP(one,e2)
         val e = emptyExpr put p1 put p2
-        ece(emptySet,e)
+        ece(e1.dependencies maximum e2.dependencies,e)
       }
     }
 
@@ -1191,8 +1179,8 @@ object Engine_v3 {
           var e: MST = emptyMSet
           while (a.first != None) {
             val p: SP = a.first.get
-            val ec = econcat(b,fullReduce(p.second))
-            e = e put SetP(p.first,ec)
+            val ec = econcat(b,p.second)
+            e = e put SetP(p.first,fullReduce(ec))
             a = a.split(a.first.get)._3
           }
           makeMSet(as.dependencies,e)
@@ -1477,7 +1465,6 @@ object Engine_v3 {
     }
 
     def flattened(p: EP): SEQ = flattened(p.second)
-
 
     def flattened(p: Expr): SEQ = p match {
       case e: ECompoundExprImpl =>  e.cex.measure match {
@@ -1815,5 +1802,4 @@ object Engine_v3 {
       }
     }
   }
-
 }
