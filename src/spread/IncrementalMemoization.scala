@@ -44,11 +44,17 @@ object IncrementalMemoization {
   def cint(i: Long): CInt = cint(BigInteger.valueOf(i))
   def cint(i: BigInteger): CInt = CInt(i)
 
-  def $[A1,A2,R](f: T[A1] => T[R], a1: T[A1]): T[R] = memoize(UnaTrace(f,a1))
-  def $[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2]): T[R] = memoize(BinTrace(f,a1,a2))
+  def call1[A1,A2,R](f: T[A1] => T[R], a1: T[A1]): T[R] = memoize(UnaTrace(f,a1))
+  def call2[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2]): T[R] = memoize(BinTrace(f,a1,a2))
 
-  def tcall1[A1,A2,R](f: A1 => R, a1: T[A1]): T[R] = memoize(TUnaTrace(f,a1))
-  def tcall2[A1,A2,R](f: (A1,A2) => R, a1: T[A1], a2: T[A2]): T[R] = memoize(TBinTrace(f,a1,a2))
+  def t_call1[A1,A2,R](f: A1 => R, a1: T[A1]): T[R] = memoize(TUnaTrace(f,a1))
+  def t_call2[A1,A2,R](f: (A1,A2) => R, a1: T[A1], a2: T[A2]): T[R] = memoize(TBinTrace(f,a1,a2))
+
+  // sugar
+  def $[A1,A2,R](f: T[A1] => T[R], a1: T[A1]) = call1(f,a1)
+  def $[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2])= call2(f,a1,a2)
+  implicit def toCInt(i: Int): CInt = cint(i)
+  implicit def toCInt(i: BigInteger): CInt = cint(i)
 
   case class UnaTrace[A1,R](f: T[A1] => T[R],a1: T[A1]) extends T[R] {
     override lazy val apply = step.apply
@@ -68,13 +74,10 @@ object IncrementalMemoization {
     override lazy val apply = f(a1(),a2())
   }
 
-  val add = (a1: TInt, a2: TInt) => tcall2((x: BigInteger,y: BigInteger) => {x add y},a1,a2)
-  val mul = (a1: TInt, a2: TInt) => tcall2((x: BigInteger,y: BigInteger) => {x multiply y},a1,a2)
+  val add = (a1: TInt, a2: TInt) => t_call2((x: BigInteger,y: BigInteger) => {x add y},a1,a2)
+  val mul = (a1: TInt, a2: TInt) => t_call2((x: BigInteger,y: BigInteger) => {x multiply y},a1,a2)
 
   // Examples
-
-  implicit def toCInt(i: Int): CInt = cint(i)
-  implicit def toCInt(i: BigInteger): CInt = cint(i)
 
   val fib: TInt => TInt = a1 => {
     val a = a1()

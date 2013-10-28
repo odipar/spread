@@ -74,41 +74,24 @@ BINARY:
 object Test {
   import IncrementalMemoization._
 
-  import java.math.BigInteger
-
+  // Proof of concept works!
   final def main(args: Array[String]): Unit = {}
   {
 
     var f1 = $(fib,100)
     println("f1: " + f1())
+    println("tot: " + totalt)
 
-   /* println(Engine_v3.total)
-    println(Engine_v3.Mem.m.size)
-
-
-    var f2 = call1(fib,CInt(BigInteger.valueOf(10)))
+    var f2 = $(fib,110)
     println("f2: " + f2())
+    println("tot: " + totalt)
 
-    println(Engine_v3.total)
-    println(Engine_v3.Mem.m.size)
-
-    f = null
+    f1 = null
     f2 = null
     System.gc()
 
-    var f3 = call1(fib,CInt(BigInteger.valueOf(10)))
-    System.gc()
-
+    var f3 = $(fib,100)
     println("f3: " + f3())
-
-    println(Engine_v3.total)
-    println(Engine_v3.Mem.m.size)*/
-  }
-
-  def fac2(i: BigInteger): BigInteger = {
-    if (i.compareTo(BigInteger.valueOf(1)) <= 0) BigInteger.valueOf(1)
-    else {
-      i multiply fac2(i add BigInteger.valueOf(-1))
-    }
+    println("tot: " + totalt)
   }
 }
