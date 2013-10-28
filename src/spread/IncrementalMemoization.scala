@@ -3,7 +3,7 @@ package spread
 import java.lang.ref.WeakReference
 
 /*
-  SPREAD: Garbage collectable incremental tracing memoization
+  SPREAD lib: Garbage collectable incremental tracing memoization
 
   Features:
 
