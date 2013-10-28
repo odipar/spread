@@ -112,6 +112,7 @@ class SpreadREPL extends JPanel {
       StyleConstants.setFontSize(l, 14);
       StyleConstants.setForeground(l, new Color(0,0,255));
       l.addAttribute("FIX","ME")
+
       l
     }
 

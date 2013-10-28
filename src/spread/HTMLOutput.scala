@@ -27,6 +27,7 @@ object HTMLOutput {
       else mapToHTML(m)
     }
     case l: ELabeledExprImpl => LabeledExprToHTML(l)
+    case Empty => <pre>EMPTY</pre>
     case _ => sys.error("illegal state: " + o)
   }
 
@@ -432,7 +433,7 @@ object HTMLOutput {
           tm
         }
         case ee => {
-          ECTableModel(ece2(emptySet,emptyExpr put CP(zero,ee)))
+          ECTableModel(ece2(Empty,emptyExpr put CP(zero,ee)))
         }
       }
 
@@ -452,7 +453,7 @@ object HTMLOutput {
             case l: ELabeledExprImpl => {
               if (col.compare(zero) == 0) Some(subHTML(l.first))
               else if (col.compare(one) == 0) Some(quote)
-              else cModel.getValue(ece2(emptySet,emptyExpr put CP(zero,l.second)),col)
+              else cModel.getValue(ece2(Empty,emptyExpr put CP(zero,l.second)),col)
             }
             case c: ECompoundExprImpl => cModel.getValue(c,col)
             case xx => Some(toHTML(xx))

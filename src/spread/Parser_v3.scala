@@ -33,7 +33,7 @@ object Parser_v3 {
 
     def chrExcept(cs: Char*) = elem("", ch => (cs forall (ch !=)))
 
-    def createMSet(ll: List[SetP]): Expr  = {
+    def createMSet(ll: List[Option[MultiSetPair]]): Expr  = {
       val l = ll.reverse
       var e = emptyMSet
       var i = l.iterator
@@ -43,7 +43,7 @@ object Parser_v3 {
         e = e put a
         ii = ii + 1
       }
-      makeMSet(emptySet,e)
+      makeMSet(Empty,e)
     }
     def createMMap(l: List[MapP]): Expr  = {
       var e = emptyMMap
@@ -54,7 +54,7 @@ object Parser_v3 {
         e = e put a
         ii = ii + 1
       }
-      mmp(emptySet,e)
+      mmp(Empty,e)
     }
 
     def createExpr(l: List[Expr]): Expr  = {
@@ -72,20 +72,20 @@ object Parser_v3 {
           case p => p.second
         }
       }
-      else ece(emptySet,e)
+      else ece(Empty,e)
     }
     def str(l: List[Char]): Expr = {
-      if (l.size == 1) makeChar(emptySet,l.head)
+      if (l.size == 1) makeChar(Empty,l.head)
       else {
         val it = l.iterator
         var i = zero
         var m = emptyMMap
         while (it.hasNext) {
           val e = it.next
-          m = m put MapP(i,makeChar(emptySet,e))
+          m = m put MapP(i,makeChar(Empty,e))
           i = i.incr
         }
-        mmp(emptySet,m)
+        mmp(Empty,m)
       }
     }
 
@@ -98,11 +98,12 @@ object Parser_v3 {
         em = em put MapP(ii,e)
         ii = ii.incr
       }
-      mmp(emptySet,em)
+      mmp(Empty,em)
     }
 
-    lazy val digit = elem("digit", isDigit) ^^ {c => c}
-    lazy val letter = elem("letter", isLetter) ^^ {c => c}
+    lazy val digit: Parser[Char] = elem("digit", isDigit) ^^ {c => c}
+    lazy val letter: Parser[Char] = elem("letter", isLetter) ^^ {c => c}
+    lazy val letter_or_digit: Parser[Char] = letter | digit
     lazy val character = chrExcept('\"')
     lazy val sp = ' ' ^^^ { }
     lazy val wse = sp | ret
@@ -116,39 +117,39 @@ object Parser_v3 {
     lazy val operator = unary | binary
     lazy val unary = pack | iota | reduce | split | turn
     lazy val fold = afold | efold
-    lazy val afold = '.' ~> satom ^^ { case e => makeFold(emptySet,e)}
-    lazy val efold = '.' ^^ { case e => makeFold(emptySet,Empty) }
+    lazy val afold = '.' ~> satom ^^ { case e => makeFold(Empty,e)}
+    lazy val efold = '.' ^^ { case e => makeFold(Empty,Empty) }
     lazy val foreach = aforeach | eforeach
-    lazy val aforeach = '@' ~> satom ^^ { case e => makeForeach(emptySet,e) }
-    lazy val eforeach = '@' ^^ { case e => makeForeach(emptySet,Empty) }
-    lazy val turn = '%' ^^ { case a => makeTurn(emptySet) }
-    lazy val pack = '^' ^^ { case a => makePack(emptySet) }
-    lazy val reduce = '$' ^^ { case a => makeRed(emptySet) }
-    lazy val iota = '~' ^^ { case a => makeIota(emptySet) }
+    lazy val aforeach = '@' ~> satom ^^ { case e => makeForeach(Empty,e) }
+    lazy val eforeach = '@' ^^ { case e => makeForeach(Empty,Empty) }
+    lazy val turn = '%' ^^ { case a => makeTurn(Empty) }
+    lazy val pack = '^' ^^ { case a => makePack(Empty) }
+    lazy val reduce = '$' ^^ { case a => makeRed(Empty) }
+    lazy val iota = '~' ^^ { case a => makeIota(Empty) }
     lazy val binary = add | mul | max | min | sub | swap | concat | bind
-    lazy val add = '+' ^^ { case a => makeAdd(emptySet) }
-    lazy val mul = '*' ^^ { case a => makeMul(emptySet) }
-    lazy val max = '|' ^^ { case a => makeMax(emptySet) }
-    lazy val min = '&' ^^ { case a => makeMin(emptySet) }
-    lazy val sub = '-' ^^ { case a => makeSub(emptySet) }
-    lazy val bind = '!' ^^ { case a => makeBind(emptySet) }
-    lazy val split = '/' <~ 'c' <~ 'u' <~ 't' ^^ { case a => makeCut(emptySet) }
-    lazy val concat = '`' ~> '+' ^^ { case a => EConcat(emptySet) }
-    lazy val swap = '\\' ^^ { case a => makeSwap(emptySet) }
+    lazy val add = '+' ^^ { case a => makeAdd(Empty) }
+    lazy val mul = '*' ^^ { case a => makeMul(Empty) }
+    lazy val max = '|' ^^ { case a => makeMax(Empty) }
+    lazy val min = '&' ^^ { case a => makeMin(Empty) }
+    lazy val sub = '-' ^^ { case a => makeSub(Empty) }
+    lazy val bind = '!' ^^ { case a => makeBind(Empty) }
+    lazy val split = '/' <~ 'c' <~ 'u' <~ 't' ^^ { case a => makeCut(Empty) }
+    lazy val concat = '`' ~> '+' ^^ { case a => EConcat(Empty) }
+    lazy val swap = '\\' ^^ { case a => makeSwap(Empty) }
     lazy val string = '\"' ~> rep1(character) <~ '\"' ^^ { case s => str(s) }
     lazy val setpair = msetpair | ssetpair
-    lazy val ssetpair = expr ^^ { case l => SetP(one,l) }
-    lazy val msetpair = expr ~ ':' ~! expr ^^ { case m ~ ':' ~ l => SetP(m,l) }
+    lazy val ssetpair = expr ^^ { case l => setp(one,l) }
+    lazy val msetpair = expr ~ ':' ~! expr ^^ { case m ~ ':' ~ l => setp(m,l) }
     lazy val alternatives: Parser[Expr] = '{' ~> (repsep(setpair,',') <~ '}') ^^ { case l => createMSet(l) }
     lazy val subexpr = '(' ~> expr2 <~ ')' ^^  { case e => e }
     lazy val number = posnumber | negnumber
     lazy val posnumber = rep1(digit) ^^ { i => EInt(makeInt(buildString(i))) }
     lazy val negnumber = '_' ~> rep1(digit) ^^ { case i => EInt(makeInt(buildString(i)).negate) }
-    lazy val symbol: Parser[Expr] = rep1(letter) ^^ { t => msymbol(emptySet,buildString(t)) }
+    lazy val symbol: Parser[Expr] = letter ~ rep(letter_or_digit) ^^ { case l ~ t => msymbol(Empty,"" + l + buildString(t)) }
     lazy val satom: Parser[Expr] =  sequence | atom
     lazy val labeled = alabeled | nlabeled
-    lazy val nlabeled = satom <~ '\'' ^^ { case e1 => makeLabeledExpr(emptySet,e1,Empty) }
-    lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => makeLabeledExpr(emptySet,e1,e2)}
+    lazy val nlabeled = satom <~ '\'' ^^ { case e1 => makeLabeledExpr(Empty,e1,Empty) }
+    lazy val alabeled = satom ~ '\'' ~ satom ^^ { case e1 ~ '\'' ~ e2 => makeLabeledExpr(Empty,e1,e2)}
     lazy val map: Parser[Expr] = '[' ~> repsep(mappair,',') <~ ']' ^^ { case l => createMMap(l) }
     lazy val mappair = meqpair | spair
     lazy val meqpair = expr ~ '=' ~! expr ^^ {case e1 ~ '=' ~ e2 => MapP(e1,e2)}

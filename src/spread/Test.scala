@@ -72,19 +72,43 @@ BINARY:
  */
 
 object Test {
-  import Engine_v3._
-  import scala.collection.immutable.SortedMap
-  import Parser_v3.SpreadParser._
+  import IncrementalMemoization._
+
+  import java.math.BigInteger
 
   final def main(args: Array[String]): Unit = {}
   {
-    val r = "{1,2}"
-    var reader = new CharSequenceReader(r.trim + "\n")
-    var e = parse(new PackratReader(reader)).get
-    var ee = e
 
-    val html = HTMLOutput.toHTML(ee)
+    var f1 = $(fib,100)
+    println("f1: " + f1())
 
-    println("r: " + html)
+   /* println(Engine_v3.total)
+    println(Engine_v3.Mem.m.size)
+
+
+    var f2 = call1(fib,CInt(BigInteger.valueOf(10)))
+    println("f2: " + f2())
+
+    println(Engine_v3.total)
+    println(Engine_v3.Mem.m.size)
+
+    f = null
+    f2 = null
+    System.gc()
+
+    var f3 = call1(fib,CInt(BigInteger.valueOf(10)))
+    System.gc()
+
+    println("f3: " + f3())
+
+    println(Engine_v3.total)
+    println(Engine_v3.Mem.m.size)*/
+  }
+
+  def fac2(i: BigInteger): BigInteger = {
+    if (i.compareTo(BigInteger.valueOf(1)) <= 0) BigInteger.valueOf(1)
+    else {
+      i multiply fac2(i add BigInteger.valueOf(-1))
+    }
   }
 }

@@ -7,8 +7,11 @@ object OrderedSetImplementation {
   // and recasts the combination into a new Immutable Ordered Set
 
   trait OrderedISet[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC], SIS <: OrderedISet[X,M,SS,CC,SIS]] {
+
     def s: SS // returns the concrete SISet
     def c: CC // returns the concrete SISetContext
+
+    def self: SIS
 
     def create(x: X):SIS = put(x)
     def create(l: SIS, e: Option[X], r: SIS) = construct(c.create(l.s,e,r.s))
@@ -22,6 +25,10 @@ object OrderedSetImplementation {
     def measure = s.measure(c)
     def order(x1: X, x2: X) = c.compareOrder(x1,x2)
     def put(x: X): SIS = construct(s.put(x)(c))
+    def put(x: Option[X]): SIS = x match {
+      case None => self
+      case Some(x) => put(x)
+    }
     def get(x: X) = s.get(x)(c)
     def left = construct((s.left(c),c))
     def right = construct((s.right(c),c))
@@ -51,6 +58,7 @@ object OrderedSetImplementation {
 
   trait OrderedISetImpl[X,M,SS <: SISetImpl[X,M,SS,CC], CC <: SISetContextImpl[X,M,SS,CC]]
     extends OrderedISet[X,M,SS,CC,OrderedISetImpl[X,M,SS,CC]] {
+    def self = this
     def construct(s: (SS,CC)) = if (s._1.isEmpty) EmptyOrderedISet(s._2) else LOrderedISet(s._1,s._2)
   }
 

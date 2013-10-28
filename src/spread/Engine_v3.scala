@@ -15,26 +15,26 @@ object Engine_v3 {
   trait Expr {
     def bind(label: Expr, value: Expr): Expr
     def bindings: MultiMap
-    def addDependencies(d: MST): Expr
-    def dependencies: MST
+    //def addDependencies(d: MST): Expr
+    def dependsOn: Expr
     def reduce: Expr
     def wipe: Expr
     def isRedex: Boolean
   }
 
   trait NoDepedencies extends Expr {
-    def dependencies = emptySet
+    def dependsOn = Empty
   }
 
-  def ece(d: MST, c: CEX): Expr = {
+  def ece(d: Expr, c: CEX): Expr = {
     if (c.isEmpty) Empty
     else {
-      if (d.isEmpty) ECompoundExpr(c)
+      if (d == Empty) ECompoundExpr(c)
       else DECompoundExpr(d,c)
     }
   }
-  def ece2(d: MST, c: CEX): ECompoundExprImpl = {
-    if (d.isEmpty) ECompoundExpr(c)
+  def ece2(d: Expr, c: CEX): ECompoundExprImpl = {
+    if (d == Empty) ECompoundExpr(c)
     else DECompoundExpr(d,c)
   }
 
@@ -52,16 +52,15 @@ object Engine_v3 {
   trait CompoundExpr extends IndexedExpr with Expr
 
   case class ETrace(t: TTT) extends ETraceImpl with NoDepedencies
-  case class DETrace(dependencies: MST, t: TTT) extends ETraceImpl
+  case class DETrace(dependsOn: Expr, t: TTT) extends ETraceImpl
 
-  def makeTrace(d: MST, t: TTT): ETraceImpl = {
-    if (d.isEmpty) ETrace(t)
+  def makeTrace(d: Expr, t: TTT): ETraceImpl = {
+    if (d == Empty) ETrace(t)
     else DETrace(d,t)
   }
 
   trait ETraceImpl extends Trace {
     def t: TTT
-    def addDependencies(dd: MST) = makeTrace(dependencies maximum dd,t)
     def bindings = not_yet
     def bind(label: Expr, value: Expr) = not_yet
     def reduce = this
@@ -80,23 +79,23 @@ object Engine_v3 {
     } */
   }
 
-  def mmp(d: MST, m: MMT): Expr = {
-    if (m.isEmpty) zero.addDependencies(d)
+  def mmp(d: Expr, m: MMT): Expr = {
+    if (m.isEmpty) zero
     else mmp2(d,m)
   }
 
-  def mmp2(d: MST, m: MMT): MMapImpl = {
-    if (d.isEmpty) MMap(m)
+  def mmp2(d: Expr, m: MMT): MMapImpl = {
+    if (d == Empty) MMap(m)
     else DMMap(d,m)
   }
 
-  case class DMMap(dependencies: MST, m: MMT) extends MMapImpl
+  case class DMMap(dependsOn: Expr, m: MMT) extends MMapImpl
   case class MMap(m: MMT) extends MMapImpl with NoDepedencies
 
   trait MMapImpl extends MultiMap with Arg {
     def m: MMT
-    def addDependencies(dd: MST) = mmp(dependencies maximum dd,m)
-    def bind(label: Expr, value: Expr) = {
+    def bind(label: Expr, value: Expr) = this
+    def bind2(label: Expr, value: Expr): MMapImpl = {
       var nm = emptyMMap
       var mm = m
       while (mm.first != None) {
@@ -106,7 +105,8 @@ object Engine_v3 {
             var mms = ms.m
             while (mms.first != None) {
               val ps = mms.first.get
-              nm = nm put MapP(p.first.bind(label,ps.second),p.second.bind(label,ps.second))
+              val fm = emptyMMap put MapP(p.first.bind(label,ps.second),p.second.bind(label,ps.second))
+              nm = nm maximum fm
               mms = mms.split(ps)._3
             }
           }
@@ -116,7 +116,7 @@ object Engine_v3 {
         }
         mm = mm.split(mm.first.get)._3
       }
-      mmp(dependencies,nm)
+      mmp2(dependsOn,nm)
     }
 
     def bindings = not_yet
@@ -124,11 +124,11 @@ object Engine_v3 {
     def wipe = not_yet
     def isRedex = false
 
-    def multiAdd(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m add mm.m) }
-    def multiSub(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m subtract mm.m) }
-    def multiMul(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m multiply mm.m) }
-    def multiMax(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m maximum mm.m) }
-    def multiMin(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependencies maximum mm.dependencies,m minimum mm.m) }
+    def multiAdd(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependsOn,m add mm.m) }
+    def multiSub(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependsOn,m subtract mm.m) }
+    def multiMul(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependsOn,m multiply mm.m) }
+    def multiMax(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependsOn,m maximum mm.m) }
+    def multiMin(o: MultiMap) = o match { case mm: MMapImpl => mmp(dependsOn,m minimum mm.m) }
 
     def isString: Boolean = {
       var e1 = m
@@ -163,36 +163,35 @@ object Engine_v3 {
   }
 
   case class MSet(m: MST) extends MSetImpl with NoDepedencies
-  case class DMSet(dependencies: MST, m: MST) extends MSetImpl
+  case class DMSet(dependsOn: Expr, m: MST) extends MSetImpl
 
-  def makeMSet(d: MST, m: MST): MSetImpl = {
-    if (d.isEmpty) MSet(m)
+  def makeMSet(d: Expr, m: MST): MSetImpl = {
+    if (d == Empty) MSet(m)
     else DMSet(d,m)
   }
 
   trait MSetImpl extends MultiSet {
     def m: MST
     def isEmpty = m.isEmpty
-    def addDependencies(dd: MST): Expr = makeMSet(dependencies maximum dd,m)
     def bind(label: Expr, value: Expr) = {
       var nm = emptyMSet
       var mm = m
-      while (nm.first == None) {
+      while (mm.first != None) {
         var p = mm.first.get
-        nm = nm put SetP(fullReduce(p.first.bind(label,value)),p.second.bind(label,value))
-        mm = mm.split(nm.first.get)._3
+        nm = nm put setp(p.first.bind(label,value),p.second.bind(label,value))
+        mm = mm.split(mm.first.get)._3
       }
-      makeMSet(dependencies,nm)
+      makeMSet(dependsOn,nm)
     }
     def bindings = not_yet
     def reduce = not_yet
     def wipe = not_yet
     def isRedex = false
-    def multiAdd(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m add mm.m) }
-    def multiSub(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m subtract mm.m) }
-    def multiMul(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m multiply mm.m) }
-    def multiMax(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m maximum mm.m) }
-    def multiMin(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependencies maximum mm.dependencies,m minimum mm.m) }
+    def multiAdd(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependsOn,m add mm.m) }
+    def multiSub(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependsOn,m subtract mm.m) }
+    def multiMul(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependsOn,m multiply mm.m) }
+    def multiMax(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependsOn,m maximum mm.m) }
+    def multiMin(o: MultiSet) = o match { case mm: MSetImpl => makeMSet(dependsOn,m minimum mm.m) }
   }
 
   trait Pair[A <: Expr, B <: Expr] {
@@ -238,25 +237,30 @@ object Engine_v3 {
   lazy val one: Number = EInt(BigInteger.valueOf(1))
   lazy val two: Number = EInt(BigInteger.valueOf(2))
   lazy val three: Number = EInt(BigInteger.valueOf(3))
+  lazy val four: Number = EInt(BigInteger.valueOf(4))
 
+  def setp(first: Expr, second: Expr): Option[MultiSetPair] = {
+    val f = fullReduce(first)
+    if (ExprOrdering.compare(f,zero) == 0) None
+    else Some(SetP(f,second))
+  }
   case class SetP(first: Expr, second: Expr) extends MultiSetPair {
     def op(o: MPair[Expr,Expr], bo: BinaryOperator) = {
       val i = emptyExpr put CP(zero,first) put CP(one,o.first) put CP(two,bo)
-      val e = fullReduce(ece(emptySet,i))
-      if (ExprOrdering.compare(e,zero) == 0) None
-      else Some(SetP(e,second))
+      val e = fullReduce(ece(Empty,i))
+      setp(e,second)
     }
-    def neg = op(SetP(zero,second),makeSub(emptySet))
-    def add(o: MPair[Expr,Expr]) = op(o,makeAdd(emptySet))
-    def mul(o: MPair[Expr,Expr]) = op(o,makeMul(emptySet))
-    def max(o: MPair[Expr,Expr]) = op(o,makeMax(emptySet))
-    def min(o: MPair[Expr,Expr]) = op(o,makeMin(emptySet))
-    def subtract(o: MPair[Expr,Expr]) = op(o,makeSub(emptySet))
+    def neg = op(SetP(zero,second),makeSub(Empty))
+    def add(o: MPair[Expr,Expr]) = op(o,makeAdd(Empty))
+    def mul(o: MPair[Expr,Expr]) = op(o,makeMul(Empty))
+    def max(o: MPair[Expr,Expr]) = op(o,makeMax(Empty))
+    def min(o: MPair[Expr,Expr]) = op(o,makeMin(Empty))
+    def subtract(o: MPair[Expr,Expr]) = op(o,makeSub(Empty))
   }
 
   def asMSet(o: Expr): MSetImpl = o match {
     case m: MSetImpl => m
-    case _ => makeMSet(o.dependencies,emptyMSet put SetP(one,o))
+    case _ => makeMSet(o.dependsOn,emptyMSet put setp(one,o))
   }
 
   def mp(m: MapP): Option[MapP] = m.second match {
@@ -298,14 +302,14 @@ object Engine_v3 {
     (ii,mm)
   }
 
-  case class EConcat(dependencies: MST) extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = EConcat(d)
+  case class EConcat(dependsOn: Expr) extends BinOpImp with NormalExpr {
+    def recreate(d: Expr) = EConcat(d)
     def reduceNumber(arg1: Number, arg2: Number) = reduceMap(makeMap(arg1),makeMap(arg2))
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = (arg1,arg2) match {
       case (m1: MMapImpl, m2: MMapImpl) => {
         val (i,s1) = makeSeq(m1.m,zero)
         val (i2,s2) = makeSeq(m2.m,i)
-        mmp(m1.dependencies maximum m2.dependencies,s1 maximum s2)
+        mmp(m1.dependsOn,s1 maximum s2)
       }
     }
     def asString = "`+"
@@ -313,22 +317,22 @@ object Engine_v3 {
 
 
   case class ELabeledExpr(first: Expr, second: Expr) extends ELabeledExprImpl with NoDepedencies
-  case class DELabeledExpr(dependencies: MST, first: Expr, second: Expr) extends ELabeledExprImpl
+  case class DELabeledExpr(dependsOn: Expr, first: Expr, second: Expr) extends ELabeledExprImpl
 
-  def makeLabeledExpr(d: MST, first: Expr, second: Expr): ELabeledExprImpl = {
-    if (d.isEmpty) ELabeledExpr(first,second)
-    else DELabeledExpr(d,first,second)
+  def makeLabeledExpr(d: Expr, first: Expr, second: Expr): ELabeledExprImpl = {
+    val f = fullReduce(first)
+    if (d == Empty) ELabeledExpr(f,second)
+    else DELabeledExpr(d,f,second)
   }
 
   trait ELabeledExprImpl extends LabeledExpr with NormalExpr {
     override def isRedex = second.isRedex
-    override def reduce: Expr = ece(emptySet,emptyExpr put CP(zero,second.addDependencies(first.dependencies).addDependencies(emptySet put SetP(one,first))))
-    def addDependencies(dd: MST) = makeLabeledExpr(dependencies maximum dd,first,second)
+    override def reduce: Expr = ece(Empty,emptyExpr put CP(zero,second))
     def bind(label: Expr, value: Expr) = {
-      if (ExprOrdering.compare(first,label) == 0) makeLabeledExpr(dependencies,first,value)
-      else makeLabeledExpr(dependencies,fullReduce(first.bind(label,value)),fullReduce(second.bind(label,value)))
+      if (ExprOrdering.compare(first,label) == 0) makeLabeledExpr(dependsOn,first,value)
+      else makeLabeledExpr(dependsOn,first.bind(label,value),second.bind(label,value))
     }
-  }
+  }                      // f
 
   trait Number extends Expr {
     def zero: Number
@@ -356,7 +360,6 @@ object Engine_v3 {
   }
 
   case object Empty extends NormalExpr with NoBind with NoDepedencies {
-    def addDependencies(d: MST) = this
   }
 
   trait CompoundPairImpl extends CompoundPair {
@@ -398,7 +401,7 @@ object Engine_v3 {
     def labeledValue = s match {
       case e: ELabeledExprImpl => {
         if (ExprOrdering.compare(e.second, Empty) == 0) s
-        else e.second.addDependencies(emptySet put SetP(one,e.first)).addDependencies(e.dependencies).addDependencies(e.first.dependencies)
+        else e.second
       }
       case l: ETraceImpl => {
         lll = lll + 1
@@ -412,16 +415,15 @@ object Engine_v3 {
 
 
   case class Symbol(s: String) extends SymbolImpl with NoDepedencies
-  case class DSymbol(dependencies: MST, s: String) extends SymbolImpl
+  case class DSymbol(dependsOn: Expr, s: String) extends SymbolImpl
 
-  def msymbol(d: MST, s: String): SymbolImpl = {
-    if (d.isEmpty) Symbol(s)
+  def msymbol(d: Expr, s: String): SymbolImpl = {
+    if (d == Empty) Symbol(s)
     else DSymbol(d,s)
   }
 
   trait SymbolImpl extends NoBind {
     def s: String
-    def addDependencies(dd: MST) = msymbol(dependencies maximum dd,s)
     def bindings = not_yet
     def reduce = this
     def wipe = this
@@ -430,17 +432,16 @@ object Engine_v3 {
 
   trait Arg extends Expr
 
-  def makeChar(d: MST, c: Char): ECharImpl = {
-    if (d.isEmpty) EChar(c)
+  def makeChar(d: Expr, c: Char): ECharImpl = {
+    if (d == Empty) EChar(c)
     else DEChar(d,c)
   }
 
   case class EChar(c: Char) extends ECharImpl with NoDepedencies
-  case class DEChar(dependencies: MST, c: Char) extends ECharImpl
+  case class DEChar(dependsOn: Expr, c: Char) extends ECharImpl
 
   trait ECharImpl extends NoBind {
     def c: Char
-    def addDependencies(dd: MST) = makeChar(dependencies maximum dd,c)
     def bindings = not_yet
     def reduce = this
     def wipe = this
@@ -481,63 +482,84 @@ object Engine_v3 {
       if (ExprOrdering.compare(s,Empty) == 0) Empty
       else {
         t = t put TraceP(i,ee)
-        makeTrace(emptySet,t)
+        makeTrace(Empty,t)
       }
     }
     else e
   }
 
   case object ERed extends ERedImpl with NoDepedencies
-  case class DERed(dependencies: MST) extends ERedImpl
+  case class DERed(dependsOn: Expr) extends ERedImpl
 
-  def makeRed(d: MST): ERedImpl = {
-    if (d.isEmpty) ERed
+  def makeRed(d: Expr): ERedImpl = {
+    if (d == Empty) ERed
     else DERed(d)
   }
 
   trait ERedImpl extends UnaryOperator with NormalExpr with UnaOpImp {
-    def recreate(d: MST) = makeRed(d)
+    def recreate(d: Expr) = makeRed(d)
     def reduceNumber(i: Number) = i
-    def reduceMap(arg1: MMapImpl) = arg1 match {
-      case m: MMapImpl =>  {
-        var mm = m.m
-        var nm = emptyMMap
-        while (mm.first != None) {
-          val p = mm.first.get
-          if (p.second.isRedex) {
-            val r = fullReduce2(p.second)
-            if (ExprOrdering.compare(r,Empty) != 0) {
-              val np = MapP(p.first,r)
-              nm = nm put np
+    def reduceMap(arg1: MMapImpl): Expr = arg1 match {
+      case m: MMapImpl => {
+        val mm: MMT = m.m
+        if (mm.first != None) {
+          if (mm.first == mm.last) {
+            val p = mm.first.get
+            if (p.second.isRedex) {
+              val r = fullReduce2(p.second)
+              if (ExprOrdering.compare(r,Empty) != 0) {
+                val np = MapP(p.first,r)
+                mmp(Empty,emptyMMap put np)
+              }
+              else mmp(Empty,emptyMMap)
             }
+            else mmp(Empty,mm)
           }
-          else nm = nm put p
-          mm = mm.split(mm.first.get)._3
+          else {
+            val (l,r) = spliti(mm)
+            val nex = emptyExpr put CP(zero,mmp(Empty,l)) put CP(one, ERed) put CP(two,mmp(Empty,r)) put CP(three,ERed) put CP(four,EAdd)
+            ece(Empty,nex)
+          }
         }
-        mmp(m.dependencies,nm)
+        else mmp(Empty, emptyMMap)
+      }
+    }
+    def spliti(m: MMT): (MMT, MMT) = {
+      if (m.left.isEmpty) {
+        if (m.right.isEmpty) {
+          if (m.some != None) {
+            (m.left put m.some,m.right)
+          }
+          else (m.left,m.right)
+        }
+        else (m.left put m.some,m.right)
+      }
+      else {
+        if (m.right.isEmpty) (m.left,m.right put m.some)
+        else (m.left put m.some, m.right)
       }
     }
     def asString = "$"
   }
 
   case class EForeach(a: Expr) extends EForeachImpl with NoDepedencies
-  case class DEForeach(dependencies: MST, a: Expr) extends EForeachImpl
+  case class DEForeach(dependsOn: Expr, a: Expr) extends EForeachImpl
 
-  def makeForeach(d: MST, a: Expr): EForeachImpl = {
-    if (d.isEmpty) EForeach(a)
+  def makeForeach(d: Expr, a: Expr): EForeachImpl = {
+    if (d == Empty) EForeach(a)
     else DEForeach(d,a)
   }
 
   trait EForeachImpl extends UnaOpImp with UnaryOperator {
     def a: Expr
-    override def bind(label: Expr, value: Expr) = makeForeach(dependencies,a.bind(label,value))
-    def recreate(d: MST) = makeForeach(d,a)
+    override def bind(label: Expr, value: Expr) = makeForeach(dependsOn,a.bind(label,value))
+    def recreate(d: Expr) = makeForeach(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
     def reduceMap(arg1: MMapImpl) = arg1 match {
       case m: MMapImpl =>  {
         a match {
-          case Empty => mmp(m.dependencies,foreach2(m.m))
-          case _ => mmp(m.dependencies,foreach(m.m))
+          case Empty => mmp(m.dependsOn,foreach2(m.m))
+          case _ => mmp(m.dependsOn,foreach(m.m))
         }
       }
     }
@@ -554,7 +576,7 @@ object Engine_v3 {
       if (m.isEmpty) m
       else {
         val e = m.some.get
-        val c = ece(emptySet,emptyExpr put CP(zero,e.second) put CP(one,a))
+        val c = ece(Empty,emptyExpr put CP(zero,e.second) put CP(one,a))
         val c1 = fullReduce(c)
         if (ExprOrdering.compare(c1,Empty) != 0) foreach(m.left) put MapP(e.first,c1) add foreach(m.right)
         else foreach(m.left) add foreach(m.right)
@@ -574,24 +596,24 @@ object Engine_v3 {
   }
 
   case class EFold(a: Expr) extends EFoldImpl with NoDepedencies
-  case class DEFold(dependencies: MST, a: Expr) extends EFoldImpl
+  case class DEFold(dependsOn: Expr, a: Expr) extends EFoldImpl
 
-  def makeFold(d: MST, a: Expr): EFoldImpl = {
-    if (d.isEmpty) EFold(a)
+  def makeFold(d: Expr, a: Expr): EFoldImpl = {
+    if (d == Empty) EFold(a)
     else DEFold(d,a)
   }
   
   trait EFoldImpl extends UnaOpImp with UnaryOperator {
     def a: Expr
-    override def bind(label: Expr, value: Expr) = makeFold(dependencies,a.bind(label,value))
-    def recreate(d: MST) = makeFold(d,a)
+    override def bind(label: Expr, value: Expr) = makeFold(dependsOn,a.bind(label,value))
+    def recreate(d: Expr) = makeFold(d,a)
     def reduceNumber(i: Number) = reduceMap(makeMap(i))
     def reduceMap(arg1: MMapImpl) = arg1 match {
       case m: MMapImpl=> {
-        if (ExprOrdering.compare(a,Empty) == 0) ece(m.dependencies,fold2(m.m))
+        if (ExprOrdering.compare(a,Empty) == 0) ece(m.dependsOn,fold2(m.m))
         else {
           val (f,_) = fold(m.m,zero)
-          fullReduce(ece(m.dependencies,f))
+          fullReduce(ece(m.dependsOn,f))
         }
       }
     }
@@ -629,12 +651,11 @@ object Engine_v3 {
 
   trait EIntImpl extends Number with NormalExpr with Arg with NoBind {
     def integer: BigInteger
-    def addDependencies(dd: MST): Expr = create(dd,integer)
-    def create(i: BigInteger): Number = create(dependencies,i)
-    def create(dd: MST, i: BigInteger): Number = {
+    def create(i: BigInteger): Number = create(dependsOn,i)
+    def create(dd: Expr, i: BigInteger): Number = {
       // TODO: Optimize
-      val nd = dependencies maximum dd
-      if (nd.isEmpty) EInt(i)
+      val nd = dependsOn
+      if (nd == Empty) EInt(i)
       else DEInt(nd,i)
     }
     def zero: Number = create(BigInteger.valueOf(0))
@@ -642,11 +663,11 @@ object Engine_v3 {
     def incr: Number = this add one
     def decr: Number = this sub one
     def split2: Number = create(integer divide BigInteger.valueOf(2))
-    def add(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer add n2.integer) }
-    def mul(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer multiply  n2.integer) }
-    def min(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer min n2.integer) }
-    def max(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependencies,integer max n2.integer) }
-    def sub(n: Number): Number = n match{ case n2: EIntImpl => create(n2.dependencies,integer subtract n2.integer) }
+    def add(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependsOn,integer add n2.integer) }
+    def mul(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependsOn,integer multiply  n2.integer) }
+    def min(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependsOn,integer min n2.integer) }
+    def max(n: Number): Number = n match { case n2: EIntImpl => create(n2.dependsOn,integer max n2.integer) }
+    def sub(n: Number): Number = n match{ case n2: EIntImpl => create(n2.dependsOn,integer subtract n2.integer) }
     def compare(n: Number): Int = n match { case n2: EIntImpl => integer.compareTo(n2.integer) }
     def asString: String = {
       if (integer.signum < 0) "_" + integer.negate.toString
@@ -655,38 +676,36 @@ object Engine_v3 {
   }
 
   case class EInt(integer: BigInteger) extends EIntImpl with NoDepedencies
-  case class DEInt(dependencies: MST, integer: BigInteger) extends EIntImpl
+  case class DEInt(dependsOn: Expr, integer: BigInteger) extends EIntImpl
 
   case object EPack extends EPackImpl with NoDepedencies
-  case class DEPack(dependencies: MST) extends EPackImpl
+  case class DEPack(dependsOn: Expr) extends EPackImpl
 
-  def makePack(d: MST): EPackImpl = {
-    if (d.isEmpty) EPack
+  def makePack(d: Expr): EPackImpl = {
+    if (d == Empty) EPack
     else DEPack(d)
   }
   trait EPackImpl extends UnaryOperator with NormalExpr {
-    def addDependencies(d: MST) = makePack(d maximum dependencies)
-    def reduce(arg1: Expr) = EPair(Empty,mmp(emptySet,emptyMMap put MapP(zero,arg1)))
+    def reduce(arg1: Expr) = EPair(Empty,mmp(Empty,emptyMMap put MapP(zero,arg1)))
     def asString = "^"
   }
 
   case object ECut extends ECutImpl with NoDepedencies
-  case class DECut(dependencies: MST) extends ECutImpl
+  case class DECut(dependsOn: Expr) extends ECutImpl
 
-  def makeCut(d: MST): ECutImpl = {
-    if (d.isEmpty) ECut
+  def makeCut(d: Expr): ECutImpl = {
+    if (d == Empty) ECut
     else DECut(d)
   }
   
   trait ECutImpl extends UnaryOperator with NormalExpr {
-    def addDependencies(d: MST) = makeCut(d maximum dependencies)
     def reduce(arg1: Expr) = arg1 match {
       case m: MMapImpl => {
         val s = sizem(m.m)
         val l1 = s / 2
         val (l,e,rr) = splitm(l1,m.m)
         val r = rr put e.get
-        EPair(mmp(m.dependencies,l),mmp(m.dependencies,r))
+        EPair(mmp(m.dependsOn,l),mmp(m.dependsOn,r))
       }
       case n: Number => {
         var i1 = n.split2
@@ -699,15 +718,15 @@ object Engine_v3 {
   }
 
   case object ETurn extends ETurnImpl with NoDepedencies
-  case class DETurn(dependencies: MST) extends ETurnImpl
+  case class DETurn(dependsOn: Expr) extends ETurnImpl
 
-  def makeTurn(d: MST): ETurnImpl = {
-    if (d.isEmpty) ETurn
+  def makeTurn(d: Expr): ETurnImpl = {
+    if (d == Empty) ETurn
     else DETurn(d)
   }
   
   trait ETurnImpl extends UnaryOperator with NormalExpr with UnaOpImp {
-    def recreate(d: MST) = makeTurn(d)
+    def recreate(d: Expr) = makeTurn(d)
     def reduceNumber(i: Number) = i
     def reduceMap(arg1: MMapImpl) = arg1 match {
       case m: MMapImpl => {
@@ -721,7 +740,7 @@ object Engine_v3 {
               while (ss.first != None) {
                 val sp = ss.first.get
                 if (ExprOrdering.compare(sp.first,one) == 0) { nm = nm put MapP(ss.first.get.second,p.first) }
-                else { nm = nm put MapP(sp.second,makeMSet(s.dependencies,emptySet put SetP(sp.first,p.first))) }
+                else { nm = nm put MapP(sp.second,makeMSet(s.dependsOn,emptySet put setp(sp.first,p.first))) }
                 ss = ss.split(ss.first.get)._3
               }
             }
@@ -731,22 +750,22 @@ object Engine_v3 {
           }
           mm = mm.split(mm.first.get)._3
         }
-        mmp(m.dependencies,nm)
+        mmp(m.dependsOn,nm)
       }
     }
     def asString = "%"
   }
 
   case object EIota extends EIotaImpl with NoDepedencies
-  case class DEIota(dependencies: MST) extends EIotaImpl
+  case class DEIota(dependsOn: Expr) extends EIotaImpl
 
-  def makeIota(d: MST): EIotaImpl = {
-    if (d.isEmpty) EIota
+  def makeIota(d: Expr): EIotaImpl = {
+    if (d == Empty) EIota
     else DEIota(d)
   }
 
   trait EIotaImpl extends UnaryOperator with NormalExpr with UnaOpImp {
-    def recreate(d: MST) = makeIota(d)
+    def recreate(d: Expr) = makeIota(d)
     def reduceNumber(i: Number) = {
       var m = emptyMMap
       var ii = i.zero
@@ -755,54 +774,51 @@ object Engine_v3 {
         m = m put MapP(ii,ii)
         ii = ii.incr
       }
-      mmp(i.dependencies,m)
+      mmp(i.dependsOn,m)
     }
     def reduceMap(arg1: MMapImpl) = not_yet
     def asString = "~"
   }
 
   def makeMap(i: Number): MMapImpl = {
-    if (i.compare(i.zero) == 0) mmp2(i.dependencies,emptyMMap)
+    if (i.compare(i.zero) == 0) mmp2(i.dependsOn,emptyMMap)
     else {
-      val sp = SetP(i,i.zero)
-      val mp = MapP(i.zero,makeMSet(emptySet,emptyMSet put sp))
+      val sp = setp(i,i.zero)
+      val mp = MapP(i.zero,makeMSet(Empty,emptyMSet put sp))
       val m = emptyMMap put mp
-      mmp2(i.dependencies,m)
+      mmp2(i.dependsOn,m)
     }
   }
 
   case object ESwap extends ESwapImpl with NoDepedencies
-  case class DESwap(dependencies: MST) extends ESwapImpl
+  case class DESwap(dependsOn: Expr) extends ESwapImpl
 
-  def makeSwap(d: MST): ESwapImpl = {
-    if (d.isEmpty) ESwap
+  def makeSwap(d: Expr): ESwapImpl = {
+    if (d == Empty) ESwap
     else DESwap(d)
   }
   
   trait ESwapImpl extends BinaryOperator with NormalExpr {
-    def addDependencies(dd: MST) = makeSwap(dependencies maximum dd)
     def reduce(arg1: Expr, arg2: Expr) = ETriple(arg2,arg1,Empty)
     def asString = "\\"
   }
 
   trait UnaOpImp extends UnaryOperator {
-    def recreate(d: MST): UnaOpImp
-    def addDependencies(dd: MST) = recreate(dependencies maximum dd)
+    def recreate(d: Expr): UnaOpImp
     def reduceNumber(arg1: Number): Expr
     def reduceMap(arg1: MMapImpl): Expr
     def reduce(arg1: Expr) = (arg1) match {
       //case (a1: ELabeledExpr) => reduce(a1.second)
-      case (a1: Number) => EPair(Empty,reduceNumber(a1).addDependencies(dependencies))
-      case (a1: MMapImpl) => EPair(Empty,reduceMap(a1).addDependencies(dependencies))
+      case (a1: Number) => EPair(Empty,reduceNumber(a1))
+      case (a1: MMapImpl) => EPair(Empty,reduceMap(a1))
     }
   }
   trait BinOpImp extends BinaryOperator {
-    def recreate(d: MST): BinOpImp
-    def addDependencies(dd: MST) = recreate(dependencies maximum dd)
+    def recreate(d: Expr): BinOpImp
     def reduceNumber(arg1: Number, arg2: Number): Expr
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl): Expr
     def reduce(arg1: Expr, arg2: Expr) = {
-      ETriple(Empty,Empty,reduce2(arg1,arg2).addDependencies(dependencies))
+      ETriple(Empty,Empty,reduce2(arg1,arg2))
     }
     def reduce2(arg1: Expr, arg2: Expr): Expr = (arg1,arg2) match {
       case (a1: Number,a2: Number) => reduceNumber(a1,a2)
@@ -813,26 +829,26 @@ object Engine_v3 {
   }
 
   object EBind extends EBindImpl with NoDepedencies
-  case class DEBind(dependencies: MST) extends EBindImpl
+  case class DEBind(dependsOn: Expr) extends EBindImpl
   
-  def makeBind(d: MST): EBindImpl = {
-    if (d.isEmpty) EBind
+  def makeBind(d: Expr): EBindImpl = {
+    if (d == Empty) EBind
     else DEBind(d)
   }
   
   trait EBindImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeBind(d)
+    def recreate(d: Expr) = makeBind(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg2 match {
       case m: MMapImpl => {
         var mm = m.m
-        var a: Expr = arg1
+        var a: MMapImpl = arg1
         while (mm.first != None) {
           val p = mm.first.get
-          a = a.bind(p.first,p.second)
+          a = a.bind2(p.first,p.second)
           mm = mm.split(mm.first.get)._3
         }
-        a.addDependencies(m.dependencies)
+        a
       }
     }
     def asString = "!"
@@ -840,62 +856,62 @@ object Engine_v3 {
 
 
   case object EAdd extends EAddImpl with NoDepedencies
-  case class DEAdd(dependencies: MST) extends EAddImpl
+  case class DEAdd(dependsOn: Expr) extends EAddImpl
 
-  def makeAdd(d: MST): EAddImpl = {
-    if (d.isEmpty) EAdd
+  def makeAdd(d: Expr): EAddImpl = {
+    if (d == Empty) EAdd
     else DEAdd(d)
   }
 
   trait EAddImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeAdd(d)
+    def recreate(d: Expr) = makeAdd(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 add arg2
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiAdd arg2
     def asString = "+"
   }
 
   case object EMul extends EMulImpl with NoDepedencies
-  case class DEMul(dependencies: MST) extends EMulImpl
+  case class DEMul(dependsOn: Expr) extends EMulImpl
 
-  def makeMul(d: MST): EMulImpl = {
-    if (d.isEmpty) EMul
+  def makeMul(d: Expr): EMulImpl = {
+    if (d == Empty) EMul
     else DEMul(d)
   }
 
   trait EMulImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeMul(d)
+    def recreate(d: Expr) = makeMul(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 mul arg2
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMul arg2
     def asString = "*"
   }
 
   case object EMax extends EMaxImpl with NoDepedencies
-  case class DEMax(dependencies: MST) extends EMaxImpl
+  case class DEMax(dependsOn: Expr) extends EMaxImpl
 
-  def makeMax(d: MST): EMaxImpl = {
-    if (d.isEmpty) EMax
+  def makeMax(d: Expr): EMaxImpl = {
+    if (d == Empty) EMax
     else DEMax(d)
   }
 
 
   trait EMaxImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeMax(d)
+    def recreate(d: Expr) = makeMax(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 max arg2
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMax arg2
     def asString = "|"
   }
 
   case object EMin extends EMinImpl with NoDepedencies
-  case class DEMin(dependencies: MST) extends EMinImpl
+  case class DEMin(dependsOn: Expr) extends EMinImpl
 
-  def makeMin(d: MST): EMinImpl = {
-    if (d.isEmpty) EMin
+  def makeMin(d: Expr): EMinImpl = {
+    if (d == Empty) EMin
     else DEMin(d)
   }
 
 
   trait EMinImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeMin(d)
+    def recreate(d: Expr) = makeMin(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 min arg2
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiMin arg2
     def asString = "&"
@@ -903,21 +919,21 @@ object Engine_v3 {
 
 
   case object ESub extends ESubImpl with NoDepedencies
-  case class DESub(dependencies: MST) extends ESubImpl
+  case class DESub(dependsOn: Expr) extends ESubImpl
 
-  def makeSub(d: MST): ESubImpl = {
-    if (d.isEmpty) ESub
+  def makeSub(d: Expr): ESubImpl = {
+    if (d == Empty) ESub
     else DESub(d)
   }
 
   trait ESubImpl extends BinOpImp with NormalExpr {
-    def recreate(d: MST) = makeSub(d)
+    def recreate(d: Expr) = makeSub(d)
     def reduceNumber(arg1: Number, arg2: Number) = arg1 sub arg2
     def reduceMap(arg1: MMapImpl, arg2: MMapImpl) = arg1 multiSub arg2
     def asString = "-"
   }
 
-  lazy val emptyCompound = ece2(emptySet,emptyExpr)
+  lazy val emptyCompound = ece2(Empty,emptyExpr)
 
   def sizem(mmt: MMT): Int = mmt.measure match {
     case None => 0
@@ -952,7 +968,7 @@ object Engine_v3 {
   }
 
 
-  case class DECompoundExpr(dependencies: MST, cex: CEX) extends ECompoundExprImpl
+  case class DECompoundExpr(dependsOn: Expr, cex: CEX) extends ECompoundExprImpl
   case class ECompoundExpr(cex: CEX) extends ECompoundExprImpl with NoDepedencies
 
   var pp = 0
@@ -962,7 +978,7 @@ object Engine_v3 {
       pp = pp + 1
     }
     def cex: CEX
-    def addDependencies(dd: MST) = ece(dependencies maximum dd, cex)
+    def addDependencies(dd: MST) = ece(dependsOn, cex)
     def bind(label: Expr, value: Expr) = {
       var nm = emptyExpr
       var mm = cex
@@ -971,7 +987,7 @@ object Engine_v3 {
         nm = nm put p.bind(label,value)
         mm = mm.split(mm.first.get)._3
       }
-      ece(dependencies,nm)
+      ece(dependsOn,nm)
     }
     def isEmpty = cex.isEmpty
     def first: Option[EP] = if (left.isEmpty) some ; else left.first
@@ -987,7 +1003,7 @@ object Engine_v3 {
     def concat(e: ECompoundExprImpl): ECompoundExprImpl = {
       if (e.cex.isEmpty) this
       else if (isEmpty) e
-      else ece2(dependencies maximum e.dependencies,cex add e.cex)
+      else ece2(dependsOn,cex add e.cex)
     }
     def put(e: Option[EP]): ECompoundExprImpl = e match {
       case None => this
@@ -996,18 +1012,18 @@ object Engine_v3 {
 
     def split(n: Int): (ECompoundExprImpl,Option[EP],ECompoundExprImpl) = {
       val (l,e,r) = splite(n,cex)
-      (ece2(dependencies,l),e,ece2(dependencies,r))
+      (ece2(dependsOn,l),e,ece2(dependsOn,r))
     }
-    def put(x: EP): ECompoundExprImpl =  ece2(dependencies,cex add (emptyExpr put x))
+    def put(x: EP): ECompoundExprImpl =  ece2(dependsOn,cex add (emptyExpr put x))
     lazy val left: ECompoundExprImpl = {
       val s = cex.some.flatMap(s => Some(s.second))
       s match {
         case Some(e: ECompoundExprImpl) => {
           val l = e.left
-          if (l.isEmpty) ece2(dependencies,cex.left)
-          else ece2(dependencies,cex.left put CP(cex.some.get.first,l))
+          if (l.isEmpty) ece2(dependsOn,cex.left)
+          else ece2(dependsOn,cex.left put CP(cex.some.get.first,l))
         }
-        case _ => ece2(dependencies,cex.left)
+        case _ => ece2(dependsOn,cex.left)
       }
     }
     lazy val right: ECompoundExprImpl = {
@@ -1015,10 +1031,10 @@ object Engine_v3 {
       s match {
         case Some(e: ECompoundExprImpl) => {
           val r = e.right
-          if (r.isEmpty) ece2(dependencies,cex.right)
-          else ece2(dependencies,cex.right put CP(cex.some.get.first,r))
+          if (r.isEmpty) ece2(dependsOn,cex.right)
+          else ece2(dependsOn,cex.right put CP(cex.some.get.first,r))
         }
-        case _ => ece2(dependencies,cex.right)
+        case _ => ece2(dependsOn,cex.right)
       }
     }
     lazy val some: Option[EP] = {
@@ -1029,7 +1045,7 @@ object Engine_v3 {
           nn match {
             case None => None
             case Some(x) => {
-              val ee = ece(e.dependencies,emptyExpr put x)
+              val ee = ece(e.dependsOn,emptyExpr put x)
               Some(CP(cex.some.get.first,ee))
             }
           }
@@ -1038,7 +1054,7 @@ object Engine_v3 {
           cex.some match {
             case None => None
             case Some(x) => {
-              val ee = CP(x.first,x.second.addDependencies(dependencies))
+              val ee = CP(x.first,x.second)
               Some(ee)
             }
           }
@@ -1064,10 +1080,10 @@ object Engine_v3 {
 
     def flatten(a: Option[Expr]): Option[Expr] = a match {
       case Some(ee: ECompoundExprImpl) => {
-        flatten(ee.first.flatMap(e => Some(e.second.addDependencies(ee.dependencies))))
+        flatten(ee.first.flatMap(e => Some(e.second)))
       }
       case Some(e: ELabeledExprImpl) => {
-        flatten(Some(e.second.addDependencies(emptySet put SetP(one,e.first))))
+        flatten(Some(e.second))
       }
       case Some(e: ETraceImpl) => flatten(e.t.last.flatMap(e => Some(e.second)))
       case _ => a
@@ -1077,7 +1093,7 @@ object Engine_v3 {
       case None => sys.error("illegal state")
       case Some(ep) => ep.second match {
         case cc: ECompoundExprImpl => {
-          val k = ece(cc.dependencies,emptyExpr put re(cc.first,n))
+          val k = ece(cc.dependsOn,emptyExpr put re(cc.first,n))
           CP(ep.first,k)
         }
         case _ => CP(ep.first,n)
@@ -1091,14 +1107,14 @@ object Engine_v3 {
       (flatten(f),flatten(s)) match {
         case (Some(a1), Some(a2: MultiSet)) => {
           val p = mconcat(Some(a1),Some(a2))
-          val c = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,p))
-          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
+          val c = ece2(Empty,emptyExpr put re(first,Empty) put re(second,p))
+          val r = ece2(Empty,emptyExpr put re(first,Empty) put re(second,Empty))
           (r,c concat c)
         }
         case (Some(a1: MultiSet),Some(a2)) => {
           val p = mconcat(Some(a1),Some(a2))
-          val c = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,p))
-          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
+          val c = ece2(Empty,emptyExpr put re(first,Empty) put re(second,p))
+          val r = ece2(Empty,emptyExpr put re(first,Empty) put re(second,Empty))
           (r,c concat c)
         }
         case _ => sys.error("illegal state")
@@ -1111,23 +1127,23 @@ object Engine_v3 {
       val t = third.flatMap(l => Some(l.second))
 
       (flatten(f),flatten(s),flatten(t)) match {
-        case (Some(a1: Arg),Some(u: UnaryOperator),_) => {
-          val p = u.reduce(a1)
-          val c = ece2(emptySet,emptyExpr put re(first,p.first) put re(second,p.second))
-          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty))
-          (r,c concat c)
-        }
         case (_,Some(a1: Arg),Some(u: UnaryOperator)) => {
           val p = u.reduce(a1)
-          val c = ece2(emptySet,emptyExpr put re(second,p.first) put re(third,p.second))
-          val r = ece2(emptySet,emptyExpr put re(second,Empty) put re(third,Empty))
+          val c = ece2(Empty,emptyExpr put re(second,p.first) put re(third,p.second))
+          val r = ece2(Empty,emptyExpr put re(second,Empty) put re(third,Empty))
+          (r,c concat c)
+        }
+        case (Some(a1: Arg),Some(u: UnaryOperator),_) => {
+          val p = u.reduce(a1)
+          val c = ece2(Empty,emptyExpr put re(first,p.first) put re(second,p.second))
+          val r = ece2(Empty,emptyExpr put re(first,Empty) put re(second,Empty))
           (r,c concat c)
         }
 
         case (Some(a1: Arg),Some(a2: Arg),Some(u: BinaryOperator)) => {
           val p = u.reduce(a1,a2)
-          val c = ece2(emptySet,emptyExpr put re(first,p.first) put re(second,p.second) put re(third,p.third))
-          val r = ece2(emptySet,emptyExpr put re(first,Empty) put re(second,Empty) put re(third,Empty))
+          val c = ece2(Empty,emptyExpr put re(first,p.first) put re(second,p.second) put re(third,p.third))
+          val r = ece2(Empty,emptyExpr put re(first,Empty) put re(second,Empty) put re(third,Empty))
           (r,c concat c)
         }
         case _ => sys.error("illegal state")
@@ -1139,7 +1155,7 @@ object Engine_v3 {
         val p1 = CP(zero,e1)
         val p2 = CP(one,e2)
         val e = emptyExpr put p1 put p2
-        ece(e1.dependencies maximum e2.dependencies,e)
+        ece(e1.dependsOn,e)
       }
     }
 
@@ -1155,13 +1171,13 @@ object Engine_v3 {
               val p1: SP = a.first.get
               val p2: SP = b.first.get
               val ec = econcat(p1.second,p2.second)
-              val m = ece(emptySet,emptyExpr put CP(zero,p1.first) put CP(one,p2.first) put CP(two,makeMul(emptySet)))
-              e = e put SetP(fullReduce(m),fullReduce(ec))
+              val m = ece(Empty,emptyExpr put CP(zero,p1.first) put CP(one,p2.first) put CP(two,makeMul(Empty)))
+              e = e put setp(m,fullReduce(ec))
               b = b.split(b.first.get)._3
             }
             a = a.split(a.first.get)._3
           }
-          makeMSet(as.dependencies maximum bs.dependencies,e)
+          makeMSet(as.dependsOn,e)
         }
         case (Some(as: MSetImpl), Some(b)) => {
           var a = as.m
@@ -1169,10 +1185,10 @@ object Engine_v3 {
           while (a.first != None) {
             val p: SP = a.first.get
             val ec = econcat(p.second,b)
-            e = e put SetP(p.first,fullReduce(ec))
+            e = e put setp(p.first,fullReduce(ec))
             a = a.split(a.first.get)._3
           }
-          makeMSet(as.dependencies,e)
+          makeMSet(as.dependsOn,e)
         }
         case (Some(b), Some(as: MSetImpl)) => {
           var a = as.m
@@ -1180,10 +1196,10 @@ object Engine_v3 {
           while (a.first != None) {
             val p: SP = a.first.get
             val ec = econcat(b,p.second)
-            e = e put SetP(p.first,fullReduce(ec))
+            e = e put setp(p.first,fullReduce(ec))
             a = a.split(a.first.get)._3
           }
-          makeMSet(as.dependencies,e)
+          makeMSet(as.dependsOn,e)
         }
         case _ => sys.error("illegal state")
       }
@@ -1194,9 +1210,9 @@ object Engine_v3 {
     def reduce3: ECompoundExprImpl = cex.measure match {
       case None => this
       case Some(x) => {
-        if (1 == 1) { //x.isRedex) {
+        if (x.isRedex) {
         // TODO: optimize to cut and paste, given specific positions
-        val l = left
+          val l = left
           val x = some
           val r = right
 
@@ -1205,8 +1221,10 @@ object Engine_v3 {
           val ll2 = l.last2
           val rf2 = r.first2
 
+
+          // TODO: 1 ^ 2 ^ => [1] 2 ^ => [1] [2] (<- not optimal)
           val (re1,re2) = {
-            if (qredexp(ll2,ll,x))reduce(ll2,ll,x)
+            if (qredexp(ll2,ll,x)) reduce(ll2,ll,x)
             else if (qredexp(ll,x,rf)) reduce(ll,x,rf)
             else if (qredexp(x,rf,rf2)) reduce(x,rf,rf2)
             else if (mredexp(ll,x)) reduce2(ll,x)
@@ -1802,4 +1820,87 @@ object Engine_v3 {
       }
     }
   }
+
+  import java.math.BigInteger
+
+  var total: Long = 0
+
+  trait LTrace[R] {
+    {
+     total = total + 1
+    }
+    def apply(): R
+    def step: LTrace[R] = this
+  }
+
+  type TInt = LTrace[BigInteger]
+
+  case class CInt(i: BigInteger) extends TInt {
+    def apply = i
+    override def toString = i.toString
+  }
+
+  object Mem {
+    import java.lang.ref.WeakReference
+    var m = scala.collection.mutable.WeakHashMap.empty[LTrace[_], WeakReference[LTrace[_]]]
+
+    def mm[R](t: LTrace[R]): LTrace[R] = {
+      if (!m.contains(t)) m.put(t,new WeakReference(t))
+      m.get(t).get.get.asInstanceOf[LTrace[R]]
+    }
+  }
+  val cmtwo: TInt = CInt(BigInteger.valueOf(-2))
+  val cmone: TInt = CInt(BigInteger.valueOf(-1))
+  val cone: TInt = CInt(BigInteger.valueOf(1))
+  val ctwo: TInt = CInt(BigInteger.valueOf(2))
+
+  def call1[A1,A2,R](f: LTrace[A1] => LTrace[R], a1: LTrace[A1]): LTrace[R] = Mem.mm(UnaTrace(f,a1))
+  def call2[A1,A2,R](f: (LTrace[A1],LTrace[A2]) => LTrace[R], a1: LTrace[A1], a2: LTrace[A2]): LTrace[R] = Mem.mm(BinTrace(f,a1,a2))
+
+  def ecall1[A1,A2,R](f: A1 => R, a1: LTrace[A1]): LTrace[R] =  Mem.mm(EUnaTrace(f,a1))
+  def ecall2[A1,A2,R](f: (A1,A2) => R, a1: LTrace[A1], a2: LTrace[A2]): LTrace[R] = Mem.mm(EBinTrace(f,a1,a2))
+
+  case class UnaTrace[A1,R](f: LTrace[A1] => LTrace[R],a1: LTrace[A1]) extends LTrace[R] {
+    lazy val apply = step.apply
+    override lazy val step: LTrace[R] = f(a1)
+  }
+
+  case class BinTrace[A1,A2,R](f: (LTrace[A1],LTrace[A2]) => LTrace[R], a1: LTrace[A1], a2: LTrace[A2]) extends LTrace[R] {
+    lazy val apply = step.apply
+    override lazy val step: LTrace[R] = f(a1,a2)
+  }
+
+  case class EUnaTrace[A1,R](f: A1 => R, a1: LTrace[A1]) extends LTrace[R] {
+    lazy val apply = f(a1())
+  }
+
+  case class EBinTrace[A1,A2,R](f: (A1,A2) => R,a1: LTrace[A1], a2: LTrace[A2]) extends LTrace[R] {
+    lazy val apply = f(a1(),a2())
+  }
+
+  val add = (a1: TInt, a2: TInt) => ecall2((x: BigInteger,y: BigInteger) => {x add y},a1,a2)
+  val mul = (a1: TInt, a2: TInt) => ecall2((x: BigInteger,y: BigInteger) => {x multiply y},a1,a2)
+
+  val fib: TInt => TInt = a1 => {
+    val a = a1()
+    if (a.compareTo(cone()) <= 0) cone
+    else {
+      val i1: TInt = CInt(a add cmone())
+      val i2: TInt = CInt(a add cmtwo())
+      val n1: TInt = call1(fib,i1)
+      val n2: TInt = call1(fib,i2)
+      call2(add,n1,n2)
+    }
+  }
+
+  val fac: TInt => TInt = a1 => {
+    val a = a1()
+    if (a.compareTo(cone()) <= 0) { cone }
+    else {
+      val i1: TInt = CInt(a add cmone())
+      val r = call1(fac,i1)
+      call2(mul,a1,r)
+    }
+  }
+
 }
