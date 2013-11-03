@@ -1,7 +1,5 @@
 package spread
 
-import java.lang.ref.WeakReference
-
 /*
   SPREAD lib: Incremental Computational Reuse
 
@@ -84,8 +82,11 @@ object IncrementalMemoization {
   def $_[A,R](f: F1[A,R], a1: FFCall[A]) = hashcons($$(f,a1))
   def $_[A,B,R](f: F2[A,B,R], a1: FFCall[A], a2: FFCall[B]) = hashcons($$(f,a1,a2))
 
+  import scala.collection.mutable.WeakHashMap
+  import java.lang.ref.WeakReference
+
   // naive hash-consing, implemented with a weak HashMap
-  val mtable = scala.collection.mutable.WeakHashMap.empty[FCall[_], WeakReference[FCall[_]]]
+  val mtable = WeakHashMap.empty[FCall[_], WeakReference[FCall[_]]]
 
   def hashcons[R](c: FCall[R]): FCall[R] =  synchronized {
     if (!mtable.contains(c)) mtable.put(c,new WeakReference(c))

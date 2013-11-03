@@ -7,7 +7,7 @@
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383515931545" ignored="false" />
+    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383516316865" ignored="false" />
     <file path="/AbstractImmutableSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369644654728" ignored="false" />
     <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382883130007" ignored="false" />
     <file path="/RationalWheel.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699332927" ignored="false" />
@@ -42,7 +42,7 @@
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-1_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/XMLSchema-instance.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1374232009398" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-2_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
-    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383516169431" ignored="false" />
+    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383516420157" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/HTMLOutput.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -125,8 +125,10 @@
       <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="87" column="32" selection-start="2849" selection-end="2849" vertical-scroll-proportion="0.66753924">
-              <folding />
+            <state line="95" column="40" selection-start="3145" selection-end="3145" vertical-scroll-proportion="0.8821989">
+              <folding>
+                <element signature="e#2726#2769#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -917,7 +919,11 @@
       <created>1383515932333</created>
       <updated>1383515932333</updated>
     </task>
-    <option name="localTasksCounter" value="92" />
+    <task id="LOCAL-00092" summary="refactor with compressed type signatures">
+      <created>1383516317964</created>
+      <updated>1383516317964</updated>
+    </task>
+    <option name="localTasksCounter" value="93" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -937,7 +943,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24230146" sideWeight="0.7351443" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24230146" sideWeight="0.7351443" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26485568" sideWeight="0.6223663" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -988,7 +994,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed typos" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor with compressed type signatures" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1002,7 +1008,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="got the major stuff working - know what?" />
     <MESSAGE value="Applet" />
     <MESSAGE value="Start of engine v3&#10;" />
     <MESSAGE value="powerful expr&lt;-&gt;subexpr evaluation" />
@@ -1027,6 +1032,7 @@
     <MESSAGE value="garbage collectable incremental tracing memoization" />
     <MESSAGE value="reworked to be more generic" />
     <MESSAGE value="fixed typos" />
+    <MESSAGE value="refactor with compressed type signatures" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1060,7 +1066,9 @@
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="97" column="28" selection-start="3070" selection-end="3070" vertical-scroll-proportion="0.0">
-          <folding />
+          <folding>
+            <element signature="e#2726#2769#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1141,8 +1149,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="87" column="32" selection-start="2849" selection-end="2849" vertical-scroll-proportion="0.66753924">
-          <folding />
+        <state line="95" column="40" selection-start="3145" selection-end="3145" vertical-scroll-proportion="0.8821989">
+          <folding>
+            <element signature="e#2726#2769#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
