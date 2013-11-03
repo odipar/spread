@@ -31,9 +31,8 @@ object IncrementalMemoization {
     def arg1: A
   }
 
-  // A binary function call with two argument A and B
-  trait BCall[A,B,+R] extends FCall[R] {
-    def arg1: A
+  // A binary function call with two arguments A and B
+  trait BCall[A,B,+R] extends UCall[A,R] {
     def arg2: B
   }
 

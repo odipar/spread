@@ -93,7 +93,7 @@ object Test {
   }
 
   type FInt = FCall[Int]
-  case class CInt(i: Int) extends FInt {  def apply = i }
+  case class CInt(i: Int) extends NCall[Int] { def apply = i }
   implicit def intToFInt(i: Int): FInt = CInt(i)
 
   type Sum4Type = F1[Vector[Int],FInt]
