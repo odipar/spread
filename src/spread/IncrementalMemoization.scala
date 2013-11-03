@@ -3,127 +3,93 @@ package spread
 import java.lang.ref.WeakReference
 
 /*
-  SPREAD lib: Garbage collectable incremental tracing memoization
+  SPREAD lib: Incremental Computational Reuse
 
   Features:
 
   1) spreadsheet-like incremental computation
-  2) re-use of expensive (sub)computations
+  2) reuse of expensive (sub)computations
   3) full traceability
   4) purely functional
-  5) automatic garbage collection of unused memoized traces
+  5) automatic garbage collection of unused memoized calls
 
   Copyright 2013: Robbert van Dalen
 */
 
 object IncrementalMemoization {
-  import language.implicitConversions
-  import java.math.BigInteger
 
-  var totalt: Long = 0 // Statistics
-
-  // Types
-  trait Trace[R] {
+  // Applying a function call FCall[+R] will yield its evaluation R
+  trait FCall[+R] {
     def apply(): R
-    def step: Trace[R] = this
-
-    synchronized { totalt = totalt + 1 }
   }
 
-  type T[X] = Trace[X]
-  type TInt = T[BigInteger]
+  // A nullary function with zero arguments
+  trait NCall[+R] extends FCall[R]
 
-  // Data
-  case class UnaTrace[A1,R](f: T[A1] => T[R],a1: T[A1]) extends T[R] {
-    override lazy val apply = step.apply
-    override lazy val step: T[R] = f(a1)
+  // An unary function call with one argument A
+  trait UCall[A,+R] extends FCall[R] {
+    def arg1: A
   }
 
-  case class BinTrace[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2]) extends T[R] {
-    override lazy val apply = step.apply
-    override lazy val step: T[R] = f(a1,a2)
+  // A binary function call with two argument A and B
+  trait BCall[A,B,+R] extends FCall[R] {
+    def arg1: A
+    def arg2: B
   }
 
-  case class TUnaTrace[A1,R](f: A1 => R, a1: T[A1]) extends T[R] {
-    override lazy val apply = f(a1())
+  // Compressing type signatures for convenience
+  type F1[-A,+R] = Function1[A,R]
+  type F2[-A,-B,+R] = Function2[A,B,R]
+
+  // A lazily applied unary function call
+  case class LUCall[A,+R](f: F1[A,R], arg1: A) extends UCall[A,R] {
+    lazy val apply = f(arg1)
+    override def toString = f + "(" + arg1 + ")"
   }
 
-  case class TBinTrace[A1,A2,R](f: (A1,A2) => R,a1: T[A1], a2: T[A2]) extends T[R] {
-    override lazy val apply = f(a1(),a2())
+  // A lazily applied binary function call
+  case class LBCall[A,B,+R](f: F2[A,B,R], arg1: A, arg2: B) extends BCall[A,B,R] {
+    lazy val apply = f(arg1,arg2)
+    override def toString = f + "(" + arg1 + "," + arg2 + ")"
   }
 
-  case class CInt(i: BigInteger) extends TInt {
-    def apply = i
-
-    // Convenience
-    def *(a: CInt) = cint(i multiply a.i)
-    def +(a: CInt) = cint(i add a.i)
-    def -(a: CInt) = cint(i subtract a.i)
-    def <(a: CInt) = compare(a) < 0
-    def >(a: CInt) = compare(a) > 0
-    def compare(a: CInt) = i.compareTo(a.i)
-
-    override def toString = i.toString
+  // A lazily applied terminal unary function call, with one call argument
+  case class TUCall[A,B,+R](f: F1[A,R], a1: FCall[FCall[A]]) extends UCall[FCall[A],R] {
+    lazy val apply = f(arg1())
+    lazy val arg1 = a1()
+    override def toString = f + "(" + a1 + ")"
   }
 
-  // Implementation
-  def call1[A1,A2,R](f: T[A1] => T[R], a1: T[A1]): T[R] = memoize(UnaTrace(f,a1))
-  def call2[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2]): T[R] = memoize(BinTrace(f,a1,a2))
-
-  def t_call1[A1,A2,R](f: A1 => R, a1: T[A1]): T[R] = memoize(TUnaTrace(f,a1))
-  def t_call2[A1,A2,R](f: (A1,A2) => R, a1: T[A1], a2: T[A2]): T[R] = memoize(TBinTrace(f,a1,a2))
-
-
-  // Memoization
-  val mtable = scala.collection.mutable.WeakHashMap.empty[T[_], WeakReference[T[_]]]
-
-  def memoize[R](t: T[R]): T[R] = synchronized {
-    if (!mtable.contains(t)) mtable.put(t,new WeakReference(t))
-    mtable.get(t).get.get.asInstanceOf[T[R]]
+  // A lazily applied terminal binary function call, with two call arguments
+  case class TBCall[A,B,+R](f: F2[A,B,R], a1: FCall[FCall[A]], a2: FCall[FCall[B]]) extends BCall[FCall[A], FCall[B],R] {
+    lazy val apply = f(arg1(),arg2())
+    lazy val arg1 = a1()
+    lazy val arg2 = a2()
+    override def toString = "(" + a1 + " " + f + " " + a2 + ")"
   }
 
-  // Sugar
-  def $[A1,A2,R](f: T[A1] => T[R], a1: T[A1]) = call1(f,a1)
-  def $[A1,A2,R](f: (T[A1],T[A2]) => T[R], a1: T[A1], a2: T[A2])= call2(f,a1,a2)
-  implicit def toCInt(i: Int): CInt = cint(i)
-  implicit def toCInt(i: BigInteger): CInt = cint(i)
+  // eager evaluation
+  def $[A,R](f: F1[A,R], a: A): R = f(a)
+  def $[A,B,R](f: F2[A,B,R], a: A, b: B): R = f(a,b)
 
-  // Convenience
-  def cint(i: Long): CInt = cint(BigInteger.valueOf(i))
-  def cint(i: BigInteger): CInt = CInt(i)
-  val add = (a1: TInt, a2: TInt) => t_call2((x: BigInteger,y: BigInteger) => {x add y},a1,a2)
-  val mul = (a1: TInt, a2: TInt) => t_call2((x: BigInteger,y: BigInteger) => {x multiply y},a1,a2)
+  // lazy evaluation
+  def $$[A,R](f: F1[A,FCall[R]], a: A): FCall[FCall[R]] = LUCall(f,a)
+  def $$[A,B,R](f: F2[A,B,FCall[R]], a: A, b: B): FCall[FCall[R]] = LBCall(f,a,b)
+  def $$[A,B,R](f: F1[A,R], a1: FCall[FCall[A]]) = TUCall(f,a1)
+  def $$[A,B,R](f: F2[A,B,R], a1: FCall[FCall[A]], a2: FCall[FCall[B]]) = TBCall(f,a1,a2)
 
+  // hash-consed evaluation (=memoization)
+  def $_[A,R](f: F1[A,FCall[R]], a: A): FCall[FCall[R]] = hashcons($$(f,a))
+  def $_[A,B,R](f: F2[A,B,FCall[R]], a: A, b: B): FCall[FCall[R]] = hashcons($$(f,a,b))
+  def $_[A,B,R](f: F1[A,R], a1: FCall[FCall[A]]) = hashcons($$(f,a1))
+  def $_[A,B,R](f: F2[A,B,R], a1: FCall[FCall[A]], a2: FCall[FCall[B]]) = hashcons($$(f,a1,a2))
 
-  // Examples
-  val fib: TInt => TInt = a1 => {
-    val a = a1()
-    if (a < 1) 1
-    else $(add,$(fib,a - 1),$(fib,a - 2))
-  }
+  // naive hash-consing, implemented with a weak HashMap
+  val mtable = scala.collection.mutable.WeakHashMap.empty[FCall[_], WeakReference[FCall[_]]]
 
-  val fac: TInt => TInt = a1 => {
-    val a = a1()
-    if (a < 1) 1
-    else $(mul,a1,$(fac,a - 1))
-  }
-
-  final def test(): Unit = {}
-  {
-    var f1 = $(fib,100)
-    println("f1: " + f1())
-    println("tot: " + totalt)
-
-    var f2 = $(fib,110)
-    println("f2: " + f2())
-    println("tot: " + totalt)
-
-    f1 = null
-    f2 = null
-    System.gc() // removes (sub)traces from the weak memo table, held by f1 and f2
-
-    var f3 = $(fib,100)
-    println("f3: " + f3())
-    println("tot: " + totalt)
+  def hashcons[R](c: FCall[R]): FCall[R] =  synchronized {
+    if (!mtable.contains(c)) mtable.put(c,new WeakReference(c))
+    else { println("hit: " + c) }
+    mtable.get(c).get.get.asInstanceOf[FCall[R]]
   }
 }
