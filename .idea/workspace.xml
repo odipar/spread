@@ -3,12 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383515159045" ignored="false" />
+    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383515931545" ignored="false" />
     <file path="/AbstractImmutableSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369644654728" ignored="false" />
     <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382883130007" ignored="false" />
     <file path="/RationalWheel.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699332927" ignored="false" />
@@ -43,7 +42,7 @@
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-1_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/XMLSchema-instance.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1374232009398" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-2_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
-    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383515918772" ignored="false" />
+    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1383516169431" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/HTMLOutput.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -126,7 +125,7 @@
       <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="46" selection-start="728" selection-end="728" vertical-scroll-proportion="0.039267015">
+            <state line="87" column="32" selection-start="2849" selection-end="2849" vertical-scroll-proportion="0.66753924">
               <folding />
             </state>
           </provider>
@@ -914,7 +913,11 @@
       <created>1383515160005</created>
       <updated>1383515160005</updated>
     </task>
-    <option name="localTasksCounter" value="91" />
+    <task id="LOCAL-00091" summary="fixed typos">
+      <created>1383515932333</created>
+      <updated>1383515932333</updated>
+    </task>
+    <option name="localTasksCounter" value="92" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -985,7 +988,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="reworked to be more generic" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed typos" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -999,7 +1002,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="reworked parser +  trace binding" />
     <MESSAGE value="got the major stuff working - know what?" />
     <MESSAGE value="Applet" />
     <MESSAGE value="Start of engine v3&#10;" />
@@ -1024,6 +1026,7 @@
     <MESSAGE value="show case" />
     <MESSAGE value="garbage collectable incremental tracing memoization" />
     <MESSAGE value="reworked to be more generic" />
+    <MESSAGE value="fixed typos" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1138,7 +1141,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="46" selection-start="728" selection-end="728" vertical-scroll-proportion="0.039267015">
+        <state line="87" column="32" selection-start="2849" selection-end="2849" vertical-scroll-proportion="0.66753924">
           <folding />
         </state>
       </provider>
