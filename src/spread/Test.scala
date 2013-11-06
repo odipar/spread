@@ -20,28 +20,29 @@ object Test {
   // Proof of concept works!
   final def main(args: Array[String]): Unit =
   {
-    val f1 = $$(sum4,Vector(1,2,3,4,5,6,7,8,9,10,11,12))
-    val f2 = $$(sum4,Vector(10,2,3,4,5,6,7,8,9,10,11,9))
+    val f1 = $_(sum4,Vector(1,2,3,4,5,6,7,8,9,10,11,12))
+    val f2 = $_(sum4,Vector(10,2,3,4,5,6,7,8,9,10,11,9))
 
     val node1 = MyTreeNode(null,f1)
     val model1 = new DefaultTreeModel(node1)
     var tree1 = new JTree(model1)
     tree1.setShowsRootHandles(true)
-    tree1.setPreferredSize(new Dimension(600, 300))
+    tree1.setPreferredSize(new Dimension(600, 600))
     tree1.setMinimumSize(new Dimension(10, 10))
 
     val node2 = MyTreeNode(null,f2)
     val model2 = new DefaultTreeModel(node2)
     var tree2 = new JTree(model2)
     tree2.setShowsRootHandles(true)
-    tree2.setPreferredSize(new Dimension(600, 300))
+    tree2.setPreferredSize(new Dimension(600, 600))
     tree2.setMinimumSize(new Dimension(10, 10))
 
     var f = new JFrame()
     f.setLayout(new BorderLayout)
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-    f.add(tree1, BorderLayout.EAST)
-    f.add(tree2, BorderLayout.WEST)
+    var sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,tree1,tree2)
+
+    f.add(sp, BorderLayout.CENTER)
     f.pack()
     f.setVisible(true)
 

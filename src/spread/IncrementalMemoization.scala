@@ -35,17 +35,13 @@ object IncrementalMemoization {
   }
 
   // A lazily applied unary function call
-  case class LUCall[A,+R](f: A => R, arg1: A)
-   extends UCall[A,R] {
-
+  case class LUCall[A,+R](f: A => R, arg1: A) extends UCall[A,R] {
     lazy val apply = f(arg1)
     override def toString = f + "(" + arg1 + ")"
   }
 
   // A lazily applied binary function call
-  case class LBCall[A,B,+R](f: (A,B) => R, arg1: A, arg2: B)
-   extends BCall[A,B,R] {
-
+  case class LBCall[A,B,+R](f: (A,B) => R, arg1: A, arg2: B) extends BCall[A,B,R] {
     lazy val apply = f(arg1,arg2)
     override def toString = f + "(" + arg1 + "," + arg2 + ")"
   }
@@ -54,18 +50,14 @@ object IncrementalMemoization {
   type FFCall[+R] = FCall[FCall[R]]
 
   // A lazily applied unary terminal function call, with one call argument
-  case class TUCall[A,+R](f: A => R, a1: FFCall[A])
-   extends UCall[FCall[A],R] {
-
+  case class TUCall[A,+R](f: A => R, a1: FFCall[A]) extends UCall[FCall[A],R] {
     lazy val apply = f(arg1())
     lazy val arg1 = a1()
     override def toString = f + "(" + a1 + ")"
   }
 
   // A lazily applied binary terminal function call, with two call arguments
-  case class TBCall[A,B,+R](f: (A,B) => R, a1: FFCall[A], a2: FFCall[B])
-   extends BCall[FCall[A], FCall[B],R] {
-
+  case class TBCall[A,B,+R](f: (A,B) => R, a1: FFCall[A], a2: FFCall[B]) extends BCall[FCall[A], FCall[B],R] {
     lazy val apply = f(arg1(),arg2())
     lazy val arg1 = a1()
     lazy val arg2 = a2()
@@ -77,16 +69,16 @@ object IncrementalMemoization {
   def $[A,B,R](f: (A,B) => R, a: A, b: B): R = f(a,b)
 
   // lazy evaluation
-  def $$[A,R](f: A => FCall[R], a: A): FFCall[R] = LUCall(f,a)
-  def $$[A,B,R](f: (A,B) => FCall[R], a: A, b: B): FFCall[R] = LBCall(f,a,b)
-  def $$[A,R](f: A => R, a1: FFCall[A]) = TUCall(f,a1)
-  def $$[A,B,R](f: (A,B) => R, a1: FFCall[A], a2: FFCall[B]) = TBCall(f,a1,a2)
+  def $$[A,R](f: A => R, a: A): FCall[R] = LUCall(f,a)
+  def $$[A,B,R](f: (A,B) => R, a: A, b: B): FCall[R] = LBCall(f,a,b)
+  def $$[A,R](f: A => R, a1: FFCall[A]): FCall[R] = TUCall(f,a1)
+  def $$[A,B,R](f: (A,B) => R, a1: FFCall[A], a2: FFCall[B]): FCall[R] = TBCall(f,a1,a2)
 
-  // hash-consed lazy evaluation (=lazy memoization)
-  def $_[A,R](f: A => FCall[R], a: A): FFCall[R] = hashcons($$(f,a))
-  def $_[A,B,R](f: (A,B) => FCall[R], a: A, b: B): FFCall[R] = hashcons($$(f,a,b))
-  def $_[A,R](f: A => R, a1: FFCall[A]) = hashcons($$(f,a1))
-  def $_[A,B,R](f: (A,B) => R, a1: FFCall[A], a2: FFCall[B]) = hashcons($$(f,a1,a2))
+  // lazy hash-consed evaluation
+  def $_[A,R](f: A => R, a: A): FCall[R]  = hashcons($$(f,a))
+  def $_[A,B,R](f: (A,B) => R, a: A, b: B): FCall[R]  = hashcons($$(f,a,b))
+  def $_[A,R](f: A => R, a: FFCall[A]): FCall[R]  = hashcons($$(f,a))
+  def $_[A,B,R](f: (A,B) => R, a: FFCall[A], b: FFCall[B]): FCall[R] = hashcons($$(f,a,b))
 
   import scala.collection.mutable.WeakHashMap
   import java.lang.ref.WeakReference
