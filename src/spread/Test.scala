@@ -9,19 +9,21 @@ import scala.sys
  */
 
 object Test {
-  import IncrementalMemoization._
   import language.implicitConversions
+  import IncrementalMemoization._
+  import scala.language.existentials
 
   import javax.swing.tree._
   import javax.swing._
   import java.awt._
 
-
-  // Proof of concept works!
   final def main(args: Array[String]): Unit =
   {
-    val f1 = $_(sum4,Vector(1,2,3,4,5,6,7,8,9,10,11,12))
-    val f2 = $_(sum4,Vector(10,2,3,4,5,6,7,8,9,10,11,9))
+    var ff1 = sum5(Add)
+    //var ff2 = fac2(Mul,Add)
+
+    var f1 = %%(ff1,Vector(1,2,3,4,5,6,7,8))
+    var f2 = %%(ff1,Vector(9,2,3,4,5,6,7,8))
 
     val node1 = MyTreeNode(null,f1)
     val model1 = new DefaultTreeModel(node1)
@@ -82,49 +84,18 @@ object Test {
     override def toString = "sum2"
   }
 
-  lazy val sum3: Sum2Type = new Sum2Type {
-    def apply(v: Vector[Int]): Int = {
-      val s = v.size
-      if (s == 0) sys.error("empty sum")
-      else if (s == 1) v(0)
-      else {
-        val si = s / 2
-        val (l,r) = v.splitAt(si)
-        $(add,$(sum3,l),$(sum3,r))
-      }
-    }
-    override def toString = "sum3"
-  }
-
-  type FInt = FCall[Int]
-  case class CInt(i: Int) extends NCall[Int] { def apply = i ; override def toString = i.toString}
-  implicit def intToFInt(i: Int): FInt = CInt(i)
-
-  type Sum4Type = Vector[Int] => FInt
-
-  lazy val sum4: Sum4Type = new Sum4Type {
-    def apply(v: Vector[Int]): FInt = {
-      val s = v.size
-      if (s == 0) sys.error("empty sum")
-      else if (s == 1) v(0)
-      else {
-        val si = s / 2
-        val (l,r) = v.splitAt(si)
-        $_(add,$_(sum4,l),$_(sum4,r))
-      }
-    }
-    override def toString = "sum4"
-  }
 
   case class MyTreeNode(parent: MyTreeNode, t: Any) extends TreeNode {
-    import scala.collection.JavaConversions._
 
-    lazy val childs: Vector[TreeNode] = t match {
-      case u: LUCall[_,_] => Vector[TreeNode](MyTreeNode(this, u.apply))
-      case b: LBCall[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.apply))
-      case u: TUCall[_,_] => Vector[TreeNode](MyTreeNode(this, u.arg1))
-      case b: TBCall[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.arg1), MyTreeNode(this, b.arg2))
-      case _ => Vector[TreeNode]()
+    lazy val childs: Vector[TreeNode] = {
+      println("fc: " + fc)
+      t match {
+        case u: LUna[_,_] => Vector[TreeNode](MyTreeNode(this, u.eval))
+        case b: LBin[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.eval))
+        case u: OUna[_,_] => Vector[TreeNode](MyTreeNode(this, u.arg1))
+        case b: OBin[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.a1), MyTreeNode(this, b.a2))
+        case _ => Vector[TreeNode]()
+      }
     }
 
     def children = scala.collection.JavaConversions.asJavaEnumeration(childs.iterator)
@@ -136,5 +107,64 @@ object Test {
     def	isLeaf: Boolean = childs.size == 0
 
     override def toString = t.toString
+  }
+
+  lazy val i = (x: Int) => x + 1
+  lazy val b = 2
+  lazy val c = i(b)
+
+
+  case class fib(add: FF2[F0[Int]]) extends FF1[F0[Int]] {
+    def self = this
+    def apply(arg1: F0[Int]) = {
+      val aa = arg1()
+      if (aa <= 1) arg1
+      else %(add,%(self,aa-1),%(self,aa-2))
+    }
+    override def toString = "fib"
+  }
+
+  case class fib2(add: FF2[F0[Int]]) extends FF1[F0[Int]] {
+    def self = this
+    def apply(arg1: F0[Int]) = {
+      val aa = arg1()
+      if (aa <= 1) arg1
+      else  %%(add,%%(self,aa-1),%%(self,aa-2))
+    }
+    override def toString = "fib2"
+  }
+
+  case class sum5[L](add: FF2[F0[Int]]) extends F1[F0[Vector[Int]],F0[Int]] {
+    def self = this
+    def apply(arg1: F0[Vector[Int]]) = {
+      val vv = arg1()
+      val s = vv.size
+      if (s == 0) sys.error("empty sum")
+      else if (s == 1) vv(0)
+      else {
+        val (l,r) = vv.splitAt(s / 2)
+        %(add,%%(self,l),%%(self,r))
+      }
+    }
+    override def toString = "sum5"
+  }
+  case class fac(mul: FF2[F0[Int]], add: FF2[F0[Int]]) extends FF1[F0[Int]] {
+    def self = this
+    def apply(arg1: F0[Int]) = {
+      val aa = arg1()
+      if (aa <= 1) arg1
+      else %(mul,arg1,%(self,aa-1))
+    }
+    override def toString = "fac"
+  }
+
+  case class fac2(mul: FF2[F0[Int]], add: FF2[F0[Int]]) extends FF1[F0[Int]] {
+    def self = this
+    def apply(arg1: F0[Int]) = {
+      val aa = arg1()
+      if (aa <= 1) arg1
+      else %%(mul,arg1,%%(self,aa-1))
+    }
+    override def toString = "fac2"
   }
 }
