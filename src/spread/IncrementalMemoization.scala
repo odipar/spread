@@ -19,10 +19,10 @@ object IncrementalMemoization {
 
   var fc: Long = 0
 
-  // An purely functional abstract Function FF that may depend on other Functions
+  // A purely functional abstract Function FF that may depend on other Functions
   trait FF[F <: FF[F]] {
     def self: F                                         // the self type
-    def force: F = self                                 // force dependency tree
+    def force: F = self                                 // forces the dependency tree
     def contains(x: FF[_]) = false                      // check whether the dependency tree contains Function x
     def replaceable = true                              // check whether this can be replaced by another Function
     def replace[X <: FF[X]](a: FF[X], b: FF[X]) = self  // replaces Function a with Function b in the dependency tree
@@ -50,10 +50,10 @@ object IncrementalMemoization {
   type FF2[X] = F2[X,X,X]
 
   // strict evaluation
-  def %*[A,R](f: F1[A,R], a: A): R = f(a)
   def %[A,R](f: F1[F0[A],F0[R]], a: F0[A]): F0[R] = f(a)
-  def %*[A,B,R](f: F2[A,B,R], a: A, b: B): R = f(a,b)
+  def %*[A,R](f: F1[A,R], a: A): R = f(a)
   def %[A,B,R](f: F2[F0[A],F0[B],F0[R]], a: F0[A], b: F0[B]): F0[R] = f(a,b)
+  def %*[A,B,R](f: F2[A,B,R], a: A, b: B): R = f(a,b)
 
   // lazy memoized evaluation
   def %^[A,R](f: F1[A,R], a: F0[A]): F0[R] = hc(OUna(f,a))
@@ -85,7 +85,7 @@ object IncrementalMemoization {
     override def toString = "[" + a + " " + f + " " + b + "]"
   }
 
-  // A unary Function with lazy arguments
+  // A lazy unary Function with one Functional argument
   case class OUna[A,R](op: F1[A,R], a1: F0[A]) extends F0[R] {
     def self = this
     lazy val apply = %*(op,arg1)
@@ -102,7 +102,7 @@ object IncrementalMemoization {
     override def toString = op + "(" + a1 + ")"
   }
 
-  // A binary Function with lazy arguments
+  // A lazy binary Function with two Functional arguments
   case class OBin[A,B,R](op: F2[A,B,R], a1: F0[A], a2: F0[B]) extends F0[R] {
     def self = this
     lazy val apply = %*(op.force,arg1,arg2)
