@@ -1,6 +1,7 @@
 package spread
 
-import scala.sys
+import scala.collection.mutable.WeakHashMap
+import java.lang.ref.WeakReference
 
 /*
 
@@ -17,22 +18,52 @@ object Test {
   import javax.swing._
   import java.awt._
 
+  type I = FValue[Int,_]
+
+  def factorial(i: Int): I = {
+    if (i <= 1) 1
+    else ?(i) * factorial(i-1)
+  }
+
+  val fac2: Function1[Int,I] = new Function1[Int,I] {
+    def apply(i: Int): I = {
+      if (i <= 1) i
+      else ?(i) * $(fac2,i-1)
+    }
+    override def toString = "fac2"
+  }
+
+  def fib(i: Int): I = {
+    if (i <= 1) i
+    else (?(0) \ fib(i-1)) + (?(0) \ fib(i-2))
+  }
+
+  val fib2: Function1[Int,I] = new Function1[Int,I] {
+    def apply(i: Int): I = {
+      if (i <= 1) i
+      else (?(0) \ $(fib2,i-1)) + (?(0) \ $(fib2,i-2))
+    }
+    override def toString = "fib2"
+  }
+
+
+
   final def main(args: Array[String]): Unit =
   {
-    var ff1 = sum5(Add)
-    //var ff2 = fac2(Mul,Add)
 
-    var f1 = %%(ff1,Vector(1,2,3,4,5,6,7,8))
-    var f2 = %%(ff1,Vector(9,2,3,4,5,6,7,8))
+    val i1 = $(fac2,10)
+    val i2 = $(fac2,5)
 
-    val node1 = MyTreeNode(null,f1)
+    val node1 = GenericTreeNode(null,i1)
     val model1 = new DefaultTreeModel(node1)
+    //traverse(node1)
+
     var tree1 = new JTree(model1)
     tree1.setShowsRootHandles(true)
     tree1.setPreferredSize(new Dimension(600, 600))
     tree1.setMinimumSize(new Dimension(10, 10))
 
-    val node2 = MyTreeNode(null,f2)
+    val node2 = GenericTreeNode(null,i2)
     val model2 = new DefaultTreeModel(node2)
     var tree2 = new JTree(model2)
     tree2.setShowsRootHandles(true)
@@ -47,56 +78,14 @@ object Test {
     f.add(sp, BorderLayout.CENTER)
     f.pack()
     f.setVisible(true)
-
   }
 
-  def sum(v: Vector[Int]): Int = {
-    val s = v.size
-    if (s == 0) sys.error("empty sum")
-    else if (s == 1) v(0)
-    else {
-      val si = s / 2
-      val (l,r) = v.splitAt(si)
-      sum(l) + sum(r)
+  trait MyTreeNode extends TreeNode {
+    {
+      println("totf: " + totf)
     }
-  }
-
-  type AddType = (Int,Int) => Int
-
-  lazy val add: AddType = new AddType {
-    def apply(a1: Int, a2: Int): Int = a1 + a2
-    override def toString = "+"
-  }
-
-  type Sum2Type = Vector[Int] => Int
-
-  lazy val sum2: Sum2Type = new Sum2Type {
-    def apply(v: Vector[Int]): Int = {
-      val s = v.size
-      if (s == 0) sys.error("empty sum")
-      else if (s == 1) v(0)
-      else {
-        val si = s / 2
-        val (l,r) = v.splitAt(si)
-        add(sum2(l),sum2(r))
-      }
-    }
-    override def toString = "sum2"
-  }
-
-
-  case class MyTreeNode(parent: MyTreeNode, t: Any) extends TreeNode {
-
-    lazy val childs: Vector[TreeNode] = {
-      println("fc: " + fc)
-      t match {
-        case u: LUna[_,_] => Vector[TreeNode](MyTreeNode(this, u.eval))
-        case b: LBin[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.eval))
-        case u: OUna[_,_] => Vector[TreeNode](MyTreeNode(this, u.arg1))
-        case b: OBin[_,_,_] => Vector[TreeNode](MyTreeNode(this, b.a1), MyTreeNode(this, b.a2))
-        case _ => Vector[TreeNode]()
-      }
-    }
+    def parent: TreeNode
+    def childs: Vector[TreeNode]
 
     def children = scala.collection.JavaConversions.asJavaEnumeration(childs.iterator)
     def	getAllowsChildren = true
@@ -104,67 +93,40 @@ object Test {
     def	getChildCount: Int = childs.size
     def getIndex(node: TreeNode): Int = sys.error("no")
     def getParent: TreeNode = parent
-    def	isLeaf: Boolean = childs.size == 0
+  }
 
+  case class GenericTreeNode(parent: TreeNode, t: Any) extends MyTreeNode {
+
+    lazy val childs: Vector[TreeNode] = {
+      //println("fc: " + fc)
+      t match {
+        case b: TBin => {
+          Vector[TreeNode](GenericTreeNode(this, b.depends._1),GenericTreeNode(this, b.depends._2))
+        }
+        case TInt(i) => Vector[TreeNode](GenericTreeNode(this, i))
+        case v: LazyFValue[_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this, v.eval))
+        case ff: FForce[_,_,_,_] => Vector[TreeNode](ForceTreeNode(this,ff),GenericTreeNode(this, ff.f))
+        case f: FValue[_,_] => Vector[TreeNode](GenericTreeNode(this, f.depends))
+        case _ => Vector[TreeNode]()
+      }
+    }
+    def	isLeaf: Boolean = childs.size == 0
     override def toString = t.toString
   }
 
-  lazy val i = (x: Int) => x + 1
-  lazy val b = 2
-  lazy val c = i(b)
-
-
-  case class fib(add: FF2[F0[Int]]) extends FF1[F0[Int]] {
-    def self = this
-    def apply(arg1: F0[Int]) = {
-      val aa = arg1()
-      if (aa <= 1) arg1
-      else %(add,%(self,aa-1),%(self,aa-2))
+  case class ForceTreeNode(parent: TreeNode, t: FForce[_,_,_,_]) extends MyTreeNode {
+    lazy val childs: Vector[TreeNode] = {
+      Vector[TreeNode](GenericTreeNode(this, t()))
     }
-    override def toString = "fib"
+    def	isLeaf: Boolean = false
+    override def toString = "EVAL {" + t.u + "}"
   }
 
-  case class fib2(add: FF2[F0[Int]]) extends FF1[F0[Int]] {
-    def self = this
-    def apply(arg1: F0[Int]) = {
-      val aa = arg1()
-      if (aa <= 1) arg1
-      else  %%(add,%%(self,aa-1),%%(self,aa-2))
+  case class LazyTreeNode(parent: TreeNode, t: LazyFValue[_,_]) extends MyTreeNode {
+    lazy val childs: Vector[TreeNode] = {
+      Vector[TreeNode](GenericTreeNode(this, t.force))
     }
-    override def toString = "fib2"
-  }
-
-  case class sum5[L](add: FF2[F0[Int]]) extends F1[F0[Vector[Int]],F0[Int]] {
-    def self = this
-    def apply(arg1: F0[Vector[Int]]) = {
-      val vv = arg1()
-      val s = vv.size
-      if (s == 0) sys.error("empty sum")
-      else if (s == 1) vv(0)
-      else {
-        val (l,r) = vv.splitAt(s / 2)
-        %(add,%%(self,l),%%(self,r))
-      }
-    }
-    override def toString = "sum5"
-  }
-  case class fac(mul: FF2[F0[Int]], add: FF2[F0[Int]]) extends FF1[F0[Int]] {
-    def self = this
-    def apply(arg1: F0[Int]) = {
-      val aa = arg1()
-      if (aa <= 1) arg1
-      else %(mul,arg1,%(self,aa-1))
-    }
-    override def toString = "fac"
-  }
-
-  case class fac2(mul: FF2[F0[Int]], add: FF2[F0[Int]]) extends FF1[F0[Int]] {
-    def self = this
-    def apply(arg1: F0[Int]) = {
-      val aa = arg1()
-      if (aa <= 1) arg1
-      else %%(mul,arg1,%%(self,aa-1))
-    }
-    override def toString = "fac2"
+    def	isLeaf: Boolean = false
+    override def toString = "FORCE {" + t.toString + "}"
   }
 }
