@@ -55,7 +55,7 @@ object IncrementalMemoization {
     def depends = this
     def apply() = i
 
-    override def toString = i.toString
+    override def toString = "~" + i.toString
   }
 
   trait TBin extends IValue[(I,I)] {

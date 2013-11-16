@@ -18,30 +18,30 @@ object Test {
   import javax.swing._
   import java.awt._
 
-  type I = FValue[Int,_]
+  type II = IValue[_]
 
-  def factorial(i: Int): I = {
+  def fac(i: Int): II = {
     if (i <= 1) 1
-    else ?(i) * factorial(i-1)
+    else ?(i) * fac(i-1)
   }
 
-  val fac2: Function1[Int,I] = new Function1[Int,I] {
-    def apply(i: Int): I = {
+  val fac2: Function1[Int,II] = new Function1[Int,II] {
+    def apply(i: Int): II = {
       if (i <= 1) i
       else ?(i) * $(fac2,i-1)
     }
     override def toString = "fac2"
   }
 
-  def fib(i: Int): I = {
+  def fib(i: Int): II = {
     if (i <= 1) i
-    else (?(0) \ fib(i-1)) + (?(0) \ fib(i-2))
+    else ?(0) \ fib(i-1) + fib(i-2)
   }
 
-  val fib2: Function1[Int,I] = new Function1[Int,I] {
-    def apply(i: Int): I = {
+  val fib2: Function1[Int,II] = new Function1[Int,II] {
+    def apply(i: Int): II = {
       if (i <= 1) i
-      else (?(0) \ $(fib2,i-1)) + (?(0) \ $(fib2,i-2))
+      else ?(0) \ $(fib2,i-1) + $(fib2,i-2)
     }
     override def toString = "fib2"
   }
@@ -51,8 +51,8 @@ object Test {
   final def main(args: Array[String]): Unit =
   {
 
-    val i1 = $(fac2,10)
-    val i2 = $(fac2,5)
+    val i1 = fac2(10)
+    val i2 = fac2(5).force
 
     val node1 = GenericTreeNode(null,i1)
     val model1 = new DefaultTreeModel(node1)
@@ -101,7 +101,7 @@ object Test {
       //println("fc: " + fc)
       t match {
         case b: TBin => {
-          Vector[TreeNode](GenericTreeNode(this, b.depends._1),GenericTreeNode(this, b.depends._2))
+          Vector[TreeNode](GForceTreeNode(this,b), GenericTreeNode(this, b.depends._1),GenericTreeNode(this, b.depends._2))
         }
         case TInt(i) => Vector[TreeNode](GenericTreeNode(this, i))
         case v: LazyFValue[_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this, v.eval))
@@ -112,6 +112,14 @@ object Test {
     }
     def	isLeaf: Boolean = childs.size == 0
     override def toString = t.toString
+  }
+
+  case class GForceTreeNode(parent: TreeNode, t: FValue[_,_]) extends MyTreeNode {
+    lazy val childs: Vector[TreeNode] = {
+      Vector[TreeNode](GenericTreeNode(this, t()))
+    }
+    def	isLeaf: Boolean = false
+    override def toString = "EVAL {" + t + "}"
   }
 
   case class ForceTreeNode(parent: TreeNode, t: FForce[_,_,_,_]) extends MyTreeNode {
