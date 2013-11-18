@@ -18,45 +18,52 @@ object Test {
   import javax.swing._
   import java.awt._
 
-  type II = IValue[_]
 
-  def fac(i: Int): II = {
+  def fac[X](i: Int): I = {
     if (i <= 1) 1
-    else ?(i) * fac(i-1)
+    else i * fac(i-1)
   }
 
-  val fac2: Function1[Int,II] = new Function1[Int,II] {
-    def apply(i: Int): II = {
+  val fac2: Function1[Int,I] = new Function1[Int,I] {
+    def apply(i: Int): I = {
       if (i <= 1) i
-      else ?(i) * $(fac2,i-1)
+      else i * $(fac2,i-1)
     }
     override def toString = "fac2"
   }
 
-  def fib(i: Int): II = {
+  def fib(i: Int): I = {
     if (i <= 1) i
-    else ?(0) \ fib(i-1) + fib(i-2)
+    else fib(i-1) + fib(i-2)
   }
 
-  val fib2: Function1[Int,II] = new Function1[Int,II] {
-    def apply(i: Int): II = {
+  val fib2: Function1[Int,I] = new Function1[Int,I] {
+    def apply(i: Int): I = {
       if (i <= 1) i
-      else ?(0) \ $(fib2,i-1) + $(fib2,i-2)
+      else $(fib2,i-1) + $(fib2,i-2)
     }
     override def toString = "fib2"
   }
 
-
-
   final def main(args: Array[String]): Unit =
   {
 
-    val i1 = fac2(10)
-    val i2 = fac2(5).force
+    var join = fjoin(intord)
 
+    val k1 = join(T(1),T(2))
+    val k2 = join(T(3),T(4))
+
+    val j = join1(intord)
+    val r = %%(j,FI(k1),FI(k2))
+    println("j: " + r)
+
+    val i1 = r
+    val i2 = r
+    /*val i1 = fib2(10)
+    val i2 = fib2(5)
+      */
     val node1 = GenericTreeNode(null,i1)
     val model1 = new DefaultTreeModel(node1)
-    //traverse(node1)
 
     var tree1 = new JTree(model1)
     tree1.setShowsRootHandles(true)
@@ -81,9 +88,7 @@ object Test {
   }
 
   trait MyTreeNode extends TreeNode {
-    {
-      println("totf: " + totf)
-    }
+    { println("totf: " + totf) }
     def parent: TreeNode
     def childs: Vector[TreeNode]
 
@@ -98,15 +103,22 @@ object Test {
   case class GenericTreeNode(parent: TreeNode, t: Any) extends MyTreeNode {
 
     lazy val childs: Vector[TreeNode] = {
-      //println("fc: " + fc)
       t match {
-        case b: TBin => {
-          Vector[TreeNode](GForceTreeNode(this,b), GenericTreeNode(this, b.depends._1),GenericTreeNode(this, b.depends._2))
+        case b: TTer[_,_,_,_] => {
+          Vector[TreeNode](GForceTreeNode(this,b), GenericTreeNode(this, b.origin._1),GenericTreeNode(this, b.origin._2),GenericTreeNode(this, b.origin._3))
+        }
+        case b: TBin[_,_,_] => {
+          Vector[TreeNode](GForceTreeNode(this,b), GenericTreeNode(this, b.origin._1),GenericTreeNode(this, b.origin._2))
+        }
+        case b: TUna[_,_] => {
+          Vector[TreeNode](GForceTreeNode(this,b), GenericTreeNode(this, b.origin))
         }
         case TInt(i) => Vector[TreeNode](GenericTreeNode(this, i))
-        case v: LazyFValue[_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this, v.eval))
+        case v: LazyFValue[_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this, v.eval))
+        case v: LazyF2Value[_,_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b),GenericTreeNode(this, v.eval))
+        case v: LazyF3Value[_,_,_,_] => Vector[TreeNode](LazyTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b),GenericTreeNode(this,v.c),GenericTreeNode(this, v.eval))
         case ff: FForce[_,_,_,_] => Vector[TreeNode](ForceTreeNode(this,ff),GenericTreeNode(this, ff.f))
-        case f: FValue[_,_] => Vector[TreeNode](GenericTreeNode(this, f.depends))
+        case f: FValue[_,_] => Vector[TreeNode](GenericTreeNode(this, f.origin))
         case _ => Vector[TreeNode]()
       }
     }
@@ -130,7 +142,7 @@ object Test {
     override def toString = "EVAL {" + t.u + "}"
   }
 
-  case class LazyTreeNode(parent: TreeNode, t: LazyFValue[_,_]) extends MyTreeNode {
+  case class LazyTreeNode(parent: TreeNode, t: FValue[_,_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       Vector[TreeNode](GenericTreeNode(this, t.force))
     }
