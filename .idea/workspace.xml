@@ -2,19 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization_v2.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/Test2.scala" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/FunctionalTreap.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384611793297" ignored="false" />
+    <file path="/Dummy.txt" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384733818364" ignored="false" />
     <file path="/AbstractImmutableSequence.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369644654728" ignored="false" />
     <file path="/fragment.java" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384719263458" ignored="false" />
     <file path="/RationalWheel.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1356699332927" ignored="false" />
-    <file path="/Test.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384732793484" ignored="false" />
+    <file path="/Test.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384885073349" ignored="false" />
     <file path="/AbstractImmutableOrderedSet.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1369644498557" ignored="false" />
     <file path="/package.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1365964284374" ignored="false" />
     <file path="/Engine.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1366625884287" ignored="false" />
@@ -45,11 +44,13 @@
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-1_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/XMLSchema-instance.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1374232009398" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/idea.jar!/standardSchemas/xslt-2_0.xsd" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1380982004630" ignored="false" />
-    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384733705338" ignored="false" />
+    <file path="/IncrementalMemoization.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384884270911" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/HTMLOutput.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <file path="$PROJECT_DIR$/src/spread/SpreadREPL.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1382968250008" ignored="false" />
     <file path="/Test2.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384719094962" ignored="false" />
     <file path="/IncrementalMemoization_v2.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384719184413" ignored="false" />
+    <file path="/FunctionalSpread.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384809066248" ignored="false" />
+    <file path="/FunctionalTreap.scala" changelist="e8122ab2-daa2-4d67-a0c5-12f232fa029b" time="1384884974231" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,7 +109,7 @@
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <method_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/spread/Test.scala" line="21" class="spread.Test$" package="spread">
+      <breakpoint url="file://$PROJECT_DIR$/src/spread/Test.scala" line="23" class="spread.Test$" package="spread">
         <option name="WATCH_ENTRY" value="true" />
         <option name="WATCH_EXIT" value="true" />
         <option name="ENABLED" value="true" />
@@ -135,10 +136,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Test.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Test.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="122" column="56" selection-start="3785" selection-end="3785" vertical-scroll-proportion="0.0">
+            <state line="144" column="46" selection-start="3977" selection-end="3977" vertical-scroll-proportion="3.6743517">
               <folding>
                 <element signature="e#16#59#0" expanded="true" />
                 <element signature="e#157#192#0" expanded="true" />
@@ -147,31 +148,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Test2.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/Test2.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="46" selection-start="116" selection-end="116" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="92" column="17" selection-start="2669" selection-end="2669" vertical-scroll-proportion="0.21613833">
+            <state line="39" column="36" selection-start="844" selection-end="844" vertical-scroll-proportion="0.0">
               <folding>
-                <element signature="e#387#428#0" expanded="true" />
+                <element signature="e#388#429#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="package.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/sys/package.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="26" column="0" selection-start="960" selection-end="960" vertical-scroll-proportion="0.0">
-              <folding />
             </state>
           </provider>
         </entry>
@@ -194,11 +177,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Class.class" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Class.class">
+      <file leaf-file-name="OrderedTreapSet.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/OrderedTreapSet.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="304" column="0" selection-start="13867" selection-end="13867" vertical-scroll-proportion="0.0">
+            <state line="117" column="60" selection-start="4616" selection-end="4616" vertical-scroll-proportion="0.0">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractImmutableSequence.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="9" column="12" selection-start="367" selection-end="384" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FunctionalTreap.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/FunctionalTreap.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="178" column="0" selection-start="6599" selection-end="6599" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#43#74#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -212,19 +215,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractImmutableOrderedSet.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
+      <file leaf-file-name="Hashing.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="19" selection-start="3221" selection-end="3238" vertical-scroll-proportion="0.0">
+            <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractImmutableSequence.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
+      <file leaf-file-name="AbstractImmutableOrderedSet.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="12" selection-start="367" selection-end="384" vertical-scroll-proportion="0.0">
+            <state line="56" column="19" selection-start="3221" selection-end="3238" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -249,8 +252,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala" />
-        <option value="$PROJECT_DIR$/src/spread/WeightBalancedSequence.scala" />
         <option value="$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala" />
         <option value="$PROJECT_DIR$/src/spread/Engine_v2.scala" />
         <option value="$PROJECT_DIR$/src/spread/SequenceImplementation.scala" />
@@ -263,8 +264,10 @@
         <option value="$PROJECT_DIR$/src/spread/Engine_v3.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization_v2.scala" />
         <option value="$PROJECT_DIR$/src/spread/Test2.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
+        <option value="$PROJECT_DIR$/src/spread/FunctionalSpread.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
+        <option value="$PROJECT_DIR$/src/spread/FunctionalTreap.scala" />
       </list>
     </option>
   </component>
@@ -1003,7 +1006,11 @@
       <created>1384596063053</created>
       <updated>1384596063053</updated>
     </task>
-    <option name="localTasksCounter" value="101" />
+    <task id="LOCAL-00101" summary="lazy treap join exposition">
+      <created>1384733819448</created>
+      <updated>1384733819448</updated>
+    </task>
+    <option name="localTasksCounter" value="102" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1019,7 +1026,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26485568" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3248731" sideWeight="0.49025974" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.47028863" sideWeight="0.4700162" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4074703" sideWeight="0.4700162" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="5" side_tool="false" content_ui="tabs" />
@@ -1074,7 +1081,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="some more tree node types" />
+    <option name="LAST_COMMIT_MESSAGE" value="lazy treap join exposition" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1088,7 +1095,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="engine v3" />
     <MESSAGE value="clean-up + additional ops implementation such as bind" />
     <MESSAGE value="added dependency tracking" />
     <MESSAGE value="better trace handling" />
@@ -1113,6 +1119,7 @@
     <MESSAGE value="wording" />
     <MESSAGE value="- reworked model &#10;- lazy forcing + evaluation" />
     <MESSAGE value="some more tree node types" />
+    <MESSAGE value="lazy treap join exposition" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1122,13 +1129,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="53" selection-start="2721" selection-end="2721" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
@@ -1148,27 +1148,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="12" selection-start="367" selection-end="384" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/OrderedTreapSet.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="60" selection-start="4616" selection-end="4616" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/sys/package.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="26" column="0" selection-start="960" selection-end="960" vertical-scroll-proportion="0.0">
@@ -1176,16 +1155,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="19" selection-start="3221" selection-end="3238" vertical-scroll-proportion="0.0">
+        <state line="63" column="59" selection-start="2494" selection-end="2494" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/OrderedSetImplementation.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Test2.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="59" selection-start="2494" selection-end="2494" vertical-scroll-proportion="0.0">
+        <state line="6" column="46" selection-start="116" selection-end="116" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -1204,9 +1183,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test2.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/OrderedTreapSet.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="46" selection-start="116" selection-end="116" vertical-scroll-proportion="0.0">
+        <state line="117" column="60" selection-start="4616" selection-end="4616" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableOrderedSet.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="19" selection-start="3221" selection-end="3238" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -1218,21 +1204,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="122" column="56" selection-start="3785" selection-end="3785" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#16#59#0" expanded="true" />
-            <element signature="e#157#192#0" expanded="true" />
-          </folding>
+        <state line="2" column="7" selection-start="23" selection-end="23" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="9" column="12" selection-start="367" selection-end="384" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="92" column="17" selection-start="2669" selection-end="2669" vertical-scroll-proportion="0.21613833">
+        <state line="39" column="36" selection-start="844" selection-end="844" vertical-scroll-proportion="0.0">
           <folding>
-            <element signature="e#387#428#0" expanded="true" />
+            <element signature="e#388#429#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/FunctionalTreap.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="178" column="0" selection-start="6599" selection-end="6599" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#43#74#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="46" selection-start="3977" selection-end="3977" vertical-scroll-proportion="3.6743517">
+          <folding>
+            <element signature="e#16#59#0" expanded="true" />
+            <element signature="e#157#192#0" expanded="true" />
           </folding>
         </state>
       </provider>
