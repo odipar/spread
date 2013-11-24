@@ -5,7 +5,7 @@ object FunctionalTreap {
   import scala.language.implicitConversions
   import scala.language.existentials
 
-  trait FTreap[V,P] extends FValue[FTreap[V,P],FTreap[V,P]] {
+ /* trait FTreap[V,P] extends FValue[FTreap[V,P],FTreap[V,P]] {
     def isEmpty: Boolean
     def prio: P
     def left: FTreap[V,P]
@@ -100,36 +100,37 @@ object FunctionalTreap {
 
   trait MemoizedPrioOrdering[V,P] extends PrioOrdering[V,P] {
     val fcreate = fcreate1[V,P]
+
     val create_1 = create1[V,P](this)
     val join_1 = join1[V,P](this)
     val lsplit_1 = lsplit1[V,P](this)
     val rsplit_1 = rsplit1[V,P](this)
+    val put_1 = put1[V,P](this)
 
-    override def create(v: V): VFT[V,P] = fcreate(v,prio(v)) //$$(LFTreap(v,prio(v)))
-    override def create(l: VFT[V,P], v: V, p: P, r: VFT[V,P]): VFT[V,P] = create_1(l,(v,p),r)// $$(create_2(l(),(v,p),r()))
-    override def join(t1: VFT[V,P], t2: VFT[V,P]): VFT[V,P] = join_1(t1,t2)
-    override def lsplit(t: VFT[V,P], v: V): VFT[V,P] = lsplit_1(t,v)
-    override def rsplit(t: VFT[V,P], v: V): VFT[V,P] = rsplit_1(t,v)
+    override def create(v: V): VFT[V,P] = $$(fcreate(v,prio(v))) //$$(LFTreap(v,prio(v)))
+    override def create(l: VFT[V,P], v: V, p: P, r: VFT[V,P]): VFT[V,P] = ^^^(create_1,l,(v,p),r)// $$(create_2(l(),(v,p),r()))
+    override def join(t1: VFT[V,P], t2: VFT[V,P]): VFT[V,P] = ^^(join_1,t1,t2)
+    override def lsplit(t: VFT[V,P], v: V): VFT[V,P] = ^^(lsplit_1,t,v)
+    override def rsplit(t: VFT[V,P], v: V): VFT[V,P] = ^^(rsplit_1,t,v)
   }
   type VFT[V,P] = FValue[FTreap[V,P],_]
 
-  def create1[V,P](p: PrioOrdering[V,P]) = new Function3[VFT[V,P],(V,P),VFT[V,P],VFT[V,P]] {
+  def create1[V,P](p: PrioOrdering[V,P]): Function3[VFT[V,P],(V,P),VFT[V,P],VFT[V,P]] = new Function3[VFT[V,P],(V,P),VFT[V,P],VFT[V,P]] {
     val create: Function3[FTreap[V,P],(V,P),FTreap[V,P],VFT[V,P]] = create2(p)
-    def join = this
-    def apply(l: VFT[V,P], vp: (V,P), r: VFT[V,P]): VFT[V,P] = %%%(create,l(),vp,r())
-    override def toString = "create2"
+    def apply(l: VFT[V,P], vp: (V,P), r: VFT[V,P]): VFT[V,P] = ^^^(create,l(),vp,r())
+    override def toString = "create1"
   }
 
   def create2[V,P](p: PrioOrdering[V,P]): Function3[FTreap[V,P],(V,P),FTreap[V,P],VFT[V,P]] = new Function3[FTreap[V,P],(V,P),FTreap[V,P],VFT[V,P]] {
     val create: Function3[FTreap[V,P], (V,P), FTreap[V,P],FTreap[V,P]] = fcreate
     def join = this
     def apply(l: FTreap[V,P], vp: (V,P), r: FTreap[V,P]): VFT[V,P] = create(l,vp,r)
-    override def toString = "create3"
+    override def toString = "create2"
   }
 
   def join1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P],VFT[V,P],VFT[V,P]] = new Function2[VFT[V,P],VFT[V,P],VFT[V,P]] {
-    val join = join2(p)
-    def apply(a1: VFT[V,P], a2: VFT[V,P]): VFT[V,P] = %%(join,a1(),a2())
+    val join: Function2[FTreap[V,P],FTreap[V,P],VFT[V,P]] = join2(p)
+    def apply(l: VFT[V,P], r: VFT[V,P]): VFT[V,P] = ^^(join,l(),r())
     override def toString = "join1"
   }
 
@@ -149,16 +150,6 @@ object FunctionalTreap {
     override def toString = "join2"
   }
 
-  def left2[V,P] = new Function1[VFT[V,P],VFT[V,P]] {
-    def apply(a1: VFT[V,P]) = a1().left
-    override def toString = "left"
-  }
-
-  def right2[V,P] = new Function1[VFT[V,P],VFT[V,P]] {
-    def apply(a1: VFT[V,P]) = a1().right
-    override def toString = "right"
-  }
-
   def first[V,P](t1: FTreap[V,P]): Option[V] = {
     if (t1.isEmpty) None
     else if (t1.left.isEmpty && t1.right.isEmpty) Some(t1.value)
@@ -171,15 +162,13 @@ object FunctionalTreap {
     else last(t1.right)
   }
 
-  def lsplit1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P], V, VFT[V,P]] = new Function2[VFT[V,P], V, VFT[V,P]] {
-    lazy val split = lsplit2(p)
-    def apply(t1: VFT[V,P], x: V): VFT[V,P] =  split(t1(),x)
-    override def toString = "lsplit1"
-  }
 
+  def lsplit1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P],V,VFT[V,P]] = new Function2[VFT[V,P],V,VFT[V,P]] {
+    val split: Function2[FTreap[V,P],V,VFT[V,P]] = lsplit2(p)
+    def apply(l: VFT[V,P], v: V): VFT[V,P] = ^^(split,l(),v)
+    override def toString = "join1"
+  }
   def lsplit2[V,P](p: PrioOrdering[V,P]) = new Function2[FTreap[V,P], V, VFT[V,P]] {
-    lazy val split = lsplit1(p)
-    val join = join1(p)
     def apply(t1: FTreap[V,P], x: V): VFT[V,P] = {
       if (t1.isEmpty) t1
       else {
@@ -198,10 +187,10 @@ object FunctionalTreap {
     override def toString = "lsplit2"
   }
 
-  def rsplit1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P], V, VFT[V,P]] = new Function2[VFT[V,P], V, VFT[V,P]] {
-    lazy val split = rsplit2(p)
-    def apply(t1: VFT[V,P], x: V): VFT[V,P] =  split(t1(),x)
-    override def toString = "rsplit1"
+  def rsplit1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P],V,VFT[V,P]] = new Function2[VFT[V,P],V,VFT[V,P]] {
+    val split: Function2[FTreap[V,P],V,VFT[V,P]] = rsplit2(p)
+    def apply(l: VFT[V,P], v: V): VFT[V,P] = ^^(split,l(),v)
+    override def toString = "join1"
   }
 
   def rsplit2[V,P](p: PrioOrdering[V,P]) = new Function2[FTreap[V,P], V, VFT[V,P]] {
@@ -223,10 +212,10 @@ object FunctionalTreap {
     override def toString = "rsplit2"
   }
 
-  def put1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P], V, VFT[V,P]] = new Function2[VFT[V,P], V, VFT[V,P]] {
-    val put = put2(p)
-    def apply(t1: VFT[V,P], x: V): VFT[V,P] =  put(t1(),x)
-    override def toString = "put1"
+  def put1[V,P](p: PrioOrdering[V,P]): Function2[VFT[V,P],V,VFT[V,P]] = new Function2[VFT[V,P],V,VFT[V,P]] {
+    val put: Function2[FTreap[V,P],V,VFT[V,P]] = put2(p)
+    def apply(l: VFT[V,P], v: V): VFT[V,P] = ^^(put,l(),v)
+    override def toString = "join1"
   }
 
   def put2[V,P](p: PrioOrdering[V,P]) = new Function2[FTreap[V,P], V, VFT[V,P]] {
@@ -238,5 +227,5 @@ object FunctionalTreap {
       p.join(ll,r)
     }
     override def toString = "put2"
-  }
+  }*/
 }
