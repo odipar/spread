@@ -41,39 +41,43 @@ object Test {
 
     /*val iord = intord
 
-    val c = 5
+    var c = 10
+    var i = 2
 
     var r0: VFT[Int,Int] = T(1)
-    var i = 2
     while (i <= c) {
       r0 = iord.join(r0,T(i))
       i = i +1
-    } */
+    }
 
-    /*var r1: VFT[Int,Int] = T(1)
+    { println("totf: " + totf) }
 
-    System.gc()
+    var r1: VFT[Int,Int] = T(1)
 
-    i = c
-    while (i >= 2) {
-      r1 = iord.put(r1,i)
-      i = i - 1
-    } */
+    //System.gc()
 
-    val rr0 = $(fac,100)
-    val rr1 = $(fac,100)
+    println("YES")
+
+    c = 10
+    i = 2
+
+    while (i <= c) {
+      r1 = iord.join(r1,T(i))
+      i = i +1
+    }
+
+    { println("totf: " + totf) }
+
+    val rr0 = r0
+    val rr1 = r1
 
     println("rr0: " + rr0.hashCode)
     println("rr1: " + rr1.hashCode)
-   // println("equals: " + (rr0 eq rr1))
+    println("equals: " + (rr0 eq rr1)) */
 
 
-    val i1 = rr0
-    val i2 = rr1
-
-
-    /*val i1 = $(fib2,10)
-    val i2 = $(fib2,5)  */
+    val i1 = $(fac,10)
+    val i2 = $(fac,5)
 
     val node1 = GenericTreeNode(null,i1)
     //expand(node1)

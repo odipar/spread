@@ -35,7 +35,6 @@ object IncrementalMemoization {
     { totf = totf + 1 }
   }
 
-
   type I = FValue[Int,_]
 
   case class FI[X](x: X) extends FValue[X,FI[X]] {
@@ -63,16 +62,12 @@ object IncrementalMemoization {
     override def toString = "`"+i.toString
   }
 
-  def ?> = TInt(0)
-
-  case class Trace[X,O,XX,OO](u: FValue[XX,OO], f: FValue[X,O]) extends FValue[X,FValue[XX,OO]] {
-    def self = this
-    def origin = u
+  case class Trace[X,O,XX,OO](origin: FValue[XX,OO], f: FValue[X,O]) extends FValue[X,FValue[XX,OO]] {
     lazy val apply = f.apply()
-    override lazy val eval = trace(this,f.eval)
-    override lazy val force: FValue[X,_] = trace(this,f.force)
-    override def toString = "{" + u + " => " + f + "}"
-    override lazy val hashCode = Hashing.jenkinsHash(Hashing.jenkinsHash(u.hashCode) + f.hashCode)
+    override lazy val eval = trace(this,$$(f.eval))
+    override lazy val force: FValue[X,_] = trace(this,$$(f.force))
+    override lazy val hashCode = Hashing.jenkinsHash(Hashing.jenkinsHash(origin.hashCode) + f.hashCode)
+    override def toString = "{" + origin + " => " + f + "}"
   }
 
   implicit def ttint(i: Int): I = $$(TInt(i))
@@ -86,7 +81,7 @@ object IncrementalMemoization {
       //println("vput: " + c)
       vt.put(c,new WeakReference(c))
     }
-    else { println("vhit: " + c) }
+    //else { println("vhit: " + c) }
     vt.get(c).get.get.asInstanceOf[FValue[X,O]]
     //c.hashCode
   }
@@ -94,8 +89,10 @@ object IncrementalMemoization {
   def trace[X,O,XX,OO](u: FValue[XX,OO], f: FValue[X,O]): FValue[X,FValue[XX,OO]] = $$(Trace(u,f))
   def %[A,X](f: FValue[A,_] => FValue[X,_], a: FValue[A,_]): FValue[X,_] = $$(LazyF1(f,a))
   def %[A,B,X](f: (FValue[A,_],FValue[B,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_]): FValue[X,_] = $$(LazyF2(f,a,b))
+  def %[A,B,C,X](f: (FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_], c: FValue[C,_]): FValue[X,_] = $$(LazyF3(f,a,b,c))
   def $[A,X](f: FValue[A,_] => FValue[X,_], a: FValue[A,_]): FValue[X,_] = $$(LazyD1(f,a))
   def $[A,B,X](f: (FValue[A,_],FValue[B,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_]): FValue[X,_] = $$(LazyD2(f,a,b))
+  def $[A,B,C,X](f: (FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_], c: FValue[C,_]): FValue[X,_] = $$(LazyD3(f,a,b,c))
 
   implicit def toI(i: FValue[Int,_]): IValue = i match {
     case ii: IValue => ii
@@ -104,18 +101,18 @@ object IncrementalMemoization {
 
   case class LazyF1[A,X](f: (FValue[A,_]) => FValue[X,_], a: FValue[A,_]) extends FValue[X,((FValue[A,_]) => FValue[X,_],FValue[A,_])] {
     def origin = (f,a)
-    lazy val apply = force.apply
-    override lazy val force = eval
-    override lazy val eval = trace(this,f(a.force)).force
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a)))
     override def toString = f + "(" + a + ")"
     override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
   }
 
   case class LazyD1[A,X](f: (FValue[A,_]) => FValue[X,_], a: FValue[A,_]) extends FValue[X,((FValue[A,_]) => FValue[X,_],FValue[A,_])] {
     def origin = (f,a)
-    lazy val apply = force.apply
-    override lazy val force = eval.force
-    override lazy val eval = trace(this,f(a))
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a)))
     override def toString = f + "[" + a + "]"
     override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
   }
@@ -123,48 +120,67 @@ object IncrementalMemoization {
 
   case class LazyF2[A,B,X](f: (FValue[A,_],FValue[B,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_]) extends FValue[X,((FValue[A,_],FValue[B,_]) => FValue[X,_],FValue[A,_],FValue[B,_])] {
     def origin = (f,a,b)
-    lazy val apply = force.apply
-    override lazy val force = eval
-    override lazy val eval = trace(this,f(a.force,b.force)).force
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a,b)))
     override def toString = "(" + a + " " + f + " " + b + ")"
     override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
   }
 
   case class LazyD2[A,B,X](f: (FValue[A,_],FValue[B,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_]) extends FValue[X,((FValue[A,_],FValue[B,_]) => FValue[X,_],FValue[A,_],FValue[B,_])] {
     def origin = (f,a,b)
-    lazy val apply = force.apply
-    override lazy val force = eval.force
-    override lazy val eval = trace(this,f(a,b))
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a,b)))  // start tracing: from here everything is captured.
     override def toString = "[" + a + " " + f + " " + b + "]"
     override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
   }
 
-  val add2: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = i1() - i2()
-    override def toString = "+"
+  case class LazyF3[A,B,C,X](f: (FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_], c: FValue[C,_]) extends FValue[X,((FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_],FValue[A,_],FValue[B,_],FValue[C,_])] {
+    def origin = (f,a,b,c)
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a,b,c)))
+    override def toString = f + "(" + a + "," + b + "," + c + ")"
+    override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
+  }
+
+  case class LazyD3[A,B,C,X](f: (FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_], a: FValue[A,_], b: FValue[B,_], c: FValue[C,_]) extends FValue[X,((FValue[A,_],FValue[B,_],FValue[C,_]) => FValue[X,_],FValue[A,_],FValue[B,_],FValue[C,_])] {
+    def origin = (f,a,b,c)
+    def apply = force.apply
+    override def force = $$(eval.force)
+    override lazy val eval = trace(this,$$(f(a,b,c)))
+    override def toString = f + "[" + a + "," + b + "," + c + "]"
+    override lazy val hashCode = Hashing.jenkinsHash(origin.hashCode)
   }
 
   val add: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = %(add2,i1,i2)
+    case class Add(a1: FValue[Int,_], a2: FValue[Int,_]) extends FValue[Int,(FValue[Int,_],FValue[Int,_])] {
+      def origin = (a1,a2)
+      lazy val apply = a1() + a2()
+      override def toString = "(" + a1 + " + " + a2 + ")"
+    }
+    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = $$(Add(i1.force,i2.force))
     override def toString = "+"
   }
 
-  val sub2: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = i1() - i2()
-    override def toString = "-"
-  }
-
   val sub: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = %(sub2,i1,i2)
+    case class Sub(a1: FValue[Int,_], a2: FValue[Int,_]) extends FValue[Int,(FValue[Int,_],FValue[Int,_])] {
+      def origin = (a1,a2)
+      lazy val apply = a1() - a2()
+      override def toString = "(" + a1 + " - " + a2 + ")"
+    }
+    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = $$(Sub(i1.force,i2.force))
     override def toString = "-"
   }
 
-  val mul2: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = i1() * i2()
-    override def toString = "*"
-  }
   val mul: Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] = new Function2[FValue[Int,_],FValue[Int,_],FValue[Int,_]] {
-    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = $(mul2,i1,i2)
+    case class Mul(a1: FValue[Int,_], a2: FValue[Int,_]) extends FValue[Int,(FValue[Int,_],FValue[Int,_])] {
+      def origin = (a1,a2)
+      lazy val apply = a1() * a2()
+      override def toString = "(" + a1 + " * " + a2 + ")"
+    }
+    def apply(i1: FValue[Int,_], i2: FValue[Int,_]) = $$(Mul(i1.force,i2.force))
     override def toString = "*"
   }
 
