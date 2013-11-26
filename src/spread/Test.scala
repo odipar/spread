@@ -29,58 +29,53 @@ object Test {
   }
 
   val fib: Function1[I,I] = new Function1[I,I] {
-    def apply(i: I): I  = {
-      if (i() <= 1) 1
-      else $(fib,i() -1) + $(fib,i() - 2)
+    def apply(a: I): I  = {
+      val i = a()
+
+      if (i <= 1) a
+      else $(fib,i -1) + $(fib,i - 2)
     }
     override def toString = "fib"
+  }
+
+  lazy val sum3 = force11(sum(intord))
+
+  def sum(p: PrioOrdering[Int,Int]): Function1[VFT[Int,Int],I] = new Function1[VFT[Int,Int],I] {
+    def apply(a: VFT[Int,Int]): I = {
+      val t = a()
+
+      if (t.isEmpty) 0
+      else if (t.left.isEmpty && t.right.isEmpty) t.value
+      else if (t.left.isEmpty) toI(t.value) + $(sum3,t.right)
+      else if (t.right.isEmpty) $(sum3,t.left) + t.value
+      else $(sum3,t.left) + t.value + $(sum3,t.right)
+    }
+    override def toString = "sum"
   }
 
   final def main(args: Array[String]): Unit =
   {
 
-    /*val iord = intord
+    val iord = intord
 
     var c = 10
     var i = 2
 
     var r0: VFT[Int,Int] = T(1)
-    while (i <= c) {
+    while (i < c) {
       r0 = iord.join(r0,T(i))
       i = i +1
     }
 
-    { println("totf: " + totf) }
-
-    var r1: VFT[Int,Int] = T(1)
-
-    //System.gc()
-
-    println("YES")
-
-    c = 10
-    i = 2
-
-    while (i <= c) {
-      r1 = iord.join(r1,T(i))
-      i = i +1
-    }
-
-    { println("totf: " + totf) }
-
     val rr0 = r0
-    val rr1 = r1
-
-    println("rr0: " + rr0.hashCode)
-    println("rr1: " + rr1.hashCode)
-    println("equals: " + (rr0 eq rr1)) */
+    val rr1 = $(sum3,r0())
 
 
-    val i1 = $(fac,10)
-    val i2 = $(fac,5)
+    val i1 = rr0
+    val i2 = rr1
 
     val node1 = GenericTreeNode(null,i1)
-    //expand(node1)
+    expand(node1)
 
     val model1 = new DefaultTreeModel(node1)
 
@@ -135,9 +130,13 @@ object Test {
         //case x: FTreap[_,_] => Vector[TreeNode]()
         case v: LazyF1[_,_] => Vector[TreeNode](ForceTreeNode(this,v),GenericTreeNode(this,v.a))
         case v: LazyF2[_,_,_] => Vector[TreeNode](ForceTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b))
+       // case v: LazyFI1[_,_] => Vector[TreeNode](ForceTreeNode(this,v),GenericTreeNode(this,v.a))
+       // case v: LazyFI2[_,_,_] => Vector[TreeNode](ForceTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b))
         case v: LazyD1[_,_] => Vector[TreeNode](ForceTreeNode(this,v),EvalTreeNode(this,v),GenericTreeNode(this,v.a))
         case v: LazyD2[_,_,_] => Vector[TreeNode](ForceTreeNode(this,v),EvalTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b))
-        case ff: Trace[_,_,_,_] => Vector[TreeNode](GenericTreeNode(this, ff.f))
+        //case v: LazyFD1[_,_] => Vector[TreeNode](ForceTreeNode(this,v),EvalTreeNode(this,v),GenericTreeNode(this,v.a))
+        //case v: LazyFD2[_,_,_] => Vector[TreeNode](ForceTreeNode(this,v),EvalTreeNode(this,v),GenericTreeNode(this,v.a),GenericTreeNode(this,v.b))
+        case ff: Trace[_,_] => Vector[TreeNode](GenericTreeNode(this, ff.f))
         case _ => Vector[TreeNode]()
       }
     }
@@ -145,7 +144,7 @@ object Test {
     override def toString = t.toString
   }
 
-  case class EvalTreeNode(parent: TreeNode, t: FValue[_,_]) extends MyTreeNode {
+  case class EvalTreeNode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       Vector[TreeNode](GenericTreeNode(this, t.eval))
     }
@@ -153,7 +152,7 @@ object Test {
     override def toString = "EVAL {" + t + "}"
   }
 
-  case class ForceTreeNode(parent: TreeNode, t: FValue[_,_]) extends MyTreeNode {
+  case class ForceTreeNode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       Vector[TreeNode](GenericTreeNode(this, t.force))
     }
