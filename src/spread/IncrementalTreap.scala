@@ -2,7 +2,11 @@ package spread
 
 import scala.Function2
 
-object FunctionalTreap {
+/*
+  Copyright 2013: Robbert van Dalen
+ */
+
+object IncrementalTreap {
   import IncrementalMemoization._
   import scala.language.implicitConversions
 

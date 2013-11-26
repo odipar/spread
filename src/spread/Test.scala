@@ -11,8 +11,9 @@ import java.lang.ref.WeakReference
 
 object Test {
   import language.implicitConversions
-  import FunctionalTreap._
   import IncrementalMemoization._
+  import IncrementalTreap._
+  import IncrementalArithmetic.._
 
   import scala.language.existentials
 
