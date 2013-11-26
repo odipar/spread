@@ -1,7 +1,5 @@
 package spread
 
-import scala.{Function3, Function2}
-
 /*
   SPREAD lib: Incremental Computation Reuse
 
@@ -55,10 +53,8 @@ object IncrementalMemoization {
 
   def mem[X](c: FValue[X]): FValue[X] = {
     if (!vt.contains(c)) {
-      //println("vput: " + c)
       vt.put(c,new WeakReference(c))
     }
-    //else { println("vhit: " + c) }
     vt.get(c).get.get.asInstanceOf[FValue[X]]
   }
 
