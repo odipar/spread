@@ -5,10 +5,12 @@ package spread
  */
 
 object IncrementalArithmetic {
-  import IncrementalMemoization._
   import scala.language.implicitConversions
+  import IncrementalMemoization._
+  import java.math.BigInteger
 
   type I = FValue[Int]
+  type BI = FValue[BigInteger]
 
   lazy val add = force21(fadd)
   lazy val sub = force21(fsub)
@@ -36,10 +38,11 @@ object IncrementalArithmetic {
     def *(o: I): I = %(mul,origin,o)
   }
 
-  case class IWrap(origin: I) extends IValue {
-    def apply() = sys.error("no")
-    override def force = sys.error("no")
-    override def eval = sys.error("no")
+  private case class IWrap(origin: I) extends IValue {
+    def error = sys.error("IWrap should not be used directly")
+    def apply() = error
+    override def force = error
+    override def eval = error
   }
 
   implicit def toI(i: I): IValue = i match {
