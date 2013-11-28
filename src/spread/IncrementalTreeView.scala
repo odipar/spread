@@ -7,6 +7,7 @@ package spread
 object IncrementalTreeView {
   import javax.swing.tree.TreeNode
   import spread.IncrementalMemoization._
+  import scala.language.existentials
 
   trait MyTreeNode extends TreeNode {
     { println("totf: " + totf) }
@@ -35,14 +36,18 @@ object IncrementalTreeView {
         case v: LazyD1[_,_] => Vector[TreeNode](FNode(this,v),ENode(this,v),GNode(this,v.a))
         case v: LazyD2[_,_,_] => Vector[TreeNode](FNode(this,v),ENode(this,v),GNode(this,v.a),GNode(this,v.b))
         case ff: Trace[_,_] => Vector[TreeNode](GNode(this, ff.f))
-        case _ => Vector[TreeNode]()
+        case _ => { Vector[TreeNode]() }
       }
     }
     def	isLeaf: Boolean = childs.size == 0
-    override def toString = t.toString
+    override def toString = {
+      import Serializer._
+      val s = toIds(t)
+      toNodes(s).toString
+    }
   }
 
-  case class ENode(parent: TreeNode, t: FValue[Any]) extends MyTreeNode {
+  case class ENode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       Vector[TreeNode](GNode(this, t.eval))
     }
@@ -50,7 +55,7 @@ object IncrementalTreeView {
     override def toString = "EVAL {" + t + "}"
   }
 
-  case class FNode(parent: TreeNode, t: FValue[Any]) extends MyTreeNode {
+  case class FNode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       Vector[TreeNode](GNode(this, t.force))
     }

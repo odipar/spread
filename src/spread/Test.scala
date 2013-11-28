@@ -19,9 +19,11 @@ object Test {
   import java.awt._
 
   val fac: Function1[I,I] = new Function1[I,I] {
-    def apply(i: I): I  = {
-      if (i() <= 1) 1
-      else i * $(fac,i() - 1)
+    def apply(a: I): I  = {
+      val i = a()
+
+      if (i <= 1) 1
+      else a * $(fac,i - 1)
     }
     override def toString = "fac"
   }
@@ -31,7 +33,7 @@ object Test {
       val i = a()
 
       if (i <= 1) a
-      else $(fib,i -1) + $(fib,i - 2)
+      else $(fib,i-1) + $(fib,i-2)
     }
     override def toString = "fib"
   }
@@ -43,9 +45,9 @@ object Test {
       val t = a()
 
       if (t.isEmpty) 0
-      else if (t.left.isEmpty && t.right.isEmpty) t.value
+      /*else if (t.left.isEmpty && t.right.isEmpty) t.value
       else if (t.left.isEmpty) (t.value:I) + $(sum3,t.right)
-      else if (t.right.isEmpty) $(sum3,t.left) + t.value
+      else if (t.right.isEmpty) $(sum3,t.left) + t.value*/
       else $(sum3,t.left) + t.value + $(sum3,t.right)
     }
     override def toString = "sum"
@@ -64,8 +66,13 @@ object Test {
       i = i +1
     }
 
-    val rr0 = r0
-    val rr1 = $(sum3,r0())
+    val rr0 = $(fac,5).force
+    val rr1 = $(sum3,r0()).force
+
+    import Serializer._
+    val s = toIds(rr0)
+    val xml = toNodes(s)
+    println(xml)
 
     val tree1 = createTView(GNode(null,rr0))
     val tree2 = createTView(GNode(null,rr1))
