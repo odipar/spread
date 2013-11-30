@@ -74,7 +74,7 @@ object IncrementalTreap {
   def T[V,P](v: V)(implicit p: PrioOrdering[V,P]): FTreap[V,P] = fcreate1(v,p.prio(v))
 
   case object IPrioOrdering extends PrioOrdering[Int,Int] {
-    def prio(v: Int): Int = Hashing.jenkinsHash(v.hashCode)
+    def prio(v: Int): Int = Hashing.jenkinsHash(Hashing.jenkinsHash(v) + v.hashCode)
     def orderValue(v1: Int,v2: Int) = if (v1 > v2) 1 ; else if (v1 < v2 ) -1 ; else 0
     def orderPrio(p1: Int,p2: Int) =  if (p1 > p2) 1 ; else if (p1 < p2 ) -1 ; else 0
 
@@ -88,28 +88,28 @@ object IncrementalTreap {
     def orderValue(v1: V, v2: V): Int
     def orderPrio(p1: P, p2: P): Int
 
-    lazy val create_1 = force31(create_3)
-    lazy val create_2 = force32(create_3)
+    lazy val create_1 = finish3(create_3)
+    lazy val create_2 = reduce3(create_3)
     lazy val create_3 = create3[V,P](this)
-    lazy val join_1 = force21(join_3)
-    lazy val join_2 = force22(join_3)
+    lazy val join_1 = finish2(join_3)
+    lazy val join_2 = reduce2(join_3)
     lazy val join_3 = join3[V,P](this)
-    lazy val left_1 = force11(left_3)
-    lazy val left_2 = force12(left_3)
+    lazy val left_1 = finish1(left_3)
+    lazy val left_2 = reduce1(left_3)
     lazy val left_3 = left3[V,P](this)
-    lazy val right_1 = force11(right_3)
-    lazy val right_2 = force12(right_3)
+    lazy val right_1 = finish1(right_3)
+    lazy val right_2 = reduce1(right_3)
     lazy val right_3 = right3[V,P](this)
-    lazy val lsplit_1 = force21(lsplit_3)
-    lazy val lsplit_2 = force22(lsplit_3)
+    lazy val lsplit_1 = finish2(lsplit_3)
+    lazy val lsplit_2 = reduce2(lsplit_3)
     lazy val lsplit_3 = lsplit3[V,P](this)
-    lazy val rsplit_1 = force21(rsplit_3)
-    lazy val rsplit_2 = force22(rsplit_3)
+    lazy val rsplit_1 = finish2(rsplit_3)
+    lazy val rsplit_2 = reduce2(rsplit_3)
     lazy val rsplit_3 = rsplit3[V,P](this)
     lazy val put_3 = put3[V,P](this)
 
     def create(v: V): VFT[V,P] = mem(LFTreap(v,prio(v)))
-    def create(l: VFT[V,P], v: V, p: P, r: VFT[V,P]): VFT[V,P] = %(create_1,l,FI(v,p),r)
+    def create(l: VFT[V,P], v: V, p: P, r: VFT[V,P]): VFT[V,P] = %(create_1,l,fi(v,p),r)
     def join(t1: VFT[V,P], t2: VFT[V,P]): VFT[V,P] = %(join_1,t1,t2)
     def left(t: VFT[V,P]): VFT[V,P] =  $(left_1,t)
     def right(t: VFT[V,P]): VFT[V,P] = $(right_1,t)

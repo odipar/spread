@@ -18,39 +18,45 @@ object Test {
   import javax.swing._
   import java.awt._
 
+  lazy val fac3 = reduce1(fac)
+
   val fac: Function1[I,I] = new Function1[I,I] {
     def apply(a: I): I  = {
       val i = a()
 
       if (i <= 1) 1
-      else a * $(fac,i - 1)
+      else a ** %%(fac,i - 1)
     }
     override def toString = "fac"
   }
+
+  lazy val fib3 = fib
 
   val fib: Function1[I,I] = new Function1[I,I] {
     def apply(a: I): I  = {
       val i = a()
 
       if (i <= 1) a
-      else $(fib,i-1) + $(fib,i-2)
+      else %%(fib3,i-1) +% %%(fib3,i-2)
     }
     override def toString = "fib"
   }
 
-  lazy val sum3 = force11(sum(intord))
+  lazy val prod3 = prod(intord)
 
-  def sum(p: PrioOrdering[Int,Int]): Function1[VFT[Int,Int],I] = new Function1[VFT[Int,Int],I] {
+  def %%[A,X](f: Function1[FValue[A],FValue[X]], t: FValue[A]) = %(f,t)
+
+  def prod(p: PrioOrdering[Int,Int]): Function1[VFT[Int,Int],I] = new Function1[VFT[Int,Int],I] {
     def apply(a: VFT[Int,Int]): I = {
       val t = a()
 
       if (t.isEmpty) 0
-      /*else if (t.left.isEmpty && t.right.isEmpty) t.value
-      else if (t.left.isEmpty) (t.value:I) + $(sum3,t.right)
-      else if (t.right.isEmpty) $(sum3,t.left) + t.value*/
-      else $(sum3,t.left) + t.value + $(sum3,t.right)
+      else if (t.left.isEmpty && t.right.isEmpty) t.value
+      else if (t.left.isEmpty) (t.value:I) *^ %%(prod3,t.right)
+      else if (t.right.isEmpty) %%(prod3,t.left) *^ t.value
+      else %%(prod3,t.left) *^ t.value *^ %%(prod3,t.right)
     }
-    override def toString = "sum"
+    override def toString = "prod"
   }
 
   final def main(args: Array[String]): Unit =
@@ -61,13 +67,13 @@ object Test {
     var i = 2
 
     var r0: VFT[Int,Int] = T(1)
-    while (i < c) {
+    while (i <= c) {
       r0 = iord.join(r0,T(i))
       i = i +1
     }
 
-    val rr0 = $(fac,5).force
-    val rr1 = $(sum3,r0()).force
+    val rr0 = $(prod3,r0())
+    val rr1 = $(fac,5)
 
     import Serializer._
     val s = toIds(rr0)

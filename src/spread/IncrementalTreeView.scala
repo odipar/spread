@@ -31,35 +31,39 @@ object IncrementalTreeView {
   case class GNode(parent: TreeNode, t: Any) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
       t match {
-        case v: LazyF1[_,_] => Vector[TreeNode](FNode(this,v),GNode(this,v.a))
-        case v: LazyF2[_,_,_] => Vector[TreeNode](FNode(this,v),GNode(this,v.a),GNode(this,v.b))
-        case v: LazyD1[_,_] => Vector[TreeNode](FNode(this,v),ENode(this,v),GNode(this,v.a))
-        case v: LazyD2[_,_,_] => Vector[TreeNode](FNode(this,v),ENode(this,v),GNode(this,v.a),GNode(this,v.b))
-        case ff: Trace[_,_] => Vector[TreeNode](GNode(this, ff.f))
+        case i: Iterate[_,_] => {
+          Vector[TreeNode](INode(this,i.to))
+        }
+        case v: LazyF1[_,_] => Vector[TreeNode](FNode(this,v),INode(this,v),GNode(this,v.a))
+        case v: LazyF2[_,_,_] => Vector[TreeNode](FNode(this,v),INode(this,v),GNode(this,v.a),GNode(this,v.b))
+        case v: LazyD1[_,_] => Vector[TreeNode](FNode(this,v),INode(this,v),GNode(this,v.a))
+        case v: LazyD2[_,_,_] => Vector[TreeNode](FNode(this,v),INode(this,v),GNode(this,v.a),GNode(this,v.b))
+        case ff: Trace[_,_] => Vector[TreeNode](GNode(this, ff.to))
         case _ => { Vector[TreeNode]() }
       }
     }
     def	isLeaf: Boolean = childs.size == 0
     override def toString = {
-      import Serializer._
+      t.toString
+      /*import Serializer._
       val s = toIds(t)
-      toNodes(s).toString
+      toNodes(s).toString */
     }
   }
 
-  case class ENode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
+  case class INode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
-      Vector[TreeNode](GNode(this, t.eval))
+      Vector[TreeNode](GNode(this, t.iterate))
     }
     def	isLeaf: Boolean = false
-    override def toString = "EVAL {" + t + "}"
+    override def toString = "ITERATE {" + t + "}"
   }
 
   case class FNode(parent: TreeNode, t: FValue[_]) extends MyTreeNode {
     lazy val childs: Vector[TreeNode] = {
-      Vector[TreeNode](GNode(this, t.force))
+      Vector[TreeNode](GNode(this, t.finish))
     }
     def	isLeaf: Boolean = false
-    override def toString = "FORCE {" + t + "}"
+    override def toString = "FINISH {" + t + "}"
   }
 }

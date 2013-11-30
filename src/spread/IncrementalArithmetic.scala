@@ -12,44 +12,57 @@ object IncrementalArithmetic {
   type I = FValue[Int]
   type BI = FValue[BigInteger]
 
-  lazy val add = force21(fadd)
-  lazy val sub = force21(fsub)
-  lazy val mul = force21(fmul)
+  lazy val add = finish2(fadd)
+  lazy val sub = finish2(fsub)
+  lazy val mul = finish2(fmul)
 
-  val fadd: Function2[I,I,I] = new Function2[I,I,I] {
+  lazy val add2 = reduce2(fadd)
+  lazy val sub2 = reduce2(fsub)
+  lazy val mul2 = reduce2(fmul)
+
+  lazy val fadd: Function2[I,I,I] = new Function2[I,I,I] {
     def apply(i1: I, i2: I) = i1() + i2()
     override def toString = "+"
   }
 
-  val fsub: Function2[I,I,I] = new Function2[I,I,I] {
+  lazy val fsub: Function2[I,I,I] = new Function2[I,I,I] {
     def apply(i1: I, i2: I) = i1() - i2()
     override def toString = "-"
   }
 
-  val fmul: Function2[I,I,I] = new Function2[I,I,I] {
+  lazy val fmul: Function2[I,I,I] = new Function2[I,I,I] {
     def apply(i1: I, i2: I) = i1() * i2()
     override def toString = "*"
   }
 
   trait IValue extends FValue[Int] {
     def origin: I
-    def +(o: I): I = %(add,origin,o)
-    def -(o: I): I = %(sub,origin,o)
-    def *(o: I): I = %(mul,origin,o)
+    def +(o: I): I = fadd(origin,o)
+    def -(o: I): I = fsub(origin,o)
+    def *(o: I): I = fmul(origin,o)
+    def ++(o: I): I = %(fadd,origin,o)
+    def --(o: I): I = %(fsub,origin,o)
+    def **(o: I): I = %(fmul,origin,o)
+    def +%(o: I): I = %(add2,origin,o)
+    def -%(o: I): I = %(sub2,origin,o)
+    def *%(o: I): I = %(mul2,origin,o)
+    def +^(o: I): I = %(add,origin,o)
+    def -^(o: I): I = %(sub,origin,o)
+    def *^(o: I): I = %(mul,origin,o)
   }
 
   private case class IWrap(origin: I) extends IValue {
     def error = sys.error("IWrap should not be used directly")
-    def apply() = error
-    override def force = error
-    override def eval = error
+    override def apply() = error
+    override def finish = error
+    override def iterate = error
   }
 
-  implicit def toI(i: I): IValue = i match {
+  implicit def toIWrap(i: I): IValue = i match {
     case ii: IValue => ii ; case _ => IWrap(i)
   }
 
-  implicit def toI(i: Int): I = mem(TInt(i))
+  implicit def toInt(i: Int): I = mem(TInt(i))
 
   case class TInt(i: Int) extends IValue {
     def origin = this
