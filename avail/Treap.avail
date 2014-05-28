@@ -306,9 +306,9 @@ Semantic restriction "_+_" is
     
   Unless xType ⊆ ordType's parameters'type[1] then
   [
-  		Reject parse, expected:
-			format "element type ⊆ “①” to be a subtype of “②”'s parameters"
-				with xType, ordType
+    Reject parse, expected:
+    format "element type ⊆ “①” to be a subtype of “②”'s parameters"
+    with xType, ordType
   ];
 
   treapType
@@ -358,9 +358,9 @@ Semantic restriction "_treap" is
   
   Unless arg1Type = arg2Type then
   [
-  		Reject parse, expected:
-			format "ordering parameter types “①” and “②” have to be equal"
-				with arg1Type, arg2Type
+    Reject parse, expected:
+    format "ordering parameter types “①” and “②” have to be equal"
+    with arg1Type, arg2Type
   ];
   extend typed treap with ordering : ordMetaType
 ] : typed treap's type;
