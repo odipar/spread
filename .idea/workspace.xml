@@ -134,8 +134,8 @@
       <file leaf-file-name="Treap.avail" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/avail/Treap.avail">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="5670">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="-12.427536" vertical-offset="5205" max-vertical-offset="5730">
+              <caret line="4" column="29" selection-start-line="4" selection-start-column="28" selection-end-line="4" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -227,6 +227,7 @@
         <option value="$PROJECT_DIR$/toxgml2.xsl" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
         <option value="$PROJECT_DIR$/src/spread/Test2.scala" />
+        <option value="$PROJECT_DIR$/avail/Treap.avail" />
       </list>
     </option>
   </component>
@@ -1045,7 +1046,11 @@
       <created>1401302885838</created>
       <updated>1401302885838</updated>
     </task>
-    <option name="localTasksCounter" value="112" />
+    <task id="LOCAL-00112" summary="avail and other experiments">
+      <created>1401303014187</created>
+      <updated>1401303014187</updated>
+    </task>
+    <option name="localTasksCounter" value="113" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1068,7 +1073,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24166666" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24166666" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26459628" sideWeight="0.5541667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1095,7 +1100,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Incremental memoization *is* a spreadsheet: supersedes all previous work" />
     <MESSAGE value="efficient incremental memoization without space leaks" />
     <MESSAGE value="barbage collectable incremental tracing memoization" />
     <MESSAGE value="show case" />
@@ -1120,7 +1124,8 @@
     <MESSAGE value="cleanup" />
     <MESSAGE value="xml serialization" />
     <MESSAGE value="avail and other experiment" />
-    <option name="LAST_COMMIT_MESSAGE" value="avail and other experiment" />
+    <MESSAGE value="avail and other experiments" />
+    <option name="LAST_COMMIT_MESSAGE" value="avail and other experiments" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1533,8 +1538,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/avail/Treap.avail">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="5670">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="-12.427536" vertical-offset="5205" max-vertical-offset="5730">
+          <caret line="4" column="29" selection-start-line="4" selection-start-column="28" selection-end-line="4" selection-end-column="28" />
           <folding />
         </state>
       </provider>

@@ -24,7 +24,7 @@ Body
 "ordering" is a new field atom;
 
 /**
- * a treap is a tree and heap, roughly balanced using deterministic value 
+ * a treap is a tree and a heap, roughly balanced using deterministic value
  * hashes. the basic data structure is untyped and imposes no order.
  *
  * @type "treap"
@@ -130,7 +130,11 @@ Method "_'s⁇rehash" is
 /* a full treap always has a value */
 Method "_'s⁇value" is [ t : full treap | t's tvalue ];
 
-/* the full treap's priority is drawn from the value's determistic (re)hash */
+/* the full treap's priority is drawn from the value's deterministic (re)hash.
+ * using determistic hashes, a treap collapses into a unique representation,
+ * irrespective of insertion order.
+ */
+
 Method "_'s⁇prio" is [ t : full treap | t's tvalue's rehash ];
 
 Method "___create" is 
