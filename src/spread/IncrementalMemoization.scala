@@ -1,6 +1,6 @@
 package spread
 /*
-  SPREAD lib: Incremental Cofinishtion Reuse
+  SPREAD lib: Incremental Computational Reuse
 
   Features:
 
