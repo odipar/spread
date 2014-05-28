@@ -1,6 +1,9 @@
 /**********************************************************************
- * an experimental treap implementation in avail
+ * 
+ * an experimental treap implementation in avail v0.1
+ *
  * author: Robbert van Dalen
+ *
 **********************************************************************/
 
 Module "Treap"
