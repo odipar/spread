@@ -1,6 +1,8 @@
 /**********************************************************************
  * 
- * an experimental treap implementation in avail - v0.1
+ * an experimental treap implementation in avail - v0.2
+ * 
+ * depends on revision avail@bfed27a and later
  *
  * author: Robbert van Dalen
  *
@@ -11,7 +13,9 @@ Uses
 	"Avail"
 Names
 	"_treap",
-	"__split",
+	"_∪_",
+	"_∩_",
+	"_Δ_",
 	"test treap"
 Entries
  "test treap"
@@ -26,19 +30,13 @@ Body
 /**
  * a treap is a tree and a heap, roughly balanced using deterministic value
  * hashes. the basic data structure is untyped and imposes no order.
- *
- * @type "treap"
  */
 Explicit class "treap" extends object;
 
-/* may be there is a better way to pass abstract orderings, but this will do */
+/* an abstract ordering */
 orderingType ::= [⊥,⊥]→number;
 
-/**
- * A typed treap imposes an ordering over an untyped treap
- *
- * @type "treap"
- */
+/* a typed treap imposes an ordering over an untyped treap */
 Explicit class "typed treap" extends object 
   with fields
     ordering : orderingType,
@@ -58,8 +56,7 @@ Explicit class "bin treap" extends full treap
     tleft : treap,
     tright : treap;
 
-/* 
- * note that all non-public methods are in postfix to disambiguate.
+/* note that all non-public methods are in postfix to disambiguate.
  * and also because the author likes postfix (exactly because of non-ambiguity)
  */
 Abstract method "_'s⁇left" is [treap]→treap;
@@ -71,12 +68,11 @@ Abstract method "_'s⁇last" is [treap]→any;
 Abstract method "_'s⁇first" is [treap]→any;
 Abstract method "___create" is [treap,any,treap]→treap;
 Forward  method "__join" is [treap,treap]→treap;
-Forward  method "_'s⁇rehash" is [any]→integer;
 
 empty ::= an empty treap;
 incorrect ::= an incorrect-argument-type exception;
 
-/* note that exceptions should never be thrown because of the treap's implicit
+/* exceptions should never be thrown because of the treap's implicit
  * invariants.
  */
 Method "_'s⁇left" is [ t : empty treap | Raise incorrect ];
@@ -108,34 +104,18 @@ Method "_'s⁇last" is [ t : rightish treap | t's right's last ];
 Method "_'s⁇left" is [ t : bin treap | t's tleft ] ;
 Method "_'s⁇right" is [ t : bin treap | t's tright ];
 Method "_'s⁇depth" is [ t : bin treap | t's left's depth max t's right's depth];
-Method "_'s⁇first" is [ t : bin treap | t's left's last ];
+Method "_'s⁇first" is [ t : bin treap | t's left's first ];
 Method "_'s⁇last" is [ t : bin treap | t's right's last ];
-
-/* the default rehash just takes the hash */
-Method "_'s⁇rehash" is [ t : any | t's hash ];
-
-/* but we have to rehash numbers because they are currently not well 
- * distributed, causing inbalanced treaps.
- */
-Method "_'s⁇rehash" is
-[ 
-  t : number
-| 
-  hash ::= t's hash;
-  /* make a feeble attempt to distribute a numbers hash */
-  rehash ::= -2147483648 + ((hash × (hash + 31)) mod 4294967298);
-  rehash
-];
 
 /* a full treap always has a value */
 Method "_'s⁇value" is [ t : full treap | t's tvalue ];
 
-/* the full treap's priority is drawn from the value's deterministic (re)hash.
+/* the full treap's priority is drawn from the value's deterministic hash.
  * using determistic hashes, a treap collapses into a unique representation,
  * irrespective of insertion order.
  */
 
-Method "_'s⁇prio" is [ t : full treap | t's tvalue's rehash ];
+Method "_'s⁇prio" is [ t : full treap | t's tvalue's hash ];
 
 Method "___create" is 
 [
@@ -173,9 +153,10 @@ Method "___create" is
   a bin treap with tleft ::= left, tvalue ::= value, tright ::= right
 ];
 
-/* joins two treaps a and b. 
- * all elements in a should be smaller than all elements in b
+/* joins two treaps t1 and t2. 
+ * every element in t1 should be smaller than every element in t2
  */
+Method "__join" is [ t1 : empty treap, t2: empty treap | t2 ];
 Method "__join" is [ t1 : empty treap, t2: treap | t2 ];
 Method "__join" is [ t1 : treap, t2: empty treap | t1 ];
 Method "__join" is 
@@ -200,16 +181,17 @@ Method "_as a treap" is
   a leaf treap with tvalue ::= v 
 ];
 
-/* splits a treap between a value, given an ordering */
-Abstract method "___split" is [treap,any,orderingType]→<treap…|2>;
-    
+
+/* splits a treap into three parts, given a value and an ordering */
+Abstract method "___split" is [treap,any,orderingType]→<treap…|3>;
+
 Method "___split" is
 [
   treap: empty treap,
   x: any,
   ordering: orderingType
 |
-  <empty,empty>
+  <empty,empty,empty>
 ];
 
 Method "___split" is
@@ -223,37 +205,47 @@ Method "___split" is
   if compare > 0 then 
   [
     split ::= treap's left x ordering split;
+    
     left ::= split[1];
-    right ::= split[2] treap's value as a treap join treap's right join;
-    <left,right>
+    middle ::= split[2];
+    right ::= split[3] treap's value as a treap join treap's right join;
+    
+    <left,middle,right>
   ]
   else
   [
     if compare < 0 then
     [
       split ::= treap's right x ordering split;
+      
       left ::= treap's left treap's value as a treap join split[1] join;
-      right ::= split[2];
-      <left,right>
+      middle ::= split[2];
+      right ::= split[3];
+      
+      <left,middle,right>
     ]
     else
     [
-      <treap's left,treap's right>
+      <treap's left,treap's value as a treap,treap's right>
     ]
   ]
-];
+] : <treap…|3>;
 
-/* splits a typed treap between a value, given an ordering */
+
+/* splits a typed treap into three parts, given a value and an ordering */
 Method "__split" is 
 [
   treap : typed treap,
   x : any
 |
-  split ::= treap's root x treap's ordering split;  
+  split ::= treap's root x treap's ordering split;
+  
   left ::= a typed treap with ordering ::= treap's ordering, root ::= split[1];
+  mid ::= a typed treap with ordering ::= treap's ordering, root ::= split[1];
   right ::= a typed treap with ordering ::= treap's ordering, root ::= split[2];
-  <left,right>
-] : <typed treap…|2>;
+  
+  <left,mid,right>
+] : <typed treap…|3>;
 
 
 /* inserts a value into a treap */
@@ -281,7 +273,91 @@ Method "___insert" is
     else /* slow insert */
     [
       split ::= t x ord split;  
-      split[1] x as a treap join split[2] join
+      split[1] x as a treap join split[3] join
+    ]
+  ]
+] : treap;
+
+Explicit class "set operation" extends object;
+Explicit class "union" extends set operation;
+Explicit class "intersect" extends set operation;
+Explicit class "difference" extends set operation;
+
+_union ::= a union;
+_intersect ::= an intersect;
+_difference ::= a difference;
+
+Abstract method "___equal" is [treap,treap,set operation]→treap;
+Abstract method "___disjoint" is [treap,treap,set operation]→treap;
+
+Method "___equal" is [ t1 : treap, t2 : treap, o : union | t1 ];
+Method "___disjoint" is [ t1 : treap, t2 : treap, o : union | t1 t2 join ];
+
+Method "___equal" is [ t1 : treap, t2 : treap, o : intersect | t1 ];
+Method "___disjoint" is [ t1 : treap, t2 : treap, o : intersect | empty ];
+
+Method "___equal" is [ t1 : treap, t2 : treap, o : difference | empty ];
+Method "___disjoint" is [ t1 : treap, t2 : treap, o : difference | t1 t2 join ];
+
+/* combines two treaps into a new treap, given an ordering and set operation */
+Abstract method "____combine" is [treap,treap,orderingType,set operation]→treap; 
+
+Method "____combine" is 
+[ 
+  t1 : empty treap,
+  t2 : empty treap,
+  ord : orderingType,
+  operation : set operation
+| 
+  t1 
+];
+
+Method "____combine" is 
+[ 
+  t1 : empty treap,
+  t2 : full treap,
+  ord : orderingType,
+  operation : set operation
+| 
+  t1 t2 operation disjoint
+];
+
+Method "____combine" is
+[ 
+  t1 : full treap,
+  t2 : empty treap,
+  ord : orderingType,
+  operation : set operation
+| 
+  t1 t2 operation disjoint 
+];
+
+
+Method "____combine" is
+[
+  t1 : full treap,
+  t2 : full treap,
+  ord : orderingType,
+  operation : set operation
+|
+  if t1 = t2 then [ t1 t2 operation equal ]
+  else
+  [
+    if ord(t1's last,t2's first) < 0 then [t1 t2 operation disjoint]
+    else
+    [
+      if ord(t1's first,t2's last) > 0 then [t2 t1 operation disjoint]
+      else
+      [
+        value ::= t2's value;
+        split ::= t1 value ord split;
+        
+        left ::= split[1] t2's left ord operation combine;
+        middle ::= split[2] value as a treap ord operation combine;
+        right ::= split[3] t2's right ord operation combine;
+
+        left middle join right join
+      ]
     ]
   ]
 ] : treap;
@@ -304,7 +380,7 @@ Semantic restriction "_+_" is
 |
   ordType ::= treapType's ordering;
     
-  Unless xType ⊆ ordType's parameters'type[1] then
+  Unless xType ⊆ ordType's parameters' type[1] then
   [
     Reject parse, expected:
     format "element type ⊆ “①” to be a subtype of “②”'s parameters"
@@ -312,6 +388,84 @@ Semantic restriction "_+_" is
   ];
 
   treapType
+];
+
+Method "___combine" is
+[
+  t1 : typed treap,
+  t2 : typed treap,
+  op : set operation
+|
+  ord ::= t1's ordering;
+  newroot ::= t1's root t2's root ord op combine;
+  a typed treap with ordering ::= ord, root ::= newroot
+] : typed treap;
+
+Method "__combine types" is
+[
+  treapType1 : typed treap's type,
+  treapType2 : typed treap's type
+|
+  ordType1 ::= treapType1's ordering;
+  ordType2 ::= treapType2's ordering;
+
+  /* TODO [RVD]: allow orderings types to be subtypes of each other? */
+  Unless ordType1 = ordType2 then
+  [
+    Reject parse, expected:
+    format "ordering type “①” has to be equal to ordering type “②”"
+    with ordType1, ordType2
+  ];
+  
+  treapType1
+] : typed treap's type;
+
+Public method "_∪_" is
+[
+  t1 : typed treap,
+  t2 : typed treap
+|
+  t1 t2 _union combine
+] : typed treap;
+
+Semantic restriction "_∪_" is
+[
+  treapType1 : typed treap's type,
+  treapType2 : typed treap's type
+|
+  treapType1 treapType2 combine types
+];
+
+Public method "_∩_" is
+[
+  t1 : typed treap,
+  t2 : typed treap
+|
+  t1 t2 _intersect combine
+] : typed treap;
+
+Semantic restriction "_∩_" is
+[
+  treapType1 : typed treap's type,
+  treapType2 : typed treap's type
+|
+  treapType1 treapType2 combine types
+];
+
+Public method "_Δ_" is
+[
+  t1 : typed treap,
+  t2 : typed treap
+|
+  t1 t2 _difference combine
+] : typed treap;
+
+Semantic restriction "_Δ_" is
+[
+  treapType1 : typed treap's type,
+  treapType2 : typed treap's type
+|
+  treapType1 treapType2 combine types
 ];
 
 /* pretty printing */
@@ -353,8 +507,9 @@ Semantic restriction "_treap" is
 [
   ordMetaType : orderingType's type
 |
-  arg1Type ::= ordMetaType's parameters'type[1];
-  arg2Type ::= ordMetaType's parameters'type[2];
+  ordPars  ::= ordMetaType's parameters' type;
+  arg1Type ::= ordPars[1];
+  arg2Type ::= ordPars[2];
   
   Unless arg1Type = arg2Type then
   [
@@ -368,9 +523,16 @@ Semantic restriction "_treap" is
 Public method "test treap" is 
 [
   t ::= [ x : [0..8], y : [0..8] | x - y ] treap;
+  
   t2 ::= t + 1 + 3 + 5 + 0 + 8 + 4;
   t3 ::= t + 8 + 3 + 5 + 4 + 1 + 0;
-
-  <t2,t3,t2's hash,t3's hash,t2 = t3>
+  t4 ::= t + 1 + 3 + 5 + 6 + 8;
+  t5 ::= t + 2 + 3 + 4 + 7 + 8;
+  t6 ::= t4 ∪ t5;
+  t7 ::= t4 ∩ t5;
+  t8 ::= t4 Δ t5;
+  <t,t2,t3,t2 = t3,t3 = t4,t4,t5,t6,t7,t8>
 ];
+
+
 
