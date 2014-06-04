@@ -520,6 +520,13 @@ Semantic restriction "_treap" is
   extend typed treap with ordering : ordMetaType
 ] : typed treap's type;
 
+Method "_'s⁇hash" is
+[
+  t : treap
+|
+  1
+];
+
 Public method "test treap" is 
 [
   t ::= [ x : [0..8], y : [0..8] | x - y ] treap;
@@ -533,6 +540,4 @@ Public method "test treap" is
   t8 ::= t4 Δ t5;
   <t,t2,t3,t2 = t3,t3 = t4,t4,t5,t6,t7,t8>
 ];
-
-
 
