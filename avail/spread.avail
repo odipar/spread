@@ -119,15 +119,17 @@ Explicit class "ffac" extends unary;
 Method "_show" is [ c : ffac | "factorial" ] : string;
 fac ::= a ffac;
 Method "__call" is [ n : number value, f : ffac |
-  nn ::= n's content
+  nn ::= n's content;
   if (nn < 2) then [ 1 λ ] else [ n nn-1 λ fac λ × ] 
 ] : value;
 
 Method "test spread" is
 [
-  f0 ::= 10 λ fac λ;
-  f1 ::= f0 reduce;
-  f2 ::= f1 reduce;
+  f0 ::= 1 λ 2 λ + 3 λ 4 λ + ×;
+  f1 ::= f0 full reduce;
+  f2 ::= 10 λ fac λ;
   f3 ::= f2 reduce;
-  <f0,f1,f2,f3>
+  f4 ::= f3 reduce;
+  f5 ::= f4 reduce;
+  <f0,f1,f2,f3,f4,f5>
 ];
