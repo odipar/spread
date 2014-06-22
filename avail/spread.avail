@@ -19,11 +19,17 @@ Body
 "arg1" is a new field atom;
 "arg2" is a new field atom;
 "func" is a new field atom;
+"value type" is a new field atom;
 "content" is a new field atom;
 
 Explicit class "value" extends object;
+Explicit class "typed value" extends value 
+  with fields 
+    value type : value's type;
+    root : value;
+    
 Explicit class "any value" extends value with fields content : any;
-Explicit class "number value" extends any value with fields content : number;
+Explicit class "number value" extends any value with fields content : number;                   
 
 Explicit class "function value" extends value;
 Explicit class "unary" extends function value;
@@ -52,7 +58,7 @@ Method "_show" is [ c : bin |
 Method "“_”" is [ v : value | v show ];
 
 Method "_λ" is [ n : any | a any value with content ::= n ];
-Method "_λ" is [ n : number | a number value with content ::= n ];
+Method "_λ" is [ n : number | a number value with content ::= n ] : number value;
 Method "__λ" is [ a1 : value, f: unary | a una with arg1 ::= a1, func ::= f ];
 Method "___λ" is [ a1 : value, a2 : value, f: binary |
   a bin with arg1 ::= a1, arg2 ::= a2, func ::= f 
@@ -67,27 +73,28 @@ Method "___binary operation" is [ a1 : value, a2 : value, f : binary |
 ] : value;
 
 Explicit class "add" extends binary;
-Method "_show" is [ c : add | "+" ] : string;
+Method "_show" is [ c : add | "+" ];
 _add ::= an add;
-Method "__+" is [ a1 : value, a2 : value | a1 a2 _add binary operation ];
+Method "__+" is [ 
+  a1 : value, a2 : value | a1 a2 _add binary operation ] : value;
 
 Explicit class "mul" extends binary;
-Method "_show" is [ c : mul | "×" ] : string;
+Method "_show" is [ c : mul | "×" ];
 _mul ::= an mul;
 Method "__×" is [ a1 : value, a2 : value | a1 a2 _mul binary operation ];
 
 Method "__call" is [ a1 : value, f : unary | a1 f unary operation ] : value;
 Method "___call" is [ a1 : value, a2 : value,f : binary |
   a1 a2 f binary operation
-] : value;
+];
 
 Method "___call" is [ a1 : number value, a2 : number value, f : add |
   a1's content + a2's content λ
-] : value;
+];
 
 Method "___call" is [ a1 : number value, a2 : number value, f : mul |
   a1's content × a2's content λ
-] : value;
+];
 
 Method "_reduce" is [ v : value | v ] : value;
 Forward method "_full reduce" is [value]→value;
@@ -101,7 +108,7 @@ Method "_reduce" is [
 |
   a1 ::= v's arg1 full reduce;
   if a1 = v's arg1 then [ a1 v's func call ] else [ a1 v's func λ ]
-] : value;
+];
 
 Method "_reduce" is [ 
   v : bin 
@@ -113,23 +120,41 @@ Method "_reduce" is [
     if a2 = v's arg2 then [ a1 a2 v's func call ] else [ a1 a2 v's func λ ]
   ]
   else [ a1 a2 v's func λ ]
-] : value;
+];
 
-Explicit class "ffac" extends unary;
-Method "_show" is [ c : ffac | "factorial" ] : string;
+/*Explicit class "ffac" extends unary;
+Method "_show" is [ c : ffac | "fac λ" ];
 fac ::= a ffac;
 Method "__call" is [ n : number value, f : ffac |
   nn ::= n's content;
   if nn < 2 then [ 1 λ ] else [ n nn-1 λ fac λ × ]
-] : value;
+];
 
+Explicit class "ffib" extends unary;
+Method "_show" is [ c : ffib | "fib λ" ];
+fib ::= a ffib;
+Method "__call" is [ n : number value, f : ffib |
+  nn ::= n's content;
+  if nn < 2 then [ 1 λ ] else [ nn-1 λ fib λ nn-2 λ fib λ +]
+];
+*/
 Method "test spread" is
 [
-  f0 ::= 1 λ 2 λ + 3 λ 4 λ + ×;
+  a1 : number value := 1 λ;
+  a2 : number value := 2 λ;
+  a3 : number value := 3 λ;
+  a4 : number value := 4 λ;
+  
+  f1 ::= a1 a2 +;
+  f2 ::= a3 a4 +;
+  f3 ::= f1 f2 +;
+  
+  f3
+  /*f0 ::= 1 λ 2 λ + 3 λ 4 λ + ×;
   f1 ::= f0 full reduce;
-  f2 ::= 10 λ fac λ;
+  f2 ::= 10 λ fib λ;
   f3 ::= f2 reduce;
   f4 ::= f3 reduce;
   f5 ::= f4 reduce;
-  <f0,f1,f2,f3,f4,f5>
+  <f0,f1,f2,f3,f4,f5>*/
 ];
