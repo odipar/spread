@@ -67,7 +67,6 @@ object IncrementalMemoization {
 
   case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
     override lazy val finish = F1(f, a.finish)
-    override def reduce = this
     override lazy val eval = f(a).eval
     override def toString = f + "(" + a + ")"
   }
@@ -86,7 +85,6 @@ object IncrementalMemoization {
 
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
     override lazy val finish = F2(f, a.finish, b.finish)
-    override def reduce = this
     override lazy val eval = f(a, b).eval
     override def toString = "(" + a + " " + f + " " + b + ")"
   }
@@ -106,7 +104,6 @@ object IncrementalMemoization {
 
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
     override lazy val finish = F3(f, a.finish, b.finish, c.finish)
-    override def reduce = this
     override lazy val eval = f(a, b, c).eval
     override def toString = f + "(" + a + "," + b + "," + c + ")"
   }
