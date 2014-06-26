@@ -1,7 +1,7 @@
 package spread
 
 /*
-  Copyright 2013: Robbert van Dalen
+  Copyright 2014: Robbert van Dalen
  */
 
 object IncrementalTreeView {

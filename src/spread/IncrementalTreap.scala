@@ -1,7 +1,7 @@
 package spread
 
 /*
-  Copyright 2013: Robbert van Dalen
+  Copyright 2014: Robbert van Dalen
  */
 
 object IncrementalTreap {
@@ -53,7 +53,7 @@ object IncrementalTreap {
     def left = NFTreap()
     def isEmpty = false
     override def toString = value.toString + "'" + right
-    override lazy val hashCode = jenkinsHash(right.hashCode ^ jenkinsHash(value.hashCode ^ prio.hashCode))
+    override lazy val hashCode = jenkinsHash(value.hashCode ^ jenkinsHash(right.hashCode ^ prio.hashCode))
   }
 
   type VFT[V, P] = Expr[FTreap[V, P]]
@@ -163,6 +163,7 @@ object IncrementalTreap {
     }
     override def toString = "rsplit"
   }
+
   def put1[V, P](p: PrioOrdering[V, P]) = new Function2[VFT[V, P], Expr[V], VFT[V, P]] {
     def apply(a1: VFT[V, P], x: Expr[V]): VFT[V, P] = {
       val r = p.rsplit(a1, x)
