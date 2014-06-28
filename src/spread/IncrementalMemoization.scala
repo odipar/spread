@@ -214,4 +214,36 @@ object IncrementalMemoization {
     override def toString = f + "(" + a + "," + b + "," + c + ")"
     override val hasDependencies = a.hasDependencies || b.hasDependencies || c.hasDependencies
   }
+
+  def parentPaths(e: Expr[ _], t: Expr[_]) : List[Expr[_]] = {
+    var c: List[List[Expr[_]]] = List(List(e))
+    var done = false
+
+    while (!done) {
+      var nc: List[List[Expr[_]]] = List()
+      var iter = false
+      for (tl <- c) {
+        val h = tl.head
+        if (h == t) {
+           done = true
+           nc = List(tl)
+        }
+        else
+        {
+          val p = getParents(tl.head)
+          if (!p.isEmpty) {
+            iter = true
+            for (pp <- p.keys) {
+              var k = tl.::(pp)
+              nc = k +: nc
+            }
+          }
+        }
+      }
+      c = nc
+      if (!iter) { done = true }
+    }
+
+    c.head
+  }
 }
