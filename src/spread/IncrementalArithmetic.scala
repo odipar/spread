@@ -16,9 +16,12 @@ object IncrementalArithmetic {
   /* syntactic sugar */
   trait IExpr extends I {
     def origin: I
-    def +(o: I): I = F2(2,add,origin,o)
-    def -(o: I): I = F2(2,sub,origin,o)
-    def *(o: I): I = F2(2,mul,origin,o)
+    def +(o: I): I = %(add,origin,o)
+    def ++(o: I): I = %%(add,origin,o)
+    def -(o: I): I = %(sub,origin,o)
+    def --(o: I): I = %%(sub,origin,o)
+    def *(o: I): I = %(mul,origin,o)
+    def **(o: I): I = %%(mul,origin,o)
   }
 
   case class II(eval: Int) extends IExpr {
