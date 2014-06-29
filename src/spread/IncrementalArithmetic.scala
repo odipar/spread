@@ -1,5 +1,7 @@
 package spread
 
+import spread.Hashing._
+
 /*
   Copyright 2014: Robbert van Dalen
  */
@@ -11,28 +13,29 @@ object IncrementalArithmetic {
 
   type I = Expr[Int]
 
+  /* syntactic sugar */
   trait IExpr extends I {
     def origin: I
-    def +(o: I): I = mem(%(add, origin, o))
-    def ++(o: I): I = mem(%(add2, origin, o))
-    def -(o: I): I = mem(%(sub, origin, o))
-    def --(o: I): I = mem(%(sub2, origin, o))
-    def *(o: I): I = mem(%(mul, origin, o))
-    def **(o: I): I = mem(%(mul2, origin, o))
+    def +(o: I): I = F2(2,add,origin,o)
+    def -(o: I): I = F2(2,sub,origin,o)
+    def *(o: I): I = F2(2,mul,origin,o)
   }
 
   case class II(eval: Int) extends IExpr {
     def origin = this
+    def stage = 0
     override def toString = "" + eval
-    override def hashCode = Hashing.jenkinsHash(eval)
+    override def hashCode = jh(eval)
   }
 
   implicit def toI(i: Int): I = II(i)
 
+  /* syntactic sugar */
   private case class IWrap(origin: I) extends IExpr {
     def error = sys.error("IWrap should not be used directly")
+    override def stage = error
     override def eval = error
-    override def reduce = error
+    override def reduce(s: Int, c: Context) = error
   }
 
   implicit def toIWrap(i: I): IExpr = i match {
@@ -40,33 +43,9 @@ object IncrementalArithmetic {
     case _ => IWrap(i)
   }
 
-  val add = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval + b.eval
-    override def toString = "+"
-  }
+  type BI = ((I, I) => I)
 
-  val add2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(add, a, b)
-    override def toString = "++"
-  }
-
-  val sub = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval - b.eval
-    override def toString = "-"
-  }
-
-  val sub2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(sub, a, b)
-    override def toString = "--"
-  }
-
-  val mul = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval * b.eval
-    override def toString = "*"
-  }
-
-  val mul2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(mul, a, b)
-    override def toString = "**"
-  }
+  object add extends BI { def apply(a: I, b: I): I = a.eval + b.eval ; override def toString = "+" }
+  object sub extends BI { def apply(a: I, b: I): I = a.eval - b.eval ; override def toString = "-" }
+  object mul extends BI { def apply(a: I, b: I): I = a.eval * b.eval ; override def toString = "*" }
 }

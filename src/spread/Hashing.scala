@@ -2,8 +2,8 @@ package spread
 
 object Hashing {
 
-  final def jenkinsHash(k: Int) = {
-    var key = k
+  final def jenkinsHash(k: Int): Int = {
+    var key: Int = k
     key = ~key + (key << 15) // key = (key << 15) - key - 1;
     key = key ^ (key >>> 12)
     key = key + (key << 2)

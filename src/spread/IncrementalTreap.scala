@@ -16,6 +16,7 @@ object IncrementalTreap {
     def value: V
     def right: FTreap[V, P]
     def eval = this
+    def stage = 0
   }
 
   case class NFTreap[V, P]() extends FTreap[V, P] {
@@ -87,7 +88,7 @@ object IncrementalTreap {
     lazy val lsplit_1 = lsplit1[V, P](this)
     lazy val rsplit_1 = rsplit1[V, P](this)
     lazy val put_1 = put1[V, P](this)
-    def create(v: V): VFT[V, P] = mem(LFTreap(v, prio(v)))
+    def create(v: V): VFT[V, P] = LFTreap(v, prio(v))
     def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = %(create_1, l, ei(v, p), r)
     def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = %(join_1, t1, t2)
     def left(t: VFT[V, P]): VFT[V, P] = left_1(t)

@@ -1,4 +1,8 @@
 package spread
+
+import spread.Hashing._
+import scala.collection.immutable.Map
+
 /*
   SPREAD lib: Incremental Computational Reuse
 
@@ -16,234 +20,110 @@ package spread
 
 object IncrementalMemoization {
   import scala.language.implicitConversions
-  import scala.collection.mutable.WeakHashMap
-  import java.lang.ref.WeakReference
 
-  trait Expr[V] {
-    def eval: V
-    def finish: Expr[V] = this
-    def reduce: Expr[V] = this
-    def trace: Expr[V] = Trace(this,fullRed(this))
-    def replace[X](v: Expr[X], w: Expr[X]): Expr[V] = {
-      if (this == v) w.asInstanceOf[Expr[V]]
-      else this
+  trait Expr[E] {
+    def eval: E
+    def reduce(s: Int, c: Context): (Context,Expr[E]) = (c,this)
+
+    def stage: Int
+    def minStage: Int = stage
+    def maxStage: Int = stage
+  }
+
+  case class EExpr[E](eval: E) extends Expr[E] {
+    def stage = 0
+  }
+
+  def ei[E](e: E): Expr[E] = EExpr(e)
+
+  trait Context {
+    def reduce[E](s: Int, e: Expr[E]): (Context,Expr[E]) = (this,e)
+    def merge(o: Context): Context = o
+  }
+
+  def fullReduce[E](s: Int, c: Context, e: Expr[E]): (Context, Expr[E]) = {
+    val (cc,ee) = c.reduce(s,e) ; if  (ee == e) (cc,ee) else fullReduce(s,cc,ee)
+  }
+
+  def %[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = { F1(1,f,a) }
+  def %[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = { F2(1,f,a,b) }
+  def %[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = { F3(1,f,a,b,c) }
+
+  def %%[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = { F1(2,f,a) }
+  def %%[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = { F2(2,f,a,b) }
+  def %%[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = { F3(2,f,a,b,c) }
+
+  def combine(a: Int, b: Int): Int = { if (a == 0) b ; else if (b == 0) a ; else a min b }
+
+  case class F1[A, R](stage: Int, f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
+    def eval = { sys.error("eval should only be called on stage > 0") }
+    override val maxStage = stage max a.maxStage
+    override val minStage = { val sa = a.minStage ; if (sa == 0) stage ; else sa }
+    override def reduce(s: Int, c: Context) = {
+      val (ca,ea) = fullReduce(s,c,a)
+      if (((a.stage == 0) && (ea.stage == 0))  && (s >= stage)) (ca,f(ea))
+      else (ca,F1(stage,f,ea))
     }
-    def children: Vector[Expr[_]] = empty
-    def hasDependencies: Boolean = false
-
-    def $ : Expr[V] = labelExpr(this)
-    def unary_! : V = eval
-  }
-
-  def labelExpr[V](e: Expr[V]): LabeledExpr[V] = e match {
-    case LabeledExpr(l) => LabeledExpr(l)
-    case _ => LabeledExpr(e)
-  }
-
-  case class LabeledExpr[V](expr: Expr[V]) extends Expr[V] {
-    def eval = expr.eval
-    override def finish = LabeledExpr(expr.finish)
-    override def reduce = LabeledExpr(expr.reduce)
-    override def children = expr.children
-    override def hasDependencies = true
-    override def toString = expr.toString + "'"
-  }
-
-  case class Trace[V](from: Expr[V], to: Expr[V]) extends Expr[V] {
-    def eval = to.eval
-    override def reduce = to
-    override def finish = to
-    override def children = Vector(from,to)
-    override def hasDependencies = from.hasDependencies
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[V] = {
-      val aa = replaceExpr(from, v, w)
-      if (aa == from) this; else Trace(aa, fullRed(aa))
-    }
-    override def toString = from.toString + " => " + to.toString
-  }
-
-  val empty: Vector[Expr[_]] = Vector()
-
-  val vt = WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
-  def mem[V](c: Expr[V]): Expr[V] = {
-    if (!vt.contains(c)) vt.put(c, new WeakReference(c))
-    vt.get(c).get.get.asInstanceOf[Expr[V]]
-  }
-
-  val wp = WeakHashMap.empty[Expr[_], WeakHashMap[Expr[_],WeakReference[Expr[_]]]]
-  def addParent(child: Expr[_], parent: Expr[_]) = {
-    if (child.hasDependencies) {
-      val m = {
-        if (!wp.contains(child)) WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
-        else wp.get(child).get
-      }
-      m.put(parent, new WeakReference(parent))
-      wp.put(child, m)
-    }
-  }
-
-  def getParents(child: Expr[_]): WeakHashMap[Expr[_],WeakReference[Expr[_]]] = {
-    if(!wp.contains(child)) WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
-    else wp.get(child).get
-  }
-
-  def %[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = {
-    val p = mem(F1(f, a)) ; addParent(a,p) ; p }
-  def %%[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = {
-    val p = mem(FF1(f, a)) ; addParent(a,p) ; p }
-  def %[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = {
-    val p = mem(F2(f, a, b)) ; addParent(a,p) ; addParent(b,p) ; p
-  }
-  def %%[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] =  {
-    val p = mem(FF2(f, a, b)) ; addParent(a,p) ; addParent(b,p) ; p
-  }
-  def %[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = {
-    val p = mem(F3(f, a, b, c)) ; addParent(a,p) ; addParent(b,p) ; addParent(c,p) ; p
-  }
-  def %%[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = {
-    val p = mem(FF3(f, a, b, c)) ; ; addParent(a,p) ; addParent(b,p) ; addParent(c,p) ; p
-  }
-
-  def replaceExpr[V,X](e: Expr[V], v: Expr[X], w: Expr[X]): Expr[V] = if (e.hasDependencies) e.replace(v,w) ; else e
-
-  def fullRed[A](e: Expr[A]): Expr[A] = {
-    var ee = e
-    while (ee.reduce != ee) { ee = ee.reduce }
-    ee
-  }
-
-  case class ExprImpl[X](x: X) extends Expr[X] {
-    def eval = x
-    override def toString = "`" + x.toString
-  }
-
-  def ei[X](x: X): Expr[X] = mem(ExprImpl(x))
-
-  case class F1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
-    override lazy val reduce = {
-      val aa = fullRed(a)
-      if (aa == a) mem(f(a))
-      else %(f, aa)
-    }
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      if (aa == a) this ; else F1(f,aa)
-    }
-    override lazy val eval = reduce.eval
-    override def children = Vector(a)
+    override val hashCode = jh(jh(jh(stage) ^ Hashing.jh(f)) + jh(a))
     override def toString = f + "(" + a + ")"
-    override val hasDependencies = a.hasDependencies
   }
 
-  case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
-    override lazy val finish = F1(f, a.finish)
-    override lazy val eval = f(a).eval
-    override def children = Vector(a)
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      if (aa == a) this ; else FF1(f,aa)
+  case class F2[A,B,R](stage: Int, f: (Expr[A],Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
+    def eval = { sys.error("eval should only be called on stage > 0") }
+    // TODO: optimize by using 10 bits for minStage,stage and maxStage
+    override val maxStage = stage max a.maxStage max b.maxStage
+    override val minStage: Int = {
+      val sa = a.minStage ; val sb = b.minStage
+      val cc = combine(sa,sb) ; if (cc == 0) stage ; else cc
     }
-    override def toString = f + "(" + a + ")"
-    override val hasDependencies = a.hasDependencies
-  }
+    override def reduce(s: Int, c: Context) = {
+      val (ca,ea) = fullReduce(s,c,a)
+      val (cb,eb) = fullReduce(s,ca,b)
 
-  case class F2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
-    override lazy val reduce = {
-      val aa = fullRed(a)
-      val bb = fullRed(b)
-
-      if ((aa == a) && (bb == b)) mem(f(a, b))
-      else %(f, aa, bb)
+      if (((a.stage == 0) && (ea.stage == 0)) && ((b.stage == 0) && (eb.stage == 0)) && (s >= stage)) (cb,f(ea,eb))
+      else (cb,F2(stage,f,ea,eb))
     }
-    override lazy val eval = reduce.eval
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      if ((aa == a) && (bb == b)) this ; else F2(f,aa,bb)
-    }
-    override def children = Vector(a,b)
+    override val hashCode = jh(jh(jh(jh(stage) ^ Hashing.jh(f)) - jh(a)) ^ jh(b))
     override def toString = "(" + a + " " + f + " " + b + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies
   }
 
-  case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
-    override lazy val finish = F2(f, a.finish, b.finish)
-    override lazy val eval = f(a, b).eval
-    override def children = Vector(a,b)
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      if ((aa == a) && (bb == b)) this ; else FF2(f,aa,bb)
+  case class F3[A,B,C,R](stage: Int, f: (Expr[A],Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
+    def eval = { sys.error("eval should only be called on stage > 0") }
+    override val maxStage = stage max a.maxStage max b.maxStage max c.maxStage
+    override val minStage: Int = {
+      val sa = a.minStage ; val sb = b.minStage ; val sc = c.minStage
+      val cc = combine(combine(sa,sb),sc) ; if (cc == 0) stage ; else cc
     }
-    override def toString = "(" + a + " " + f + " " + b + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies
+    override def reduce(s: Int, mc: Context) = {
+      val (ca,ea) = fullReduce(s,mc,a)
+      val (cb,eb) = fullReduce(s,ca,b)
+      val (cc,ec) = fullReduce(s,cb,c)
+
+      if (((a.stage == 0) && (ea.stage == 0)) && ((b.stage == 0) &&
+           (eb.stage == 0)) && ((c.stage == 0) && (ec.stage == 0)) && (s >= stage)) (cc,f(ea,eb,ec))
+      else (cc,F3(stage,f,ea,eb,ec))
+    }
+    override val hashCode = jh(jh(jh(jh(jh(stage) ^ Hashing.jh(f)) - jh(a)) ^ jh(b)) + jh(c))
+    override def toString = f + "(" + a + "," + c + "," + b + ")"
   }
 
-  case class F3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
-    override lazy val reduce = {
-      val aa = fullRed(a)
-      val bb = fullRed(b)
-      val cc = fullRed(c)
-
-      if ((aa == a) && (bb == b) && (cc == c)) mem(f(a, b, c))
-      else %(f, aa, bb, cc)
-    }
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      val cc = replaceExpr(c,v,w)
-      if ((aa == a) && (bb == b) && (bb == b)) this ; else F3(f,aa,bb,cc)
-    }
-    override lazy val eval = reduce.eval
-    override def children = Vector(a,b,c)
-    override def toString = f + "[" + a + "," + b + "," + c + "]"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies || c.hasDependencies
-  }
-
-  case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
-    override lazy val finish = F3(f, a.finish, b.finish, c.finish)
-    override lazy val eval = f(a, b, c).eval
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      val cc = replaceExpr(c,v,w)
-      if ((aa == a) && (bb == b) && (bb == b)) this ; else FF3(f,aa,bb,cc)
-    }
-
-    override def children = Vector(a,b,c)
-    override def toString = f + "(" + a + "," + b + "," + c + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies || c.hasDependencies
-  }
-
-  def parentPaths(e: Expr[ _], t: Expr[_]) : List[Expr[_]] = {
-    var c: List[List[Expr[_]]] = List(List(e))
-    var done = false
-
-    while (!done) {
-      var nc: List[List[Expr[_]]] = List()
-      var iter = false
-      for (tl <- c) {
-        val h = tl.head
-        if (h == t) {
-           done = true
-           nc = List(tl)
-        }
-        else
-        {
-          val p = getParents(tl.head)
-          if (!p.isEmpty) {
-            iter = true
-            for (pp <- p.keys) {
-              var k = tl.::(pp)
-              nc = k +: nc
-            }
-          }
-        }
+  case class MemContext(m: Map[(Int,Expr[_]),Expr[_]]) extends Context
+  {
+    // TODO: optimize - one map per stage
+    override def reduce[E](s: Int, e: Expr[E]): (Context,Expr[E]) = {
+      val se = (s,e)
+      if (m.contains(se)) (this,m.get(se).get.asInstanceOf[Expr[E]])
+      else {
+        val (MemContext(mm),ee: Expr[E]) = e.reduce(s,this)
+        (MemContext(mm.updated(se,ee)),ee)
       }
-      c = nc
-      if (!iter) { done = true }
     }
+  }
 
-    c.head
+  // default memoization context
+  def reduce[E](s: Int, e: Expr[E]) = ExprContext(MemContext(Map()),e).reduce(s)
+
+  case class ExprContext[E](context: Context, expr: Expr[E]) {
+    def reduce(s: Int): ExprContext[E] = { val (c,e) = context.reduce(s,expr) ; ExprContext(c,e) }
   }
 }
