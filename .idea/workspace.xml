@@ -2,7 +2,578 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$DifferenceUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$DifferenceUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftIntersectUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftIntersectUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftSetIntersect$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftSetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftSetUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$LeftSetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightIntersectUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightIntersectUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightSetIntersect$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightSetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightSetUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$RightSetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetContext$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetContextImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SISetImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetDifference$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetDifference.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetIntersect$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetOperation.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetOperationImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetOperationImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet$SetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableOrderedSet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeq.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqContext$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqContextImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqOrdering$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$ISeqOrdering.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence$Num.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/AbstractImmutableSequence.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Application$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Application.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$$anonfun$sredex$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$$anonfun$typ$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Arg.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ArgExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$BinExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$BinOpImp$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$BinOpImp.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$BinaryOperator.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CP$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CP.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundPair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundPairImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundPairImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundPath$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$CompoundPath.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEAdd$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEAdd.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEBind$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEBind.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEChar$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEChar.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DECompoundExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DECompoundExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DECut$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DECut.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEFold$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEFold.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEForeach$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEForeach.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEInt$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEInt.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEIota$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEIota.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DELabeledExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DELabeledExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMax$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMax.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMin$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMin.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMul$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEMul.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEPack$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DEPack.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DERed$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DERed.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DESub$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DESub.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DESwap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DESwap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DETrace$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DETrace.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DETurn$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DETurn.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DMMap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DMMap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DMSet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DMSet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$DSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EAdd$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EAddImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EAddImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EBind$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EBindImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EBindImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EChar$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EChar.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECharImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECharImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$5.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$6.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$7.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$8.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$flatten$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$flatten$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$$anonfun$typ2$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECompoundExprImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EConcat$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EConcat.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECut$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECutImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ECutImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EFold$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EFold.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EFoldImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EFoldImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EForeach$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EForeach.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EForeachImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EForeachImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EInt$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EInt.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EIntImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EIntImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EIota$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EIotaImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EIotaImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ELabeledExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ELabeledExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ELabeledExprImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ELabeledExprImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMax$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMaxImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMaxImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMin$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMinImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMinImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMul$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMulImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EMulImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EPack$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EPackImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EPackImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EPair$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$EPair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ERed$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ERedImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ERedImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESub$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESubImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESubImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESwap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESwapImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ESwapImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETrace$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETrace.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETraceImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETraceImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETriple$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETriple.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETurn$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETurnImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ETurnImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Empty$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Expr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprHashing$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprMeasure$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprOrdering$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprSeqContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprSeqMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprTreapContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$ExprType.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$IndexedExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$LabeledExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$LeafPath$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$LeafPath.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MMap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MMap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MMapImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MMapImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MMapTreapContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MPair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$DifferenceUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$DifferenceUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetDifference$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetDifference.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetIntersect$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetMultiply$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetMultiply.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetSumUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetSumUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$LeftMultiSetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetDifference$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetDifference.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetIntersect$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetMultiply$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetMultiply.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetOperation.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetOperationImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetOperationImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetSumUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetSumUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetUnion$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$MultiSetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetDifference$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetDifference.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetIntersect$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetIntersect.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetMultiply$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetMultiply.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetSumUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetSumUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetUnion$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations$RightMultiSetUnion.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOperations.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetOrdering$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MSetTreapContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MapMeasure$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MapMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MapP$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MapP.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiContainer.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiMap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiMapPair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiSet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$MultiSetPair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoArgExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoBind$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoBind.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoDepedencies$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoDepedencies.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NoExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NormalExpr$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NormalExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$NormalMeasure$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Number.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Operator$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Operator.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Pair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Path.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$PathContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$RedexMeasure$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SetMeasure$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SetMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SetP$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SetP.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SomeExpr.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Symbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Symbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SymbolExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SymbolImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$SymbolImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Trace.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$TraceMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$TraceP$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$TraceP.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$TracePair.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$TraceTreapContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$Triple.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$UnaExpr$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$UnaOpImp$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$UnaOpImp.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3$UnaryOperator.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Engine_v3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$CloseSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$CloseSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$ECTableModel$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$ECTableModel.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$ETableModel$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$ETableModel.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$OpenSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$OpenSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$PosSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$PosSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$QuoteSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$QuoteSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$SpreadNode.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$Symbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$Symbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$TableModel.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$TraceSymbol$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput$TraceSymbol.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/HTMLOutput.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Hashing$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Hashing$IntPriorityHasher$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Hashing$PriorityHasher.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Hashing.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$EmptyOrderedISet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$EmptyOrderedISet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$LOrderedISet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$LOrderedISet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$OrderedISet$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$OrderedISet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$OrderedISetImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation$OrderedISetImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedSetImplementation.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$BinSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$BinTreap$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$BinTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$DefaultSTreapContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$DefaultSTreapContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptyMeasure$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptyMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptySTreap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptySTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptyTreap$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$EmptyTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$JoinTreapImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$JoinTreapImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$LeafMeasure$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$LeafMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$LeafSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$LeafTreap$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$LeafTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$MBinSTreap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$MBinSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$MLeafSTreap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$MLeafSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$NonEmptySTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$NonEmptyTreap$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$NonEmptyTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreap$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreapContext$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreapContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreapContextImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreapContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$STreapImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$Treap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$TreapContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$TreapContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$TreapImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$VBinSTreap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$VBinSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$VLeafSTreap$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet$VLeafSTreap.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/OrderedTreapSet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$add$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$afold$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$afold$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$aforeach$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$aforeach$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alabeled$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alabeled$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alabeled$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alternatives$1$$anonfun$apply$10.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alternatives$1$$anonfun$apply$8.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alternatives$1$$anonfun$apply$9.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alternatives$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$alternatives$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$5.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$atom$6.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$5.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$6.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$binary$7.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$bind$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$chrExcept$1$$anonfun$apply$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$chrExcept$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$concat$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$concat$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$digit$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$digit$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$efold$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$eforeach$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$elem$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$elem$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$elem$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$elem$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$eol$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr$1$$anonfun$apply$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr$1$$anonfun$apply$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr2$1$$anonfun$apply$5.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr2$1$$anonfun$apply$6.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr2$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr2$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$expr2$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$fold$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$foreach$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$iota$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$labeled$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$letter$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$letter$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$lfd$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$map$1$$anonfun$apply$12.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$map$1$$anonfun$apply$13.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$map$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$map$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$map$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$mappair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$max$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$meqpair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$meqpair$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$meqpair$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$min$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$msetpair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$msetpair$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$msetpair$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$mul$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$negnumber$1$$anonfun$apply$11.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$negnumber$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$negnumber$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$nlabeled$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$nlabeled$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$number$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$operator$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$pack$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$path$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$path$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$path$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$posnumber$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$posnumber$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$program$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$program$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$reduce$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ret$1$$anonfun$apply$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ret$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$satom$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$sequence$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$sequence$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$sequence$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$setpair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$sp$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$spair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$split$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$split$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$split$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$split$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ssep$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ssep$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ssetpair$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$string$1$$anonfun$apply$7.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$string$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$string$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$string$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$sub$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$subexpr$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$subexpr$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$subexpr$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$swap$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$symbol$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$symbol$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$turn$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$unary$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$unary$2.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$unary$3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$unary$4.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ws$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$ws2$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$$anonfun$wse$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3$SpreadParser$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Parser_v3.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$EmptySeqImpl$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$EmptySeqImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$LSeqImpl$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$LSeqImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$SeqI$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$SeqI.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$SeqImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation$SeqImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SequenceImplementation.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadApplet$$anon$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadApplet.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadREPL$SpreadInput$RunAction$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadREPL$SpreadInput.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadREPL$SpreadOutput.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/SpreadREPL.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Test$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/Test.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$AppendWBTreeImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$AppendWBTreeImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$BinIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$BinWBTree$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$BinWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$DefaultIWBTreeContext$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$DefaultIWBTreeContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyIWBTree$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyWBMeasure$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyWBMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyWBTree$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$EmptyWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTree$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTreeContext$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTreeContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTreeContextImpl$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTreeContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IWBTreeImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IntNum$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$IntNum.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$LeafIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$LeafWBMeasure$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$LeafWBMeasure.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$LeafWBTree$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$LeafWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$MBinWBTree$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$MBinWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$MLeafIWBTree$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$MLeafIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$NonEmptyIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$NonEmptyWBTree$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$NonEmptyWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$VBinWBTree$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$VBinWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$VLeafIWBTree$.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$VLeafIWBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$WBTree.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$WBTreeContext$class.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$WBTreeContext.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$WBTreeContextImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence$WBTreeImpl.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread/WeightBalancedSequence.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/build/spread.jar" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/highlighting.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scala_settings.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/spread.xgml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/spread.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/toxgml2.xsl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Hashing.scala" afterPath="$PROJECT_DIR$/src/spread/Hashing.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -92,9 +663,11 @@
       <file leaf-file-name="Test.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.76957494" vertical-offset="1786" max-vertical-offset="2325">
-              <caret line="142" column="30" selection-start-line="142" selection-start-column="30" selection-end-line="142" selection-end-column="30" />
-              <folding />
+            <state vertical-scroll-proportion="0.8574822" vertical-offset="2234" max-vertical-offset="2730">
+              <caret line="173" column="0" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
+              <folding>
+                <element signature="e#75#110#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -136,8 +709,8 @@
       <file leaf-file-name="Hashing.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="465">
-              <caret line="8" column="19" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="18" max-vertical-offset="510">
+              <caret line="16" column="32" selection-start-line="16" selection-start-column="32" selection-end-line="16" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -178,8 +751,8 @@
       <file leaf-file-name="IncrementalArithmetic.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="285" max-vertical-offset="1170">
-              <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="27" selection-end-column="3" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="18" max-vertical-offset="1170">
+              <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
               <folding>
                 <element signature="e#93#134#0" expanded="true" />
               </folding>
@@ -234,6 +807,7 @@
         <option value="$PROJECT_DIR$/src/spread/IncrementalTreeView.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalTreap.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Hashing.scala" />
         <option value="$PROJECT_DIR$/src/spread/Test.scala" />
       </list>
     </option>
@@ -1129,7 +1703,11 @@
       <created>1403767570448</created>
       <updated>1403767570448</updated>
     </task>
-    <option name="localTasksCounter" value="123" />
+    <task id="LOCAL-00123" summary="some new ideas:&#10;- memoization via a state monad&#10;- staging">
+      <created>1403994748679</created>
+      <updated>1403994748679</updated>
+    </task>
+    <option name="localTasksCounter" value="124" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1145,7 +1723,7 @@
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39503106" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26440176" sideWeight="0.44583333" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3248731" sideWeight="0.49025974" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32348597" sideWeight="0.48958334" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20236337" sideWeight="0.46944445" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
@@ -1179,7 +1757,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="visualization" />
     <MESSAGE value="types + visualization" />
     <MESSAGE value="reworked types" />
     <MESSAGE value="wording" />
@@ -1204,7 +1781,8 @@
     <MESSAGE value="reworked reduction" />
     <MESSAGE value="some more examples" />
     <MESSAGE value="weak parent pointers + replacement" />
-    <option name="LAST_COMMIT_MESSAGE" value="weak parent pointers + replacement" />
+    <MESSAGE value="some new ideas:&#10;- memoization via a state monad&#10;- staging" />
+    <option name="LAST_COMMIT_MESSAGE" value="some new ideas:&#10;- memoization via a state monad&#10;- staging" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1243,7 +1821,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#75#110#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1314,7 +1894,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#75#110#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1399,7 +1981,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="450" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#75#110#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1577,14 +2161,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="18" max-vertical-offset="465">
-          <caret line="8" column="19" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreap.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-19.722221" vertical-offset="75" max-vertical-offset="2745">
@@ -1605,24 +2181,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Serializer.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1110" max-vertical-offset="2175">
-          <caret line="5" column="43" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="285" max-vertical-offset="1170">
-          <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="27" selection-end-column="3" />
-          <folding>
-            <element signature="e#93#134#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3810">
@@ -1633,11 +2191,39 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Serializer.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1110" max-vertical-offset="2175">
+          <caret line="5" column="43" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="18" max-vertical-offset="1170">
+          <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+          <folding>
+            <element signature="e#93#134#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="18" max-vertical-offset="510">
+          <caret line="16" column="32" selection-start-line="16" selection-start-column="32" selection-end-line="16" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.76957494" vertical-offset="1786" max-vertical-offset="2325">
-          <caret line="142" column="30" selection-start-line="142" selection-start-column="30" selection-end-line="142" selection-end-column="30" />
-          <folding />
+        <state vertical-scroll-proportion="0.8574822" vertical-offset="2234" max-vertical-offset="2730">
+          <caret line="173" column="0" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
+          <folding>
+            <element signature="e#75#110#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

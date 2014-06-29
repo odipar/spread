@@ -13,6 +13,9 @@ object Hashing {
     key
   }
 
+  final def jh(k: Any): Int = jenkinsHash(k.hashCode)
+  final def jh(k: Int): Int = jenkinsHash(k)
+
   trait PriorityHasher[X] {
     def hash(x: X): Int
   }
