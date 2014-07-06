@@ -9,7 +9,6 @@ import spread.Hashing._
 object IncrementalArithmetic {
   import scala.language.implicitConversions
   import IncrementalMemoization._
-  import java.math.BigInteger
 
   type I = Expr[Int]
 

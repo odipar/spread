@@ -58,6 +58,7 @@ object IncrementalTreap {
   }
 
   type VFT[V, P] = Expr[FTreap[V, P]]
+
   def fcreate[V, P]: Function3[FTreap[V, P], (V, P), FTreap[V, P], FTreap[V, P]] = new Function3[FTreap[V, P], (V, P), FTreap[V, P], FTreap[V, P]] {
     def apply(l: FTreap[V, P], xp: (V, P), r: FTreap[V, P]): FTreap[V, P] = {
       if (l.isEmpty && r.isEmpty) LFTreap(xp._1, xp._2)
@@ -90,7 +91,7 @@ object IncrementalTreap {
     lazy val put_1 = put1[V, P](this)
     def create(v: V): VFT[V, P] = LFTreap(v, prio(v))
     def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = %(create_1, l, ei(v, p), r)
-    def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = %(join_1, t1, t2)
+    def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = %(join_1,t1, t2)
     def left(t: VFT[V, P]): VFT[V, P] = left_1(t)
     def right(t: VFT[V, P]): VFT[V, P] = right_1(t)
     def lsplit(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(lsplit_1, t, v)
