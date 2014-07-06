@@ -31,14 +31,24 @@ object IncrementalMemoization {
     def reduce(s: Int, c: Context): (Context, Expr[E]) = (c, this)
     def contains[X](x: X, c: Context): (Context, Boolean) = (c,false)
     def replace[X,EE](r: Replacement[X,EE], c: Context): (Context, Expr[E]) = (c,this)
-    
-    def children: Set[Expr[_]] = Set()
+
     def replaceable: Boolean = false
+    def children: Set[Expr[_]] = Set()
+
     def stage: Int
     def minStage: Int = stage
     def maxStage: Int = stage
 
-    def apply[X,EE](x: X, to: Expr[EE])(implicit tag: TypeTag[EE]): Expr[E] = Replace(this,Replacement(x,to))
+    // convenience
+    def apply[X,EE : TypeTag](x: X, to: Expr[EE]): Expr[E] = Replace(this,Replacement(x,to))
+  }
+
+  trait Context {
+    def reduce[E](s: Int, e: Expr[E]): (Context,Expr[E]) = e.reduce(s,this)
+    def contains[E,X](e: Expr[E], x: X): (Context,Boolean) = e.contains(x,this)
+    def replace[X,EE,E](e: Expr[E], r: Replacement[X,EE]): (Context, Expr[E]) = e.replace(r,this)
+    def resetReplacements: Context
+    def merge(o: Context): Context = o  // not yet
   }
 
   def asString(a: Any): String = a match {
@@ -46,17 +56,10 @@ object IncrementalMemoization {
     case c: Char => "\'" + c + "\'"
     case _ => a.toString
   }
+
   case class Replacement[X,E](x: X, to: Expr[E])(implicit tag: TypeTag[E]) {
     val ttype = tag.tpe
     override def toString = "(" + asString(x) + "," + to + ")"
-  }
-
-  trait Context {
-    def reduce[E](s: Int, e: Expr[E]): (Context,Expr[E]) = e.reduce(s,this)
-    def contains[E,X](e: Expr[E], x: X): (Context,Boolean) = e.contains(x,this)
-    def replace[X,EE,E](e: Expr[E], r: Replacement[X,EE], c: Context): (Context, Expr[E]) = e.replace(r,this)
-    def resetReplacements: Context
-    def merge(o: Context): Context = o  // not yet
   }
 
   def fullReduce[E](s: Int, c: Context, e: Expr[E]): (Context, Expr[E]) = {
@@ -65,7 +68,6 @@ object IncrementalMemoization {
     else { val (cc,ee) = c.reduce(s,e) ; fullReduce(s,cc,ee) }
   }
 
-  def red[E](e: Expr[E]): Expr[E] = e
   def %[A,R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = F1(1,f,a)
   def %[A,B,R](f: (Expr[A],Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = F2(1,f,a,b)
   def %[A,B,C,R](f: (Expr[A],Expr[B],Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = F3(1,f,a,b,c)
@@ -76,21 +78,23 @@ object IncrementalMemoization {
 
   def combine(a: Int, b: Int): Int = { if (a == 0) b ; else if (b == 0) a ; else a min b }
 
-  case class Reduce[E](e: Expr[E]) extends Expr[E] {
-    def eval = sys.error("e")
-    def stage = e.stage
-
-    override def reduce(s: Int, c: Context): (Context, Expr[E]) = {
-      e.reduce(s,c)
-    }
-  }
 
   case class Replace[X,E,EE](e: Expr[E],r: Replacement[X,EE]) extends Expr[E] {
-    def eval = sys.error("e")
+    def eval = { sys.error("eval should only be called on stage == 0") }
     def stage = 1
+    override def maxStage = e.maxStage
+    override def minStage = e.minStage
 
+    override def replace[X,EE](rr: Replacement[X,EE], c: Context): (Context, Expr[E]) = {
+      val (c1,re,be) = contains_replace(rr,e,c)
+      if (be) (c1,Replace(re,r))
+      else (c1,this)
+    }
     override def reduce(s: Int, c: Context): (Context, Expr[E]) = {
       e.replace(r,c)
+    }
+    override def contains[X](x: X, c: Context): (Context, Boolean) = {
+      c.contains(e,x)
     }
 
     override def toString = e.toString + r
@@ -131,7 +135,7 @@ object IncrementalMemoization {
     val (c1,b) = c.contains(e,r.x)
     if (!b) (c1,e,false)
     else {
-      val (c2,ee) = c1.replace(e,r,c)
+      val (c2,ee) = c1.replace(e,r)
       (c2,ee,true)
     }
   }
@@ -232,14 +236,14 @@ object IncrementalMemoization {
 
   implicit def ei[E](e: E): Expr[E] = EExpr(e)
 
-  // default memoization & replacing context
+  // default purely functional memoization context
   case class MemContext(m: Map[(Expr[_],Int),Expr[_]], cn: Map[(Expr[_],_),Boolean], r: Map[(Expr[_], Replacement[_,_]),Expr[_]]) extends Context
   {
     // TODO: optimize - one map per stage
     override def reduce[E](s: Int, e: Expr[E]): (Context,Expr[E]) = {
       val se = (e,s)
       if (m.contains(se)) {
-        println("mem reduce: " + e)
+        //println("mem reduce: " + e)
         (this,m.get(se).get.asInstanceOf[Expr[E]])
       }
       else {
@@ -247,12 +251,13 @@ object IncrementalMemoization {
         (MemContext(mm.updated(se,ee),cc,rr),ee)
       }
     }
+    // TODO: optimize - one map per expression
     override def contains[E,X](e: Expr[E], x: X): (Context,Boolean) = {
       if (!e.replaceable) (this,false)
       else {
         val se = (e, x)
         if (cn.contains(se)) {
-          println("mem contains: " + e)
+          //println("mem contains: " + e)
           (this, cn.get(se).get)
         }
         else {
@@ -261,12 +266,13 @@ object IncrementalMemoization {
         }
       }
     }
-    override def replace[X,EE,E](e: Expr[E], rep: Replacement[X,EE], c: Context): (Context, Expr[E]) = {
+    // TODO: optimize - one map per replacement
+    override def replace[X,EE,E](e: Expr[E], rep: Replacement[X,EE]): (Context, Expr[E]) = {
       if (!e.replaceable) (this,e)
       else {
         val se = (e, rep)
         if (r.contains(se)) {
-          println("mem replace: " + e)
+          //println("mem replace: " + e)
           (this, r.get(se).get.asInstanceOf[Expr[E]])
         }
         else {
@@ -276,12 +282,36 @@ object IncrementalMemoization {
       }
     }
     override def resetReplacements = MemContext(m,cn,Map())
+
+    override def toString = {
+      var s = "\nREDUCTIONS:"
+      for (i <- m.keySet) {
+        s = s + "\n\t" + i._1 + " => " + m(i)
+      }
+      s = s + "\n\nCONTAINMENT:"
+      for (i <- cn.keySet) {
+        s = s + "\n\t" + i._1 + " contains " + asString(i._2) + " => " + cn(i)
+      }
+      s
+    }
   }
 
   val emptyContext = MemContext(Map(),Map(),Map())
   def spread[E](e: Expr[E]) = Spread(emptyContext,e)
 
   case class Spread[E](context: Context, expr: Expr[E]) {
-    def reduce(s: Int): Spread[E] = { val (c,e) = context.reduce(s,expr) ; Spread(c,e) }
+    def reduce(s: Int): Spread[E] = { val (c,e) = context.reduce(s,expr) ; Spread(c.resetReplacements,e) }
+    def $ = reduce(1)
+    def $$ = reduce(2)
+
+    def apply[X,EE : TypeTag](x: X,e : Expr[EE]): Spread[E] = {
+      val (cc,ee) = context.replace(expr,Replacement(x,e))
+      Spread(cc.resetReplacements,ee)
+    }
+    override def toString = {
+      "VALUE: " + expr + "\n" + context.toString
+    }
   }
+
+  // running sum ??
 }
