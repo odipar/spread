@@ -7,6 +7,7 @@ package spread
 object Test {
   import IncrementalMemoization._
   import IncrementalArithmetic._
+  import scala.reflect.runtime.universe._
   import IncrementalTreap._
 
   object fac extends (I=>I) {
@@ -26,20 +27,18 @@ object Test {
   }
 
   final def main(args: Array[String]): Unit = {
-    val e1 = V("a",1) ++ 2
-    val e2 = (3:I) ++ V("b",4)
-    val e3 = e1 ** e2
-    val e4 = e3("a",1,3)
-    val e5 = e3("a",1,4)
-    val e6 = e3("a",1,5)
-    val e7 = e3("a",1,6)
-    val e9 = (e4 ++ e5) ++ (e6 ++ e7)
-    println(e9)
-
-    println("e3: " + spread(e9).reduce(1))
+    val x = "x"
+    val e1 = Var(x,1) + 2
+    val e2 = !3 + 4
+    val e3 = e1 * e2
+    val e4 = e3(x,3)
+    val e5 = e3(x,4)
+    val e6 = e3(x,5)
+    val e7 = e3(x,6)
+    val e9 = (e4 + e5) + (e6 + e7)
+    println(spread(e9).reduce(1).reduce(1))
 
   }
-
 
 }
 

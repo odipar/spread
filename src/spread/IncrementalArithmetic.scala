@@ -50,4 +50,10 @@ object IncrementalArithmetic {
   object add extends BI { def apply(a: I, b: I): I = a.eval + b.eval ; override def toString = "+" }
   object sub extends BI { def apply(a: I, b: I): I = a.eval - b.eval ; override def toString = "-" }
   object mul extends BI { def apply(a: I, b: I): I = a.eval * b.eval ; override def toString = "*" }
+
+  case class WI(i: Int) {
+    def unary_! = II(i)
+  }
+
+  implicit def toWI(i: Int): WI = WI(i)
 }

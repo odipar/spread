@@ -21,6 +21,7 @@ import scala.collection.immutable.Map
 object IncrementalMemoization {
 
   import scala.language.implicitConversions
+  import scala.reflect.runtime.universe._
 
   type RE = Map[Expr[_], Expr[_]]
 
@@ -37,7 +38,7 @@ object IncrementalMemoization {
     def minStage: Int = stage
     def maxStage: Int = stage
 
-    def apply[X,EE](x: X, from: Expr[EE], to: Expr[EE]): Expr[E] = Replace(this,Replacement(x,from,to))
+    def apply[X,EE](x: X, to: Expr[EE])(implicit tag: TypeTag[EE]): Expr[E] = Replace(this,Replacement(x,to))
   }
 
   def asString(a: Any): String = a match {
@@ -45,8 +46,9 @@ object IncrementalMemoization {
     case c: Char => "\'" + c + "\'"
     case _ => a.toString
   }
-  case class Replacement[X,E](x: X, from: Expr[E], to: Expr[E]) {
-    override def toString = "(" + asString(x) + "," + from + "," + to + ")"
+  case class Replacement[X,E](x: X, to: Expr[E])(implicit tag: TypeTag[E]) {
+    val ttype = tag.tpe
+    override def toString = "(" + asString(x) + "," + to + ")"
   }
 
   trait Context {
@@ -93,29 +95,36 @@ object IncrementalMemoization {
 
     override def toString = e.toString + r
   }
-  case class V[X,E](x: X, e: Expr[E]) extends Expr[E] {
+  case class Var[X,E](x: X, e: Expr[E])(implicit tag: TypeTag[E]) extends Expr[E] {
     override def replaceable = true
     override def contains[X](xx: X, c: Context): (Context, Boolean) = {
       if (xx == x) (c,true)
       else c.contains(e,xx)
     }
     override def replace[X,EE](r: Replacement[X,EE], c: Context): (Context, Expr[E]) = {
-      if ((r.x == x) && (r.from == e)) (c,V(r.x,r.to.asInstanceOf[Expr[E]]))
+      val eq =r.x == x
+
+      if (eq && (r.ttype =:= tag.tpe)) {   // fast runtime eq type check
+        (c,Var(r.x,r.to.asInstanceOf[Expr[E]]))
+      }
+      else if (eq && (r.ttype <:< tag.tpe)) {  // slow runtime subtype check
+        (c,Var(r.x,r.to.asInstanceOf[Expr[E]]))
+      }
       else {
         val (c1,ce: Expr[E],be) = contains_replace(r,e,c)
-        if (be) (c1,V(x, ce))
+        if (be) (c1,Var(x, ce))
         else (c1,this)
       }
     }
 
-    override def reduce(s: Int, c: Context) = { val (ca,ea) = fullReduce(s,c,e) ; (ca,V(x,ea)) }
+    override def reduce(s: Int, c: Context) = { val (ca,ea) = fullReduce(s,c,e) ; (ca,Var(x,ea)) }
     override def children = Set(e)
     def eval = e.eval
     def stage = e.stage
     override def minStage = e.minStage
     override def maxStage = e.maxStage
     override val hashCode = jh(x)
-    override def toString = "V(" + asString(x) + "," + e +")"
+    override def toString = "Var(" + asString(x) + "," + e +")"
   }
 
   def contains_replace[X,EE,E](r: Replacement[X,EE], e: Expr[E], c: Context): (Context,Expr[E],Boolean) = {
