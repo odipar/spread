@@ -16,7 +16,6 @@ object IncrementalTreap {
     def value: V
     def right: FTreap[V, P]
     def eval = this
-    def stage = 0
   }
 
   case class NFTreap[V, P]() extends FTreap[V, P] {
@@ -67,7 +66,7 @@ object IncrementalTreap {
       else BFTreap[V, P](l, xp._1, xp._2, r)
     }
   }
-  def T[V, P](v: V)(implicit p: PrioOrdering[V, P]): FTreap[V, P] = p.create(v).eval
+  def T[V, P](v: V)(implicit p: PrioOrdering[V, P]): VFT[V, P] = p.create(v)
 
   case object IPrioOrdering extends PrioOrdering[Int, Int] {
     def prio(v: Int): Int = jenkinsHash(jenkinsHash(v) + v.hashCode)
@@ -82,6 +81,7 @@ object IncrementalTreap {
     def prio(v: V): P
     def orderValue(v1: V, v2: V): Int
     def orderPrio(p1: P, p2: P): Int
+    lazy val create_0 = create0[V,P](this)
     lazy val create_1 = create1[V, P](this)
     lazy val join_1 = join1[V, P](this)
     lazy val left_1 = left1[V, P](this)
@@ -89,7 +89,7 @@ object IncrementalTreap {
     lazy val lsplit_1 = lsplit1[V, P](this)
     lazy val rsplit_1 = rsplit1[V, P](this)
     lazy val put_1 = put1[V, P](this)
-    def create(v: V): VFT[V, P] = LFTreap(v, prio(v))
+    def create(v: V): VFT[V, P] = %(create_0,ei(v))
     def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = %(create_1, l, ei(v, p), r)
     def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = %(join_1,t1, t2)
     def left(t: VFT[V, P]): VFT[V, P] = left_1(t)
@@ -97,6 +97,11 @@ object IncrementalTreap {
     def lsplit(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(lsplit_1, t, v)
     def rsplit(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(rsplit_1, t, v)
     def put(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(put_1, t, v)
+  }
+
+  def create0[V, P](p: PrioOrdering[V, P]): Function1[Expr[V], VFT[V, P]] = new Function1[Expr[V], VFT[V, P]] {
+    def apply(v: Expr[V]): VFT[V, P] = LFTreap(v.eval, p.prio(v.eval))
+    override def toString = "create"
   }
 
   def create1[V, P](p: PrioOrdering[V, P]): Function3[VFT[V, P], Expr[(V, P)], VFT[V, P], VFT[V, P]] = new Function3[VFT[V, P], Expr[(V, P)], VFT[V, P], VFT[V, P]] {

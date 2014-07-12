@@ -6,12 +6,14 @@ package spread
 
 object Test {
   import IncrementalMemoization._
+  import scala.language.implicitConversions
   import IncrementalArithmetic._
+
   import IncrementalTreap._
 
   object fac extends (I=>I) {
     def apply(i: I): I = {
-      if (i.eval < 2) Var("y",1)
+      if (i.eval < 2) 1
       else i ** %(fac,i.eval - 1)
     }
     override def toString = "fac"
@@ -26,26 +28,20 @@ object Test {
   }
 
   final def main(args: Array[String]): Unit = {
-    val x = "x" // argument x
-    val y = "y" // argument y
+    /* val kk = 'e~('a~1 ++ 'b~2) ** 'f~('c~3 ++ 'd~4)
+    val kkk = ('a~1 ++ 2) ** (3 ++ 4)
+    println(spread(kkk).trace)
 
-    val e1 = Var(x,1) + 2
-    val e2 = Var(y,3) + 4
+    val id = StringID("abcde")
+    val id2 = StringID("abcde")
 
-    val e3 = e1 * e2
+    println("id: " + id.next.current)
+    println("id2: " + id2.next.current) */
+    val l = labelExpr(1)
+    var e = (l ++ 2) ** (3 ++ 4)
 
-    val e4 = e3(x,2)
-    val e5 = e3(x,3)
-
-    val e6 = e3(y,1)
-    val e7 = e3(y,2)
-
-    val e9 = (e4 + e5) + (e6 + e7)
-
-    val e10 = %(fac,Var(x,10))
-
-    println(spread(e10).$.$(y,5))
+    println(e.reduce.reduce)
+    //println(parentPaths(e,l))
   }
-
 }
 
