@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="lazy eval = reduce">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.iml" afterPath="$PROJECT_DIR$/spread.iml" />
+    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
@@ -232,8 +231,8 @@
     <treeState />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="115" />
-    <option name="y" value="39" />
+    <option name="x" value="48" />
+    <option name="y" value="37" />
     <option name="width" value="1440" />
     <option name="height" value="746" />
   </component>
@@ -1159,11 +1158,15 @@
       <created>1405978167038</created>
       <updated>1405978167038</updated>
     </task>
-    <option name="localTasksCounter" value="132" />
+    <task id="LOCAL-00132" summary="lazy eval = reduce">
+      <created>1405978393046</created>
+      <updated>1405978393046</updated>
+    </task>
+    <option name="localTasksCounter" value="133" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="115" y="39" width="1440" height="746" extended-state="0" />
+    <frame x="48" y="37" width="1440" height="746" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
