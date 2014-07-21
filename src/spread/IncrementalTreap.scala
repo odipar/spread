@@ -8,7 +8,7 @@ object IncrementalTreap {
   import IncrementalMemoization._
   import Hashing._
   import scala.language.implicitConversions
-
+  /*
   trait FTreap[V, P] extends Expr[FTreap[V, P]] {
     def isEmpty: Boolean
     def prio: P
@@ -91,7 +91,7 @@ object IncrementalTreap {
     lazy val put_1 = put1[V, P](this)
     def create(v: V): VFT[V, P] = %(create_0,ei(v))
     def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = %(create_1, l, ei(v, p), r)
-    def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = %(join_1,t1, t2)
+    def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = join_1(t1, t2)
     def left(t: VFT[V, P]): VFT[V, P] = left_1(t)
     def right(t: VFT[V, P]): VFT[V, P] = right_1(t)
     def lsplit(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(lsplit_1, t, v)
@@ -180,5 +180,5 @@ object IncrementalTreap {
       p.join(ll, r)
     }
     override def toString = "put"
-  }
+  }     */
 }

@@ -13,28 +13,28 @@ object IncrementalArithmetic {
 
   type I = Expr[Int]
 
-  trait IExpr extends I {
+  trait IExpr extends Expr[Int] {
     def origin: I
-    def ++(o: I): I = mem(%(add, origin, o))
-    def +++(o: I): I = mem(%(add2, origin, o))
-    def --(o: I): I = mem(%(sub, origin, o))
-    def ---(o: I): I = mem(%(sub2, origin, o))
-    def **(o: I): I = mem(%(mul, origin, o))
-    def ***(o: I): I = mem(%(mul, origin, o))
+    def ++(o: I): I = %(add, origin, o)
+    def --(o: I): I = %(sub, origin, o)
+    def **(o: I): I = %(mul, origin, o)
   }
 
-  case class II(eval: Int) extends IExpr {
+  type F0I = F0[Int]
+
+  case class II(value: Int) extends IExpr with F0I {
+    def unquote = this
     def origin = this
-    override def toString = "" + eval
-    override def hashCode = Hashing.jenkinsHash(eval)
+    override def toString = "" + value
+    override def hashCode = Hashing.jenkinsHash(value)
   }
 
   implicit def toI(i: Int) = II(i)
 
   private case class IWrap(origin: I) extends IExpr {
+    def eval = error
+    def unquote = error
     def error = sys.error("IWrap should not be used directly")
-    override def eval = error
-    override def reduce = error
   }
 
   implicit def toIWrap(i: I): IExpr = i match {
@@ -42,34 +42,19 @@ object IncrementalArithmetic {
     case _ => IWrap(i)
   }
 
-  val add = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval + b.eval
+  object add extends FA2[Int,Int,Int] {
+    def apply(a: F0I, b: F0I) = a.value + b.value
     override def toString = "++"
   }
 
-  val add2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(add, a, b)
-    override def toString = "+++"
-  }
-
-  val sub = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval - b.eval
+  object sub extends FA2[Int,Int,Int] {
+    def apply(a: F0I, b: F0I) = a.value - b.value
     override def toString = "--"
   }
 
-  val sub2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(sub, a, b)
-    override def toString = "---"
-  }
-
-  val mul = new ((I, I) => I) {
-    def apply(a: I, b: I): I = a.eval * b.eval
+  object mul extends FA2[Int,Int,Int] {
+    def apply(a: F0I, b: F0I) = a.value * b.value
     override def toString = "**"
-  }
-
-  val mul2 = new ((I, I) => I) {
-    def apply(a: I, b: I): I = %%(mul, a, b)
-    override def toString = "***"
   }
 
   case class WI(i: Int) {

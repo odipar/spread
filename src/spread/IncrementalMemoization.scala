@@ -27,284 +27,164 @@ object IncrementalMemoization {
   import java.lang.ref.WeakReference
 
   trait Expr[V] {
-    def eval: V
-    def finish: Expr[V] = this
-    def reduce: Expr[V] = this
-    def trace: Expr[V] = Trace(this,fullRed(this))
-    def replace[X](v: Expr[X], w: Expr[X]): Expr[V] = {
-      if (this == v) w.asInstanceOf[Expr[V]]
-      else this
+
+    def eval: Expr[V]
+    def unary_~ = quote(this)
+  }
+
+  trait LazyExpr[V] extends Expr[V] {
+    var e: Expr[V] = null
+
+    def eval: Expr[V] = {
+      if (e == null) e = reduce  // no lock, because duplicate (purely functional) evaluation is allowed
+      return e
     }
-    def children: Vector[Expr[_]] = empty
-    def hasDependencies: Boolean = false
-
-    def $ : Expr[V] = labelExpr(this)
-    def unary_! : V = eval
+    def reduce: Expr[V]
   }
 
-  def labelExpr[V](e: Expr[V]): LabeledExpr[V] = e match {
-    case LabeledExpr(l) => LabeledExpr(l)
-    case _ => LabeledExpr(e)
+  def quote[V](e: Expr[V]) = mem(Quote(e))
+
+  case class Quote[V](expr: Expr[V]) extends Expr[V] {
+    def eval = Quote(expr.eval)
+    override def toString = "~" + expr.toString
   }
 
-  case class LabeledExpr[V](expr: Expr[V]) extends Expr[V] {
-    def eval = expr.eval
-    override def finish = LabeledExpr(expr.finish)
-    override def reduce = LabeledExpr(expr.reduce)
-    override def children = expr.children
-    override def hasDependencies = true
-    override def toString = expr.toString + "'"
-  }
+  val vt = new WeakHashMap[Expr[_], WeakReference[Expr[_]]]
 
-  case class Trace[V](from: Expr[V], to: Expr[V]) extends Expr[V] {
-    def eval = to.eval
-    override def reduce = to
-    override def finish = to
-    override def children = Vector(from,to)
-    override def hasDependencies = from.hasDependencies
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[V] = {
-      val aa = replaceExpr(from, v, w)
-      if (aa == from) this; else Trace(aa, fullRed(aa))
-    }
-    override def toString = from.toString + " => " + to.toString
-  }
-
-  val empty: Vector[Expr[_]] = Vector()
-
-  val vt = WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
   def mem[V](c: Expr[V]): Expr[V] = {
     if (!vt.contains(c)) vt.put(c, new WeakReference(c))
+    else {  println("hit: " + c) }
     vt.get(c).get.get.asInstanceOf[Expr[V]]
   }
 
-  val wp = WeakHashMap.empty[Expr[_], WeakHashMap[Expr[_],WeakReference[Expr[_]]]]
-  def addParent(child: Expr[_], parent: Expr[_]) = {
-    if (child.hasDependencies) {
-      val m = {
-        if (!wp.contains(child)) WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
-        else wp.get(child).get
-      }
-      m.put(parent, new WeakReference(parent))
-      wp.put(child, m)
-    }
-  }
-
-  def getParents(child: Expr[_]): WeakHashMap[Expr[_],WeakReference[Expr[_]]] = {
-    if(!wp.contains(child)) WeakHashMap.empty[Expr[_], WeakReference[Expr[_]]]
-    else wp.get(child).get
-  }
-
-  def %[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = {
-    val p = mem(F1(f, a)) ; addParent(a,p) ; p }
-  def %%[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = {
-    val p = mem(FF1(f, a)) ; addParent(a,p) ; p }
-  def %[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = {
-    val p = mem(F2(f, a, b)) ; addParent(a,p) ; addParent(b,p) ; p
-  }
-  def %%[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] =  {
-    val p = mem(FF2(f, a, b)) ; addParent(a,p) ; addParent(b,p) ; p
-  }
+  def %[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = mem(FF1(f, a))
+  def %[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = mem(FF2(f, a, b))
   def %[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = {
-    val p = mem(F3(f, a, b, c)) ; addParent(a,p) ; addParent(b,p) ; addParent(c,p) ; p
+    mem(FF3(f, a, b, c))
   }
-  def %%[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = {
-    val p = mem(FF3(f, a, b, c)) ; ; addParent(a,p) ; addParent(b,p) ; addParent(c,p) ; p
-  }
-
-  def replaceExpr[V,X](e: Expr[V], v: Expr[X], w: Expr[X]): Expr[V] = if (e.hasDependencies) e.replace(v,w) ; else e
 
   def fullRed[A](e: Expr[A]): Expr[A] = {
-    var ee = e
-    while (ee.reduce != ee) { ee = ee.reduce }
-    ee
+    val ee = e.eval
+    if (ee == e) ee
+    else fullRed(ee)
   }
 
-  case class ExprImpl[X](x: X) extends Expr[X] {
-    def eval = x
-    override def toString = "`" + x.toString
+  case class ExprImpl[X](value: X) extends F0[X] {
+    def reduce = this
+    override def toString = "`" + value.toString
   }
 
   def ei[X](x: X): Expr[X] = mem(ExprImpl(x))
 
-  case class F1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
-    override lazy val reduce = {
+  trait F0[R] extends Expr[R] {
+    def eval = this
+    def value: R
+    def unary_! : R = value
+  }
+
+  trait F1[A, R] extends LazyExpr[R] {
+    def f: Expr[A] => Expr[R]
+    def a: Expr[A]
+  }
+
+  trait F2[A, B, R] extends LazyExpr[R] {
+    def f: (Expr[A], Expr[B]) => Expr[R]
+    def a: Expr[A]
+    def b: Expr[B]
+  }
+
+  trait F3[A, B, C, R] extends LazyExpr[R] {
+    def f: (Expr[A], Expr[B], Expr[C]) => Expr[R]
+    def a: Expr[A]
+    def b: Expr[B]
+    def c: Expr[C]
+  }
+
+  type F_ = F0[_]
+
+  case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends F1[A, R] {
+    def reduce = {
       val aa = fullRed(a)
-      if (aa == a) mem(f(a))
-      else %(f, aa)
-    }
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      if (aa == a) this ; else F1(f,aa)
-    }
-    override lazy val eval = reduce.eval
-    override def children = Vector(a)
-    override def toString = f + "(" + a + ")"
-    override val hasDependencies = a.hasDependencies
-  }
 
-  case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends Expr[R] {
-    override lazy val finish = F1(f, a.finish)
-    override lazy val eval = f(a).eval
-    override def children = Vector(a)
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      if (aa eq a) this ; else FF1(f,aa)
+      if (a == aa) {
+        aa match {
+          case fo: F_ => f(aa)
+          case _ => this
+        }
+      }
+      else %(f,aa)
     }
     override def toString = f + "(" + a + ")"
-    override val hasDependencies = a.hasDependencies
   }
 
-  case class F2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
-    override lazy val reduce = {
+  case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
+    def reduce = {
       val aa = fullRed(a)
       val bb = fullRed(b)
 
-      if ((aa == a) && (bb == b)) mem(f(a, b))
-      else %(f, aa, bb)
-    }
-    override lazy val eval = reduce.eval
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      if ((aa eq a) && (bb eq b)) this ; else F2(f,aa,bb)
-    }
-    override def children = Vector(a,b)
-    override def toString = "(" + a + " " + f + " " + b + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies
-  }
-
-  case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends Expr[R] {
-    override lazy val finish = F2(f, a.finish, b.finish)
-    override lazy val eval = f(a, b).eval
-    override def children = Vector(a,b)
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      if ((aa eq a) && (bb eq b)) this ; else FF2(f,aa,bb)
+      if ((a == aa) && (b == bb)) {
+        (aa,bb) match {
+          case (fa: F_, fb: F_) => f(aa,bb)
+          case _ => this
+        }
+      }
+      else %(f,aa,bb)
     }
     override def toString = "(" + a + " " + f + " " + b + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies
   }
 
-  case class F3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
-    override lazy val reduce = {
+  case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
+    def reduce = {
       val aa = fullRed(a)
       val bb = fullRed(b)
       val cc = fullRed(c)
 
-      if ((aa eq a) && (bb eq b) && (cc eq c)) mem(f(a, b, c))
-      else %(f, aa, bb, cc)
-    }
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      val cc = replaceExpr(c,v,w)
-      if ((aa == a) && (bb == b) && (bb == b)) this ; else F3(f,aa,bb,cc)
-    }
-    override lazy val eval = reduce.eval
-    override def children = Vector(a,b,c)
-    override def toString = f + "[" + a + "," + b + "," + c + "]"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies || c.hasDependencies
-  }
-
-  case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends Expr[R] {
-    override lazy val finish = F3(f, a.finish, b.finish, c.finish)
-    override lazy val eval = f(a, b, c).eval
-    override def replace[X](v: Expr[X], w: Expr[X]): Expr[R] = {
-      val aa = replaceExpr(a,v,w)
-      val bb = replaceExpr(b,v,w)
-      val cc = replaceExpr(c,v,w)
-      if ((aa == a) && (bb == b) && (bb == b)) this ; else FF3(f,aa,bb,cc)
-    }
-
-    override def children = Vector(a,b,c)
-    override def toString = f + "(" + a + "," + b + "," + c + ")"
-    override val hasDependencies = a.hasDependencies || b.hasDependencies || c.hasDependencies
-  }
-
-  def parentPaths(e: Expr[_], t: Expr[_]) : List[Expr[_]] = {
-    var c: List[List[Expr[_]]] = List(List(e))
-    var done = false
-
-    while (!done) {
-      var nc: List[List[Expr[_]]] = List()
-      var iter = false
-      for (tl <- c) {
-        val h = tl.head
-        if (h == t) {
-          done = true
-          nc = List(tl)
-        }
-        else
-        {
-          val p = getParents(tl.head)
-          if (!p.isEmpty) {
-            iter = true
-            for (pp <- p.keys) {
-              var k = tl.::(pp)
-              nc = k +: nc
-            }
-          }
+      if ((a == aa) && (b == bb) && (c == cc)) {
+        (aa,bb,cc) match {
+          case (fa: F_, fb: F_, fc: F_) => f(aa,bb,cc)
+          case _ => this
         }
       }
-      c = nc
-      if (!iter) { done = true }
+      else %(f,aa,bb,cc)
     }
-
-    c.head
-  }
-  // An IDStream should be consistent and unique, given a value object (which can be self)
-
-  trait IDStream {
-    def current: Int = Int.MinValue
-    def next: IDStream = this
+    override def toString = f + "(" + a + "," + b + "," + c + ")"
   }
 
-  object NullID extends IDStream
-
-  case class IntID(i: Int) extends IDStream {
-    override def current = i
-  }
-
-  case class LongID1(l: Long) extends IDStream {
-    override def current = l.toInt
-    override def next = LongID2(l)
-  }
-
-  case class LongID2(l: Long) extends IDStream {
-    override def current = (l >>> 32).toInt
-    override def next = NullID
-  }
-
-  def string_value(s: String, i: Int) : Int = {
-    if (i >= s.length) Int.MinValue
-    else s(i)
-  }
-
-  case class StringID(s: String) extends IDStream {
-    override def current = {
-      var s1 = string_value(s,0)
-      var s2 = string_value(s,1)
-
-      (s2 << 16) + s1
+  trait FA1[A, C] extends (Expr[A] => Expr[C]) {
+    def apply(a: Expr[A]): Expr[C] = a match {
+      case (af: F0[A]) => apply(af)
+      case _ => %(this, a)
     }
-    override def next = {
-      if (s.length >= 2) StringIDNext(2,s)
-      else NullID
+    def apply(a: F0[A]): Expr[C]
+  }
+
+  trait FA2[A, B, C] extends ((Expr[A], Expr[B]) => Expr[C]) {
+    def apply(a: Expr[A], b: Expr[B]): Expr[C] = (a, b) match {
+      case (af: F0[A], bf: F0[B]) => apply(af, bf)
+      case _ => %(this, a, b)
+    }
+    def apply(a: F0[A], b: F0[B]): Expr[C]
+  }
+
+  def ~![X](x: Expr[X]): Expr[X] = {
+    x match {
+      case Quote(x) => ~!(x)
+      case f1: F1[_,X] => {
+        val aa = ~!(f1.a)
+        %(f1.f,aa)
+      }
+      case f2: F2[_,_,X] => {
+        val aa = ~!(f2.a)
+        val bb = ~!(f2.b)
+        %(f2.f,aa,bb)
+      }
+      case f3: F3[_,_,_,X] => {
+        val aa = ~!(f3.a)
+        val bb = ~!(f3.b)
+        val cc = ~!(f3.c)
+        %(f3.f,aa,bb,cc)
+      }
+      case _ => x
     }
   }
-
-  case class StringIDNext(val pos: Int, s: String) extends IDStream {
-    override def current = {
-      var s1 = string_value(s,pos)
-      var s2 = string_value(s,pos+1)
-
-      (s2 << 16) + s1
-    }
-    override def next = {
-      if (s.length >= pos) StringIDNext(pos+2,s)
-      else NullID
-    }
-  }
-  // running sum ??
 }
