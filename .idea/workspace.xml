@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Hashing.scala" afterPath="$PROJECT_DIR$/src/spread/Hashing.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalTreap.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalTreap.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
+    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="lazy eval = reduce">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.iml" afterPath="$PROJECT_DIR$/spread.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
@@ -326,24 +322,6 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
@@ -1177,7 +1155,11 @@
       <created>1405206071568</created>
       <updated>1405206071568</updated>
     </task>
-    <option name="localTasksCounter" value="131" />
+    <task id="LOCAL-00131" summary="lazy eval = reduce">
+      <created>1405978167038</created>
+      <updated>1405978167038</updated>
+    </task>
+    <option name="localTasksCounter" value="132" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1227,7 +1209,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="new implementation" />
     <MESSAGE value="fully traceable treaps, first try" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="some more refactoring" />
@@ -1252,7 +1233,8 @@
     <MESSAGE value="- type-safe replace" />
     <MESSAGE value="- nested replace" />
     <MESSAGE value="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d" />
-    <option name="LAST_COMMIT_MESSAGE" value="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d" />
+    <MESSAGE value="lazy eval = reduce" />
+    <option name="LAST_COMMIT_MESSAGE" value="lazy eval = reduce" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
