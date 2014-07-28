@@ -19,7 +19,13 @@ import scala.collection.immutable.Map
   Copyright 2014: Robbert van Dalen
 */
 
+/*
+ Ideas:
+  - eraseTrail([((1 ++ 2) ** (3 ++ 4)) ~> [([(1 ++ 2) ~> 3] ** [(3 ++ 4) ~> 7]) ~> [(3 ** 7) ~> 21]]]) =>
+          [((1 ++ 2) ** (3 ++ 4)) ~> 21]
+  -
 
+ */
 object IncrementalMemoization {
 
   import scala.language.implicitConversions
@@ -30,21 +36,18 @@ object IncrementalMemoization {
   trait Expr[V] {
     def eval: Expr[V]
     def contains[X](x: X): Expr[Boolean]
-    def replace[X,O](x: X, o: Expr[O]): Expr[V] = {
-      val c = contains(x)
-      val to = set(x,o)
-      ContainsReplace(x,o,c,this,to)
-    }
     def set[X,O](x: X, o: Expr[O]): Expr[V]
 
-    def \ = ?(this)
+    def replace[X,O](x: X, o: Expr[O]): Expr[V] = hcons(ContainsReplace(x,o,contains(x),this,set(x,o)))
+    def \ : Expr[V] = hcons(Quote(this))
+    def @@[X,O](x: X, o: Expr[O]): Expr[V] = replace(x,o)
     def ?[X](x: X): Expr[Boolean] = contains(x)
   }
 
   trait LazyExpr[V] extends Expr[V] {
-    def reduce: Expr[V]
-    def check[X](x: X): Expr[Boolean]
     def contains[X](x: X): Expr[Boolean] = fullRed(hcons(Contains(this, x)))
+    def tracedContains[X](x: X): Expr[Boolean]
+
     def eval: Expr[V] = rt.get(this) match {
       case None => eval2
       case Some(x) => {
@@ -54,20 +57,22 @@ object IncrementalMemoization {
       }
     }
     def eval2: Expr[V] = {
-      val r = trace(this,reduce)
-      rt.put(this, new WeakReference(r))
-      return r
+      val r = tracedEval
+      if (r == this) this
+      else {
+        val tr = trace(this, r)
+        rt.put(this, new WeakReference(tr))
+        return tr
+      }
     }
+    def tracedEval: Expr[V]
   }
-
-  def ?[V](e: Expr[V]) = hcons(Quote(e))
 
   trait Trace[V] extends Expr[V] {
     def from: Expr[V]
     def to: Expr[V]
 
     override val hashCode = jh(jh(jh(from)) ^ jh(to))
-
   }
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
@@ -78,8 +83,12 @@ object IncrementalMemoization {
   }
 
   case class Trace1[V](from: Expr[V], to: Expr[V]) extends Trace[V] with LazyExpr[V] {
-    def reduce = to.eval
-    def check[X](x: X) = to.contains(x)
+    def tracedEval = {
+      val te = to.eval
+      if (te == to) this
+      else te
+    }
+    def tracedContains[X](x: X) = to.contains(x)
     def set[X,O](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     override def toString = "[" + getFrom(from) + " => " + to + "]"
   }
@@ -102,15 +111,15 @@ object IncrementalMemoization {
   }
 
   case class ContainsReplace[X,V,O](x: X, o: Expr[O], contains: Expr[Boolean], from: Expr[V], to: Expr[V]) extends LazyExpr[V] {
-    def reduce = trace(this,to.eval)
-    def check[X](x: X): Expr[Boolean] = to.contains(x)
+    def tracedEval = trace(this,to.eval)
+    def tracedContains[X](x: X): Expr[Boolean] = to.contains(x)
     def set[X,O](x: X, o: Expr[O]): Expr[V] = to.set(x,o)
-    override def toString = from + "@(" + x + "," + o + ")  => " + to
+    override def toString = from + " @@ (" + x + "," + o + ")  => " + to
   }
 
   case class Contains[V,X](expr: LazyExpr[V], x: X) extends LazyExpr[Boolean] {
-    def reduce = trace(this,expr.check(x))
-    def check[XX](x: XX) = this
+    def tracedEval = trace(this,expr.tracedContains(x))
+    def tracedContains[XX](x: XX) = this
     def set[X,O](x: X, e: Expr[O]) = this
     override def toString = expr + " ? " + x
   }
@@ -118,13 +127,13 @@ object IncrementalMemoization {
   case class Quote[V](expr: Expr[V]) extends Expr[V] {
     def eval = this
     def contains[X](x: X) = expr.contains(x)
-    def set[X,O](x: X, e: Expr[O]): Expr[V] = expr.set(x,e)
+    def set[X,O](x: X, e: Expr[O]): Expr[V] = Quote(expr.set(x,e))
     override def toString = expr +".\\"
   }
 
   case class Var[X,V](label: X, expr: Expr[V]) extends LazyExpr[V] {
-    def reduce = trace(this,expr)
-    def check[X](x: X) = {
+    def tracedEval = trace(this,expr)
+    def tracedContains[X](x: X) = {
       if (label == x) BTrue ; else expr.contains(x)
     }
     def set[X,O](x: X, e: Expr[O]): Expr[V] = {
@@ -157,8 +166,8 @@ object IncrementalMemoization {
     hcons(FF3(f, a, b, c))
   }
 
-  def reduceArg[A](e: Expr[A]): Expr[A] = e match {
-    case t0: Trace0[A] => getTo(t0)
+  def tracedEvalArg[A](e: Expr[A]): Expr[A] = e match {
+    case t0: Trace[A] => getTo(t0)
     case _ => fullRed(e)
   }
 
@@ -169,7 +178,7 @@ object IncrementalMemoization {
   }
 
   case class ExprImpl[X](value: X) extends F0[X] {
-    def reduce = this
+    def tracedEval = this
     def set[X,O](x: X, e: Expr[O]) = this
     def contains[X](x: X) = BFalse
     def normalize = this
@@ -211,8 +220,8 @@ object IncrementalMemoization {
   type F_ = F0[_]
 
   case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends F1[A, R] {
-    def reduce = {
-      val aa = reduceArg(a)
+    def tracedEval = {
+      val aa = tracedEvalArg(a)
 
       if (a == aa) {
         aa match {
@@ -223,7 +232,7 @@ object IncrementalMemoization {
       else %(f,aa)
     }
 
-    def check[X](x: X) = a.contains(x)
+    def tracedContains[X](x: X) = a.contains(x)
     def set[X,O](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       if ((aa == a)) this
@@ -244,9 +253,9 @@ object IncrementalMemoization {
   }
 
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
-    def reduce = {
-      val aa = reduceArg(a)
-      val bb = reduceArg(b)
+    def tracedEval = {
+      val aa = tracedEvalArg(a)
+      val bb = tracedEvalArg(b)
 
       if ((a == aa) && (b == bb)) {
         (aa,bb) match {
@@ -257,10 +266,11 @@ object IncrementalMemoization {
       else %(f,aa,bb)
     }
 
-    def check[X](x: X) = a.contains(x) ||| b.contains(x)
+    def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x)
     def set[X,O](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       val bb = containsReplace(b,x,e)
+
       if ((aa == a) && (bb == b)) this
       else %(f,aa,bb)
     }
@@ -268,10 +278,10 @@ object IncrementalMemoization {
   }
 
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
-    def reduce = {
-      val aa = reduceArg(a)
-      val bb = reduceArg(b)
-      val cc = reduceArg(c)
+    def tracedEval = {
+      val aa = tracedEvalArg(a)
+      val bb = tracedEvalArg(b)
+      val cc = tracedEvalArg(c)
 
       if ((a == aa) && (b == bb) && (c == cc)) {
         (aa,bb,cc) match {
@@ -282,7 +292,7 @@ object IncrementalMemoization {
       %(f,aa,bb,cc)
     }
 
-    def check[X](x: X) = a.contains(x) ||| b.contains(x) ||| c.contains(x)
+    def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x) ||| c.contains(x)
     def set[X,O](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       val bb = containsReplace(b,x,e)

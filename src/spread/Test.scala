@@ -18,7 +18,7 @@ object Test {
 
   object fac extends FA1[Int,Int] {
     def apply(i: F0I): I = {
-      if (!i < 2) 1
+      if (!i < 2) ('a~1).\
       else i ** %(fac,!i - 1)
     }
     override def toString = "fac"
@@ -33,11 +33,11 @@ object Test {
   }
 
   final def main(args: Array[String]): Unit = {
-    var a = (('a~1 ++ 2) ** (3 ++ 4))
-    var b =  ((5 ++ 6) ** (7 ++ 8))
-
-    var c = a.replace('a,2)
-    println("c: " + c)
+    var a = ((('a~1).\ ++ 2) ** (3 ++ 4))
+    var b =  ((5 ++ 6) ** (7 ++ 8.\))
+    var c = %(fac,10)
+    var e = fullRed(c) @@ ('a,10)
+    println("c: " + e)
 
      System.gc()
     println("size: " + rt.keySet.size)

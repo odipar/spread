@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
@@ -90,11 +89,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Test.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Test.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="1545">
-              <caret line="35" column="79" selection-start-line="35" selection-start-column="37" selection-end-line="35" selection-end-column="37" />
+            <state vertical-scroll-proportion="0.30176565" vertical-offset="127" max-vertical-offset="1545">
+              <caret line="21" column="50" selection-start-line="21" selection-start-column="29" selection-end-line="21" selection-end-column="29" />
               <folding>
                 <element signature="e#16#50#0" expanded="true" />
                 <element signature="e#155#196#0" expanded="true" />
@@ -113,12 +112,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3130016" vertical-offset="3225" max-vertical-offset="6090">
-              <caret line="232" column="40" selection-start-line="232" selection-start-column="3" selection-end-line="232" selection-end-column="3" />
-              <folding />
+            <state vertical-scroll-proportion="-8.333333" vertical-offset="135" max-vertical-offset="6300">
+              <caret line="39" column="17" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
+              <folding>
+                <element signature="e#16#39#0" expanded="true" />
+                <element signature="e#654#695#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -221,8 +223,8 @@
         <option value="$PROJECT_DIR$/src/spread/Hashing.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalLogic.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
       </list>
     </option>
   </component>
@@ -1167,7 +1169,11 @@
       <created>1405978556778</created>
       <updated>1405978556778</updated>
     </task>
-    <option name="localTasksCounter" value="134" />
+    <task id="LOCAL-00134" summary="the quest continues">
+      <created>1406575585634</created>
+      <updated>1406575585635</updated>
+    </task>
+    <option name="localTasksCounter" value="135" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1217,7 +1223,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="fully traceable treaps, first try" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="some more refactoring" />
     <MESSAGE value="and more refactoring" />
@@ -1242,7 +1247,8 @@
     <MESSAGE value="- nested replace" />
     <MESSAGE value="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d" />
     <MESSAGE value="lazy eval = reduce" />
-    <option name="LAST_COMMIT_MESSAGE" value="lazy eval = reduce" />
+    <MESSAGE value="the quest continues" />
+    <option name="LAST_COMMIT_MESSAGE" value="the quest continues" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1257,12 +1263,6 @@
           <line>28</line>
           <properties />
           <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala</url>
-          <line>275</line>
-          <properties />
-          <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1296,7 +1296,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="3495">
           <caret line="103" column="37" selection-start-line="103" selection-start-column="37" selection-end-line="103" selection-end-column="37" />
-          <folding />
+          <folding>
+            <element signature="e#16#39#0" expanded="true" />
+            <element signature="e#654#695#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1378,7 +1381,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2775">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#39#0" expanded="true" />
+            <element signature="e#654#695#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1428,7 +1434,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="780" max-vertical-offset="2775">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#39#0" expanded="true" />
+            <element signature="e#654#695#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1499,7 +1508,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="780" max-vertical-offset="2775">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#39#0" expanded="true" />
+            <element signature="e#654#695#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1629,14 +1641,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/toxgml.xsl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="3112" max-vertical-offset="3735">
-          <caret line="241" column="35" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreap.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2386" max-vertical-offset="2820">
@@ -1653,6 +1657,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/toxgml.xsl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3112" max-vertical-offset="3735">
+          <caret line="241" column="35" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-7.076923" vertical-offset="341" max-vertical-offset="1080">
@@ -1661,22 +1673,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="1545">
-          <caret line="35" column="79" selection-start-line="35" selection-start-column="37" selection-end-line="35" selection-end-column="37" />
+        <state vertical-scroll-proportion="-8.333333" vertical-offset="135" max-vertical-offset="6300">
+          <caret line="39" column="17" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
           <folding>
-            <element signature="e#16#50#0" expanded="true" />
-            <element signature="e#155#196#0" expanded="true" />
+            <element signature="e#16#39#0" expanded="true" />
+            <element signature="e#654#695#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3130016" vertical-offset="3225" max-vertical-offset="6090">
-          <caret line="232" column="40" selection-start-line="232" selection-start-column="3" selection-end-line="232" selection-end-column="3" />
-          <folding />
+        <state vertical-scroll-proportion="0.30176565" vertical-offset="127" max-vertical-offset="1545">
+          <caret line="21" column="50" selection-start-line="21" selection-start-column="29" selection-end-line="21" selection-end-column="29" />
+          <folding>
+            <element signature="e#16#50#0" expanded="true" />
+            <element signature="e#155#196#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
