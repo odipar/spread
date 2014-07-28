@@ -9,7 +9,6 @@ import spread.Hashing._
 object IncrementalArithmetic {
   import scala.language.implicitConversions
   import IncrementalMemoization._
-  import java.math.BigInteger
 
   type I = Expr[Int]
 
@@ -23,7 +22,8 @@ object IncrementalArithmetic {
   type F0I = F0[Int]
 
   case class II(value: Int) extends IExpr with F0I {
-    def unquote = this
+    def contains[X](x: X) = BFalse
+    def set[X,O](x: X, e: Expr[O]) = this
     def origin = this
     override def toString = "" + value
     override def hashCode = Hashing.jenkinsHash(value)
@@ -32,6 +32,8 @@ object IncrementalArithmetic {
   implicit def toI(i: Int) = II(i)
 
   private case class IWrap(origin: I) extends IExpr {
+    def contains[X](x: X) = error
+    def set[X,O](x: X, e: Expr[O]) = error
     def eval = error
     def unquote = error
     def error = sys.error("IWrap should not be used directly")
