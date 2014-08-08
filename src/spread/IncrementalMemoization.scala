@@ -12,7 +12,7 @@ import scala.collection.immutable.Map
   2) reuse of expensive (sub)computations and functions
   3) full traceability
   4) purely functional
-  5) automatic garbage collection of unused hconsoized functions
+  5) automatic garbage collection of unused hashed-consed functions
 
   - Requires scala 2.11 and higher (usage of TypeTags)
 
@@ -21,7 +21,7 @@ import scala.collection.immutable.Map
 
 /*
  Ideas:
-  - eraseTrail([((1 ++ 2) ** (3 ++ 4)) ~> [([(1 ++ 2) ~> 3] ** [(3 ++ 4) ~> 7]) ~> [(3 ** 7) ~> 21]]]) =>
+  - (destructively) eraseTrail([((1 ++ 2) ** (3 ++ 4)) ~> [([(1 ++ 2) ~> 3] ** [(3 ++ 4) ~> 7]) ~> [(3 ** 7) ~> 21]]]) =>
           [((1 ++ 2) ** (3 ++ 4)) ~> 21]
   -
 
@@ -32,15 +32,23 @@ object IncrementalMemoization {
   import scala.collection.mutable.WeakHashMap
   import java.lang.ref.WeakReference
   import Hashing._
+  import scala.reflect.runtime.universe.TypeTag
 
   trait Expr[V] {
     def eval: Expr[V]
     def contains[X](x: X): Expr[Boolean]
-    def set[X,O](x: X, o: Expr[O]): Expr[V]
+    def set[X,O: TypeTag](x: X, o: Expr[O]): Expr[V]
+    def unquote: Expr[V]
+    def containsQuotes: Boolean
 
-    def replace[X,O](x: X, o: Expr[O]): Expr[V] = hcons(ContainsReplace(x,o,contains(x),this,set(x,o)))
+    def eraseTrail: Expr[V] = this
+
+    def eraseQuotes: Expr[V] = Unquote(this,unquote)
+    def replace[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = hcons(ContainsReplace(x,o,contains(x),this,set(x,o)))
     def \ : Expr[V] = hcons(Quote(this))
-    def @@[X,O](x: X, o: Expr[O]): Expr[V] = replace(x,o)
+
+    def ^ : Expr[V] = eraseQuotes
+    def @@[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = replace(x,o)
     def ?[X](x: X): Expr[Boolean] = contains(x)
   }
 
@@ -68,16 +76,31 @@ object IncrementalMemoization {
     def tracedEval: Expr[V]
   }
 
+  case class Unquote[V](from: Expr[V], to: Expr[V]) extends Expr[V] {
+    def containsQuotes = to.containsQuotes
+    def unquote = to.unquote
+
+    def eval = this
+    def contains[X](x: X) = to.contains(x)
+    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
+    override def toString = "(" + from + ".^ => " +  to + ")"
+  }
+
   trait Trace[V] extends Expr[V] {
+    def containsQuotes = to.containsQuotes
+    def unquote = if (containsQuotes) to.unquote ; else this
+
     def from: Expr[V]
     def to: Expr[V]
+
+    override def eraseTrail: Expr[V] = trace(getFrom(from),getTo(to))
 
     override val hashCode = jh(jh(jh(from)) ^ jh(to))
   }
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
     def value = to.value
-    def set[X,O](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
+    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     def contains[X](x: X) = to.contains(x)
     override def toString = "[" + getFrom(from) + " ~> " + to + "]"
   }
@@ -89,7 +112,7 @@ object IncrementalMemoization {
       else te
     }
     def tracedContains[X](x: X) = to.contains(x)
-    def set[X,O](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
+    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     override def toString = "[" + getFrom(from) + " => " + to + "]"
   }
 
@@ -111,33 +134,47 @@ object IncrementalMemoization {
   }
 
   case class ContainsReplace[X,V,O](x: X, o: Expr[O], contains: Expr[Boolean], from: Expr[V], to: Expr[V]) extends LazyExpr[V] {
-    def tracedEval = trace(this,to.eval)
+    def containsQuotes = to.containsQuotes
+    def unquote = if (containsQuotes) to.unquote ; else this
+
+    def tracedEval = to.eval
     def tracedContains[X](x: X): Expr[Boolean] = to.contains(x)
-    def set[X,O](x: X, o: Expr[O]): Expr[V] = to.set(x,o)
+    def set[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = to.set(x,o)
     override def toString = from + " @@ (" + x + "," + o + ")  => " + to
   }
 
   case class Contains[V,X](expr: LazyExpr[V], x: X) extends LazyExpr[Boolean] {
-    def tracedEval = trace(this,expr.tracedContains(x))
+    def containsQuotes = false
+    def unquote = this
+
+    def tracedEval = expr.tracedContains(x)
     def tracedContains[XX](x: XX) = this
-    def set[X,O](x: X, e: Expr[O]) = this
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
     override def toString = expr + " ? " + x
   }
 
   case class Quote[V](expr: Expr[V]) extends Expr[V] {
+    def containsQuotes = true
+    def unquote = expr
+
     def eval = this
     def contains[X](x: X) = expr.contains(x)
-    def set[X,O](x: X, e: Expr[O]): Expr[V] = Quote(expr.set(x,e))
+    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = Quote(expr.set(x,e))
     override def toString = expr +".\\"
   }
 
-  case class Var[X,V](label: X, expr: Expr[V]) extends LazyExpr[V] {
-    def tracedEval = trace(this,expr)
+  case class Var[X,V](label: X, expr: Expr[V])(implicit vt: TypeTag[V]) extends LazyExpr[V] {
+    def containsQuotes = expr.containsQuotes
+    def unquote = if (containsQuotes) Var(label,expr.unquote) ; else this
+
+    def tracedEval = expr
     def tracedContains[X](x: X) = {
       if (label == x) BTrue ; else expr.contains(x)
     }
-    def set[X,O](x: X, e: Expr[O]): Expr[V] = {
-      if (label == x) Var(label,e).asInstanceOf[Expr[V]]
+    def set[X,O](x: X, e: Expr[O])(implicit ot: TypeTag[O]): Expr[V] = {
+      def evt = vt.tpe
+      def ovt = ot.tpe
+      if ((label == x) && (evt <:< ovt)) Var(label,e).asInstanceOf[Expr[V]]
       else Var(label,expr.set(x,e))
     }
     override def toString = label + "~" + expr
@@ -166,7 +203,7 @@ object IncrementalMemoization {
     hcons(FF3(f, a, b, c))
   }
 
-  def tracedEvalArg[A](e: Expr[A]): Expr[A] = e match {
+  def evalArg[A](e: Expr[A]): Expr[A] = e match {
     case t0: Trace[A] => getTo(t0)
     case _ => fullRed(e)
   }
@@ -178,8 +215,10 @@ object IncrementalMemoization {
   }
 
   case class ExprImpl[X](value: X) extends F0[X] {
+    def containsQuotes = false
+    def unquote = this
     def tracedEval = this
-    def set[X,O](x: X, e: Expr[O]) = this
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
     def contains[X](x: X) = BFalse
     def normalize = this
     override def toString = "`" + value.toString
@@ -220,8 +259,11 @@ object IncrementalMemoization {
   type F_ = F0[_]
 
   case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends F1[A, R] {
+    val containsQuotes = a.containsQuotes
+    def unquote = if (containsQuotes) %(f,a.unquote) ; else this
+
     def tracedEval = {
-      val aa = tracedEvalArg(a)
+      val aa = evalArg(a)
 
       if (a == aa) {
         aa match {
@@ -233,7 +275,7 @@ object IncrementalMemoization {
     }
 
     def tracedContains[X](x: X) = a.contains(x)
-    def set[X,O](x: X, e: Expr[O]) = {
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       if ((aa == a)) this
       else %(f,aa)
@@ -241,7 +283,7 @@ object IncrementalMemoization {
     override def toString = f + "(" + a + ")"
   }
 
-  def containsReplace[V,X,O](e: Expr[V], x: X, o: Expr[O]): Expr[V] = {
+  def containsReplace[V,X,O: TypeTag](e: Expr[V], x: X, o: Expr[O]): Expr[V] = {
     e.contains(x) match {
       case f: F0[Boolean] => {
         val b = f.value
@@ -253,9 +295,12 @@ object IncrementalMemoization {
   }
 
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
+    val containsQuotes = a.containsQuotes || b.containsQuotes
+    def unquote = if (containsQuotes) %(f,a.unquote,b.unquote) ; else this
+
     def tracedEval = {
-      val aa = tracedEvalArg(a)
-      val bb = tracedEvalArg(b)
+      val aa = evalArg(a)
+      val bb = evalArg(b)
 
       if ((a == aa) && (b == bb)) {
         (aa,bb) match {
@@ -267,7 +312,7 @@ object IncrementalMemoization {
     }
 
     def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x)
-    def set[X,O](x: X, e: Expr[O]) = {
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       val bb = containsReplace(b,x,e)
 
@@ -278,10 +323,13 @@ object IncrementalMemoization {
   }
 
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
+    val containsQuotes = a.containsQuotes || b.containsQuotes || c.containsQuotes
+    def unquote = if (containsQuotes) %(f,a.unquote,b.unquote,c.unquote) ; else this
+
     def tracedEval = {
-      val aa = tracedEvalArg(a)
-      val bb = tracedEvalArg(b)
-      val cc = tracedEvalArg(c)
+      val aa = evalArg(a)
+      val bb = evalArg(b)
+      val cc = evalArg(c)
 
       if ((a == aa) && (b == bb) && (c == cc)) {
         (aa,bb,cc) match {
@@ -293,7 +341,7 @@ object IncrementalMemoization {
     }
 
     def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x) ||| c.contains(x)
-    def set[X,O](x: X, e: Expr[O]) = {
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
       val aa = containsReplace(a,x,e)
       val bb = containsReplace(b,x,e)
       val cc = containsReplace(c,x,e)
@@ -320,40 +368,11 @@ object IncrementalMemoization {
     def apply(a: F0[A], b: F0[B]): Expr[C]
   }
 
-  def unquote[X](x: Expr[X]): Expr[X] = {
-    x match {
-      case Quote(xx) => unquote(xx)
-      case t: Trace[X] => {
-        val tq = unquote(t.to)
-        if (tq == t.to) t
-        else trace(t.from,tq)
-      }
-      case f1: F1[_,X] => {
-        val aa = unquote(f1.a)
-        if (aa == f1.a) f1
-        else trace(x,%(f1.f,aa))
-      }
-      case f2: F2[_,_,X] => {
-        val aa = unquote(f2.a)
-        val bb = unquote(f2.b)
-        if ((aa == f2.a) && (bb == f2.b)) f2
-        else trace(x,%(f2.f,aa,bb))
-      }
-      case f3: F3[_,_,_,X] => {
-        val aa = unquote(f3.a)
-        val bb = unquote(f3.b)
-        val cc = unquote(f3.c)
-        if ((aa == f3.a) && (bb == f3.b) && (cc == f3.c)) f3
-        else trace(x,%(f3.f,aa,bb,cc))
-      }
-      case _ => x
-    }
-  }
 
   implicit def toL[X,V](x: X): L[X] = L(x)
 
   case class L[X](x: X) {
-    def ~[V](e: Expr[V]): Expr[V] = Var(x,e)
+    def ~[V: TypeTag](e: Expr[V]): Expr[V] = Var(x,e)
   }
 
   type B = Expr[Boolean]
@@ -367,8 +386,11 @@ object IncrementalMemoization {
   type F0B = F0[Boolean]
 
   trait BB extends BExpr with F0B {
+    def containsQuotes = false
+    def unquote = this
+
     def contains[X](x: X) = BFalse
-    def set[X,O](x: X, e: Expr[O]) = this
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
     def origin = this
   }
 
@@ -385,8 +407,10 @@ object IncrementalMemoization {
   implicit def toB(b: Boolean) = if (b) BTrue ; else BFalse
 
   private case class BWrap(origin: B) extends BExpr {
+    def containsQuotes = error
+
     def contains[X](x: X) = error
-    def set[X,O](x: X, e: Expr[O]) = error
+    def set[X,O: TypeTag](x: X, e: Expr[O]) = error
     def eval = error
     def unquote = error
     def error = sys.error("BWrap should not be used directly")
