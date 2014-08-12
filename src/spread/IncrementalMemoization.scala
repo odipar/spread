@@ -99,7 +99,7 @@ object IncrementalMemoization {
   }
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
-    def value = to.value
+    def evalValue = to.evalValue
     def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     def contains[X](x: X) = to.contains(x)
     override def toString = "[" + getFrom(from) + " ~> " + to + "]"
@@ -187,7 +187,9 @@ object IncrementalMemoization {
       case None => hcons2(c)
       case Some(x) => {
         val xg = x.get
-        if (xg != null) xg.asInstanceOf[Expr[V]]
+        if (xg != null) {
+          xg.asInstanceOf[Expr[V]]
+        }
         else hcons2(c)
       }
     }
@@ -214,22 +216,22 @@ object IncrementalMemoization {
     else fullRed(ee)
   }
 
-  case class ExprImpl[X](value: X) extends F0[X] {
+  case class ExprImpl[X](evalValue: X) extends F0[X] {
     def containsQuotes = false
     def unquote = this
     def tracedEval = this
     def set[X,O: TypeTag](x: X, e: Expr[O]) = this
     def contains[X](x: X) = BFalse
     def normalize = this
-    override def toString = "`" + value.toString
+    override def toString = "`" + evalValue.toString
   }
 
-  def ei[X](x: X): Expr[X] = hcons(ExprImpl(x))
+  def ei[X](x: X): Expr[X] = ExprImpl(x)
 
   trait F0[R] extends Expr[R] {
     def eval = this
-    def value: R
-    def unary_! : R = value
+    def evalValue: R
+    def unary_! : R = evalValue
   }
 
   trait F1[A, R] extends LazyExpr[R] {
@@ -286,7 +288,7 @@ object IncrementalMemoization {
   def containsReplace[V,X,O: TypeTag](e: Expr[V], x: X, o: Expr[O]): Expr[V] = {
     e.contains(x) match {
       case f: F0[Boolean] => {
-        val b = f.value
+        val b = f.evalValue
         if (b) e.set(x,o)
         else e
       }
@@ -333,11 +335,11 @@ object IncrementalMemoization {
 
       if ((a == aa) && (b == bb) && (c == cc)) {
         (aa,bb,cc) match {
-          case (fa: F0[A], fb: F0[B], fc: F0[C]) => (f,aa,bb,cc)
+          case (fa: F0[A], fb: F0[B], fc: F0[C]) => f(aa,bb,cc)
           case _ => this
         }
       }
-      %(f,aa,bb,cc)
+      else %(f,aa,bb,cc)
     }
 
     def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x) ||| c.contains(x)
@@ -352,20 +354,28 @@ object IncrementalMemoization {
     override def toString = f + "(" + a + "," + b + "," + c + ")"
   }
 
-  trait FA1[A, C] extends (Expr[A] => Expr[C]) {
-    def apply(a: Expr[A]): Expr[C] = a match {
+  trait FA1[A, X] extends (Expr[A] => Expr[X]) {
+    def apply(a: Expr[A]): Expr[X] = a match {
       case (af: F0[A]) => apply(af)
       case _ => %(this, a)
     }
-    def apply(a: F0[A]): Expr[C]
+    def apply(a: F0[A]): Expr[X]
   }
 
-  trait FA2[A, B, C] extends ((Expr[A], Expr[B]) => Expr[C]) {
-    def apply(a: Expr[A], b: Expr[B]): Expr[C] = (a, b) match {
+  trait FA2[A, B, X] extends ((Expr[A], Expr[B]) => Expr[X]) {
+    def apply(a: Expr[A], b: Expr[B]): Expr[X] = (a, b) match {
       case (af: F0[A], bf: F0[B]) => apply(af, bf)
       case _ => %(this, a, b)
     }
-    def apply(a: F0[A], b: F0[B]): Expr[C]
+    def apply(a: F0[A], b: F0[B]): Expr[X]
+  }
+
+  trait FA3[A, B, C, X] extends ((Expr[A], Expr[B], Expr[C]) => Expr[X]) {
+    def apply(a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = (a, b, c) match {
+      case (af: F0[A], bf: F0[B], cf: F0[C]) => apply(af, bf, cf)
+      case _ => %(this, a, b, c)
+    }
+    def apply(a: F0[A], b: F0[B], c: F0[C]): Expr[X]
   }
 
 
@@ -395,12 +405,12 @@ object IncrementalMemoization {
   }
 
   case object BTrue extends BB {
-    def value = true
+    def evalValue = true
     override def toString = "true"
   }
 
   case object BFalse extends BB {
-    def value = false
+    def evalValue = false
     override def toString = "false"
   }
 
@@ -422,12 +432,12 @@ object IncrementalMemoization {
   }
 
   object or extends FA2[Boolean,Boolean,Boolean] {
-    def apply(a: F0B, b: F0B) = a.value || b.value
+    def apply(a: F0B, b: F0B) = a.evalValue || b.evalValue
     override def toString = "|||"
   }
 
   object and extends FA2[Boolean,Boolean,Boolean] {
-    def apply(a: F0B, b: F0B) = a.value && b.value
+    def apply(a: F0B, b: F0B) = a.evalValue && b.evalValue
     override def toString = "&&&"
   }
 

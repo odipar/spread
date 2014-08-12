@@ -8,14 +8,20 @@ object IncrementalTreap {
   import IncrementalMemoization._
   import Hashing._
   import scala.language.implicitConversions
-  /*
-  trait FTreap[V, P] extends Expr[FTreap[V, P]] {
+  import scala.reflect.runtime.universe.TypeTag
+
+  trait FTreap[V, P] extends F0[FTreap[V, P]] {
     def isEmpty: Boolean
     def prio: P
     def left: FTreap[V, P]
     def value: V
     def right: FTreap[V, P]
-    def eval = this
+
+    def evalValue = this
+    def contains[X](x: X): Expr[Boolean] = false
+    def set[X,O: TypeTag](x: X, o: Expr[O]) = this
+    def unquote = this
+    def containsQuotes = false
   }
 
   case class NFTreap[V, P]() extends FTreap[V, P] {
@@ -57,6 +63,8 @@ object IncrementalTreap {
   }
 
   type VFT[V, P] = Expr[FTreap[V, P]]
+  type FT[V,P] = FTreap[V,P]
+  type F0T[V,P] = F0[FT[V,P]]
 
   def fcreate[V, P]: Function3[FTreap[V, P], (V, P), FTreap[V, P], FTreap[V, P]] = new Function3[FTreap[V, P], (V, P), FTreap[V, P], FTreap[V, P]] {
     def apply(l: FTreap[V, P], xp: (V, P), r: FTreap[V, P]): FTreap[V, P] = {
@@ -89,8 +97,8 @@ object IncrementalTreap {
     lazy val lsplit_1 = lsplit1[V, P](this)
     lazy val rsplit_1 = rsplit1[V, P](this)
     lazy val put_1 = put1[V, P](this)
-    def create(v: V): VFT[V, P] = %(create_0,ei(v))
-    def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = %(create_1, l, ei(v, p), r)
+    def create(v: V): VFT[V, P] = create_0(ei(v))
+    def create(l: VFT[V, P], v: V, p: P, r: VFT[V, P]): VFT[V, P] = hcons(create_1(l, ei(v, p), r))
     def join(t1: VFT[V, P], t2: VFT[V, P]): VFT[V, P] = join_1(t1, t2)
     def left(t: VFT[V, P]): VFT[V, P] = left_1(t)
     def right(t: VFT[V, P]): VFT[V, P] = right_1(t)
@@ -99,28 +107,29 @@ object IncrementalTreap {
     def put(t: VFT[V, P], v: Expr[V]): VFT[V, P] = %(put_1, t, v)
   }
 
-  def create0[V, P](p: PrioOrdering[V, P]): Function1[Expr[V], VFT[V, P]] = new Function1[Expr[V], VFT[V, P]] {
-    def apply(v: Expr[V]): VFT[V, P] = LFTreap(v.eval, p.prio(v.eval))
-    override def toString = "create"
+  def create0[V, P](p: PrioOrdering[V, P]): FA1[V, FT[V, P]] = new FA1[V, FT[V, P]]  {
+    def apply(v: F0[V]): VFT[V, P] = LFTreap(v.evalValue, p.prio(v.evalValue))
+    override def toString = "create0"
   }
 
-  def create1[V, P](p: PrioOrdering[V, P]): Function3[VFT[V, P], Expr[(V, P)], VFT[V, P], VFT[V, P]] = new Function3[VFT[V, P], Expr[(V, P)], VFT[V, P], VFT[V, P]] {
+  def create1[V, P](p: PrioOrdering[V, P]): FA3[FT[V, P], (V, P), FT[V, P], FT[V, P]] = new FA3[FT[V, P], (V, P), FT[V, P], FT[V, P]] {
     val create: Function3[FTreap[V, P], (V, P), FTreap[V, P], FTreap[V, P]] = fcreate
-    def apply(l: VFT[V, P], vp: Expr[(V, P)], r: VFT[V, P]): VFT[V, P] = create(l.eval, vp.eval, r.eval)
-    override def toString = "create"
+    def apply(l: F0T[V,P], vp: F0[(V, P)], r: F0T[V, P]): VFT[V, P] =  create(l.evalValue, vp.evalValue, r.evalValue)
+    override def toString = "create1"
   }
-  def left1[V, P](p: PrioOrdering[V, P]): Function1[VFT[V, P], VFT[V, P]] = new Function1[VFT[V, P], VFT[V, P]] {
-    def apply(t: VFT[V, P]): VFT[V, P] = t.eval.left
+  def left1[V, P](p: PrioOrdering[V, P]): FA1[FT[V, P], FT[V, P]] = new FA1[FT[V, P], FT[V, P]] {
+    def apply(t: F0T[V, P]): VFT[V, P] = t.evalValue.left
     override def toString = "left"
   }
-  def right1[V, P](p: PrioOrdering[V, P]): Function1[VFT[V, P], VFT[V, P]] = new Function1[VFT[V, P], VFT[V, P]] {
-    def apply(t: VFT[V, P]): VFT[V, P] = t.eval.right
+  def right1[V, P](p: PrioOrdering[V, P]): FA1[FT[V, P], FT[V, P]] = new FA1[FT[V, P], FT[V, P]] {
+    def apply(t: F0T[V, P]): VFT[V, P] = t.evalValue.right
     override def toString = "right"
   }
-  def join1[V, P](p: PrioOrdering[V, P]) = new Function2[VFT[V, P], VFT[V, P], VFT[V, P]] {
-    def apply(a1: VFT[V, P], a2: VFT[V, P]): VFT[V, P] = {
-      val t1 = a1.eval
-      val t2 = a2.eval
+
+  def join1[V, P](p: PrioOrdering[V, P]) = new FA2[FT[V, P], FT[V, P], FT[V, P]] {
+    def apply(a1: F0T[V, P], a2: F0T[V, P]): VFT[V, P] = {
+      val t1 = a1.evalValue
+      val t2 = a2.evalValue
       if (t1.isEmpty) t2
       else if (t2.isEmpty) t1
       else if (p.orderPrio(t1.prio, t2.prio) > 0) {
@@ -132,13 +141,14 @@ object IncrementalTreap {
     }
     override def toString = "join"
   }
-  def lsplit1[V, P](p: PrioOrdering[V, P]) = new Function2[VFT[V, P], Expr[V], VFT[V, P]] {
-    def apply(a1: VFT[V, P], x: Expr[V]): VFT[V, P] = {
-      val t1 = a1.eval
+
+  def lsplit1[V, P](p: PrioOrdering[V, P]) = new FA2[FT[V, P], V, FT[V, P]] {
+    def apply(a1: F0T[V, P], x: F0[V]): VFT[V, P] = {
+      val t1 = a1.evalValue
       if (t1.isEmpty) t1
       else {
         val e = t1.value
-        val cc = p.orderValue(e, x.eval)
+        val cc = p.orderValue(e, x.evalValue)
         if (cc > 0) p.lsplit(p.left(a1), x)
         else if (cc < 0) {
           val r = p.lsplit(p.right(a1), x)
@@ -151,13 +161,14 @@ object IncrementalTreap {
     }
     override def toString = "lsplit"
   }
-  def rsplit1[V, P](p: PrioOrdering[V, P]) = new Function2[VFT[V, P], Expr[V], VFT[V, P]] {
-    def apply(a1: VFT[V, P], x: Expr[V]): VFT[V, P] = {
-      val t1 = a1.eval
+
+  def rsplit1[V, P](p: PrioOrdering[V, P]) = new FA2[FT[V, P], V, FT[V, P]] {
+    def apply(a1: F0T[V, P], x: F0[V]): VFT[V, P] = {
+      val t1 = a1.evalValue
       if (t1.isEmpty) t1
       else {
         val e = t1.value
-        val cc = p.orderValue(e, x.eval)
+        val cc = p.orderValue(e, x.evalValue)
         if (cc > 0) {
           val l = p.rsplit(p.left(a1), x)
           val l0 = p.create(e)
@@ -171,14 +182,14 @@ object IncrementalTreap {
     override def toString = "rsplit"
   }
 
-  def put1[V, P](p: PrioOrdering[V, P]) = new Function2[VFT[V, P], Expr[V], VFT[V, P]] {
-    def apply(a1: VFT[V, P], x: Expr[V]): VFT[V, P] = {
+  def put1[V, P](p: PrioOrdering[V, P]) = new FA2[FT[V, P], V, FT[V, P]] {
+    def apply(a1: F0T[V, P], x: F0[V]): VFT[V, P] = {
       val r = p.rsplit(a1, x)
       val l = p.lsplit(a1, x)
-      val e = p.create(x.eval)
+      val e = p.create(x.evalValue)
       val ll = p.join(l, e)
       p.join(ll, r)
     }
     override def toString = "put"
-  }     */
+  }
 }

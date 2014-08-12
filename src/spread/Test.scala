@@ -33,17 +33,36 @@ object Test {
   }
 
   final def main(args: Array[String]): Unit = {
-    var a = (1 ++ 2)
-    var b =  (('a~5 ++ 6) ** (7 ++ 'b~8))
-    //var c = b.replace('a,2).replace('b,3)
-    var e = fullRed(%(fac,5)).replace(1,2)
-    println("c: " + e)
+    val p = intord
+    var t1 = T(0)
+    var i = 1
+    while (i < 100) {
+      t1 = p.join(t1,T(i))
+      i = i + 1
+    }
 
-     System.gc()
-    println("size: " + rt.keySet.size)
+    var t2 = T(99)
+    i = 98
+    while (i >= 0) {
+      t2 = p.join(T(i),t2)
+      i = i - 1
+    }
 
-    for (i <- rt.keySet) {
-     println(i + " ==> " + rt(i).get)
+    val t3 = t1
+    val t4 = t2
+
+    val r1 = fullRed(t3)
+    val r2 = fullRed(t4)
+
+    println("r1: " + r1)
+    println("r2: " + r2)
+    println("r1 eq r2 = " + (r1 eq r2))
+
+    System.gc()
+
+    println("size: " + vt.size)
+    for (i <- vt.keySet) {
+      println(i)
     }
   }
 
