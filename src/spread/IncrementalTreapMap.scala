@@ -10,21 +10,15 @@ object IncrementalTreapMap {
 
   trait TreapMap[K,V] {
     def prio: Int
-
     def key: K
     def value: V
-
     def left: T[K,V]
     def right: T[K,V]
-
     def first: K
     def last: K
-
     def isEmpty: Boolean
-
     def join(x: T[K,V])(implicit p: PO[K,V]): T[K,V]
     def split(k: K)(implicit p: PO[K,V]): (T[K,V],T[K,V],T[K,V])
-
     def get(k: K)(implicit p: PO[K,V]): Option[V]
     def put(k: K, v: V)(implicit p: PO[K,V]): TreapMap[K,V]
   }

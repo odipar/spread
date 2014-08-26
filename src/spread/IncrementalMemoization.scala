@@ -60,7 +60,10 @@ object IncrementalMemoization {
       case None => eval2
       case Some(x) => {
         val xg = x.get
-        if (xg != null) xg.asInstanceOf[Expr[V]]
+        if (xg != null) {
+          println("from cache")
+          xg.asInstanceOf[Expr[V]]
+        }
         else eval2
       }
     }

@@ -30,7 +30,7 @@ object Hashing {
 
   trait IDStream {
     def current: Int = Int.MinValue
-    def next: IDStream = this
+    def next: IDStream = NullID
   }
 
   object NullID extends IDStream
