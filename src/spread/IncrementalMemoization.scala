@@ -96,7 +96,7 @@ object IncrementalMemoization {
     def from: Expr[V]
     def to: Expr[V]
 
-    override def eraseTrail: Expr[V] = trace(getFrom(from),getTo(to))
+    override def eraseTrail: Expr[V] = trace(getFrom(from).eraseTrail,getTo(to).eraseTrail)
 
     override val hashCode = jh(jh(jh(from)) ^ jh(to))
   }
@@ -266,6 +266,7 @@ object IncrementalMemoization {
   case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends F1[A, R] {
     val containsQuotes = a.containsQuotes
     def unquote = if (containsQuotes) %(f,a.unquote) ; else this
+    override def eraseTrail: Expr[R] = %(f,a.eraseTrail)
 
     def tracedEval = {
       val aa = evalArg(a)
@@ -303,6 +304,8 @@ object IncrementalMemoization {
     val containsQuotes = a.containsQuotes || b.containsQuotes
     def unquote = if (containsQuotes) %(f,a.unquote,b.unquote) ; else this
 
+    override def eraseTrail: Expr[R] = %(f,a.eraseTrail,b.eraseTrail)
+
     def tracedEval = {
       val aa = evalArg(a)
       val bb = evalArg(b)
@@ -330,6 +333,9 @@ object IncrementalMemoization {
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
     val containsQuotes = a.containsQuotes || b.containsQuotes || c.containsQuotes
     def unquote = if (containsQuotes) %(f,a.unquote,b.unquote,c.unquote) ; else this
+
+    override def eraseTrail: Expr[R] = %(f,a.eraseTrail,b.eraseTrail,c.eraseTrail)
+
 
     def tracedEval = {
       val aa = evalArg(a)
