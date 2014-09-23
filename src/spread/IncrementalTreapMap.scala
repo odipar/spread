@@ -8,7 +8,7 @@ object IncrementalTreapMap {
   type T[K,V] = TreapMap[K,V]
   type PO[K,V] = PrioFactory[K,V]
 
-  abstract class TreapMap[@specialized(Int,Long,Double) K,@specialized(Int,Long,Double) V] {
+  abstract class TreapMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] {
     def prio: Int
     def key: K
     def value: V
@@ -20,36 +20,35 @@ object IncrementalTreapMap {
     def join(x: T[K,V])(implicit p: PO[K,V]): T[K,V]
     def split(k: K)(implicit p: PO[K,V]): (T[K,V],T[K,V],T[K,V])
     def get(k: K)(implicit p: PO[K,V]): Option[V]
-    def put(k: K, v: V)(implicit p: PO[K,V]): TreapMap[K,V]
+    def put(e: LeafTreap[K,V])(implicit p: PO[K,V])
   }
 
-  abstract class PrioFactory[@specialized(Int,Long,Double) K,@specialized(Int,Long,Double) V] {
+  abstract class PrioFactory[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] {
     def prio(k: K): Int
     def compare(k1: K, k2: K): Int
-    def create(k: K, v: V, p: Int): T[K,V]
-    def create(l: T[K,V],k: K, v: V,p: Int,r: T[K,V]): T[K,V]
-    def create(k: K, v: V): T[K,V] = create(k,v,prio(k))
+    def create(k: T[K,V]): T[K,V]
+    def create(l: T[K,V], k: T[K,V], r: T[K,V]): T[K,V]
   }
 
   abstract class TreapImpl[K,V] extends T[K,V] {
     def join(x: T[K,V])(implicit p: PO[K,V]): T[K,V] = {
       if (isEmpty) x
       else if (x.isEmpty) this
-      else if (prio > x.prio) p.create(left,key,value,prio,right join x)
-      else p.create(this join x.left,x.key, x.value,x.prio,x.right)
+      else if (prio > x.prio) p.create(left,this,right join x)
+      else p.create(this join x.left,x,x.right)
     }
     def split(k: K)(implicit p: PO[K,V]): (T[K,V],T[K,V],T[K,V]) = {
       if (isEmpty) (this,this,this)
       else {
         def cc = p.compare(key,k)
-        if (cc == 0) (left,p.create(key,value,prio),right)
+        if (cc == 0) (left,p.create(this),right)
         else if (cc > 0) {
           val (l,m,r) = left.split(k)
-          (l,m,r join p.create(key,value,prio) join right)
+          (l,m,r join p.create(this) join right)
         }
         else {
           val (l,m,r) = right.split(k)
-          (left join p.create(key,value,prio) join l,m,r)
+          (left join p.create(this) join l,m,r)
         }
       }
     }
@@ -63,18 +62,16 @@ object IncrementalTreapMap {
         else right.get(k)
       }
     }
-    def put(k: K, v: V)(implicit p: PO[K,V]): T[K,V] = {
-      val entry = p.create(k,v)
-
-      if (isEmpty) entry
+    def put(e: LeafTreap[K,V])(implicit p: PO[K,V]) = {
+      if (isEmpty) e
       else {
-        val cc = p.compare(key,k)
-
-        if (cc > 0) this join entry
-        else if (cc < 0) entry join this
+        val k = e.key
+        val l = last
+        if (p.compare(k,l) > 0) this join e
         else {
-          val (l,_,r) = split(k)
-          l join entry join r
+          val f = first
+          if (p.compare(k,f) < 0) e join this
+          else { val (l,m,r) = split(e.key) ; l join e join r }
         }
       }
     }
@@ -83,7 +80,7 @@ object IncrementalTreapMap {
   case object NTreap extends TreapImpl[Any,Any] {
     def key = sys.error("empty treap has no key")
     def value = sys.error("empty treap has no value")
-    def prio = sys.error("empty treap has no priority")
+    def prio = 0
     def left = this
     def right = this
     def first = sys.error("empty treap has no first")
@@ -103,7 +100,12 @@ object IncrementalTreapMap {
     override def toString = key.toString + ":" + value.toString
   }
 
+  trait SetTreap[K] extends TreapImpl[K,K] {
+    def value = key
+  }
+
   case class LTreap[K,V](key: K, value: V,prio: Int) extends LeafTreap[K,V]
+  case class LSetTreap[K](key: K,prio: Int) extends LeafTreap[K,K] with SetTreap[K]
 
   abstract class BinaryTreap[K,V] extends TreapImpl[K,V] {
     def isEmpty = false
@@ -114,6 +116,7 @@ object IncrementalTreapMap {
   }
 
   case class BTreap[K,V](left: T[K,V],key: K, value: V,prio: Int,right: T[K,V]) extends BinaryTreap[K,V]
+  case class BSetTreap[K](left: T[K,K],key: K,prio: Int,right: T[K,K]) extends BinaryTreap[K,K] with SetTreap[K]
 
   abstract class BinLeftTreap[K,V] extends TreapImpl[K,V] {
     def right = empty
@@ -125,6 +128,7 @@ object IncrementalTreapMap {
   }
 
   case class BLeftTreap[K,V](left: T[K,V],key: K, value: V,prio: Int) extends BinLeftTreap[K,V]
+  case class BSetLeftTreap[K](left: T[K,K],key: K,prio: Int) extends BinLeftTreap[K,K] with SetTreap[K]
 
   abstract class BinRightTreap[K,V] extends TreapImpl[K,V] {
     def left = empty
@@ -136,20 +140,64 @@ object IncrementalTreapMap {
   }
 
   case class BRightTreap[K,V](key: K, value: V,prio: Int,right: T[K,V]) extends BinRightTreap[K,V]
+  case class BSetRightTreap[K](key: K, prio: Int,right: T[K,K]) extends BinRightTreap[K,K] with SetTreap[K]
 
-  abstract class PrioFactoryImpl[K,V] extends PrioFactory[K,V] {
-    def create(k: K, v: V, p: Int): T[K,V] = LTreap(k,v,p)
-    def create(l: T[K,V],k: K, v: V,p: Int,r: T[K,V]): T[K,V] = {
+  abstract class SetPrioFactoryImpl[K] extends PrioFactory[K,K] {
+    def create(k: T[K,K]): T[K,K] = LSetTreap(k.key,k.prio)
+    def create(l: T[K,K],kk: T[K,K],r: T[K,K]): T[K,K] = {
+      val k = kk.key
+      val p = kk.prio
       if (l.isEmpty) {
-        if (r.isEmpty) LTreap(k,v,p); else BRightTreap(k,v,p,r)
+        if (r.isEmpty) LSetTreap(k,p)
+        else BSetRightTreap(k,p,r)
+      }
+      else if (r.isEmpty) BSetLeftTreap(l,k,p)
+      else BSetTreap(l,k,p,r)
+    }
+    def create(k: K): T[K,K] = LSetTreap(k,prio(k))
+  }
+
+  abstract class MapPrioFactoryImpl[K,V] extends PrioFactory[K,V] {
+    def create(k: T[K,V]): T[K,V] = LTreap(k.key,k.value,k.prio)
+    def create(l: T[K,V], kk: T[K,V],r: T[K,V]): T[K,V] = {
+      val k = kk.key
+      val v = kk.value
+      val p = kk.prio
+      if (l.isEmpty) {
+        if (r.isEmpty) LTreap(k,v,p)
+        else BRightTreap(k,v,p,r)
       }
       else if (r.isEmpty) BLeftTreap(l,k,v,p)
       else BTreap(l,k,v,p,r)
     }
+    def create(k: K, v: V): T[K,V] = LTreap(k,v,prio(k))
   }
 
-  case class LPrioFactory[V]() extends PrioFactoryImpl[Long,V] {
+  case class IPrioFactory[V]() extends MapPrioFactoryImpl[Int,V] {
+    def prio(k: Int): Int = jenkinsHash(k)
+    def compare(k1: Int, k2: Int) = k1.compare(k2)
+  }
+
+  case class ISetPrioFactory[V]() extends SetPrioFactoryImpl[Int] {
+    def prio(k: Int): Int = jenkinsHash(k)
+    def compare(k1: Int, k2: Int) = k1.compare(k2)
+  }
+
+  case class LPrioFactory[V]() extends MapPrioFactoryImpl[Long,V] {
     def prio(k: Long): Int = jenkinsHash(k.toInt) + jenkinsHash((k >>> 32).toInt)
     def compare(k1: Long, k2: Long) = k1.compare(k2)
   }
+
+  import IncrementalMemoization.{Expr,ei}
+
+  implicit def treap[K,V](x: TreapMap[K,V]): Expr[TreapMap[K,V]] = ei(x)
+
+  /*trait TSet[@specialized(Int,Long,Double) K] {
+    implicit def pf: SetPrioFactoryImpl[K]
+    implicit def s: T[K,K]
+
+    def put(k: K): TSet[K] = {
+      create(s.put())
+    }
+  } */
 }

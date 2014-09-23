@@ -36,25 +36,21 @@ object IncrementalMemoization {
 
   trait Expr[V] {
     def eval: Expr[V]
-    def contains[X](x: X): Expr[Boolean]
-    def set[X,O: TypeTag](x: X, o: Expr[O]): Expr[V]
     def unquote: Expr[V]
     def containsQuotes: Boolean
 
     def eraseTrail: Expr[V] = this
 
     def eraseQuotes: Expr[V] = Unquote(this,unquote)
-    def replace[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = hcons(ContainsReplace(x,o,contains(x),this,set(x,o)))
-    def \ : Expr[V] = hcons(Quote(this))
+    def quote: Expr[V] = hcons(Quote(this))
 
+    def unary_! : Expr[V] = quote
     def ^ : Expr[V] = eraseQuotes
-    def @@[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = replace(x,o)
-    def ?[X](x: X): Expr[Boolean] = contains(x)
   }
 
+  trait Infix
+
   trait LazyExpr[V] extends Expr[V] {
-    def contains[X](x: X): Expr[Boolean] = fullRed(hcons(Contains(this, x)))
-    def tracedContains[X](x: X): Expr[Boolean]
 
     def eval: Expr[V] = rt.get(this) match {
       case None => eval2
@@ -84,8 +80,6 @@ object IncrementalMemoization {
     def unquote = to.unquote
 
     def eval = this
-    def contains[X](x: X) = to.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     override def toString = "(" + from + ".^ => " +  to + ")"
   }
 
@@ -103,8 +97,6 @@ object IncrementalMemoization {
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
     def evalValue = to.evalValue
-    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
-    def contains[X](x: X) = to.contains(x)
     override def toString = "[" + getFrom(from) + " ~> " + to + "]"
   }
 
@@ -114,8 +106,6 @@ object IncrementalMemoization {
       if (te == to) this
       else te
     }
-    def tracedContains[X](x: X) = to.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = to.set(x,e)
     override def toString = "[" + getFrom(from) + " => " + to + "]"
   }
 
@@ -136,51 +126,12 @@ object IncrementalMemoization {
     })
   }
 
-  case class ContainsReplace[X,V,O](x: X, o: Expr[O], contains: Expr[Boolean], from: Expr[V], to: Expr[V]) extends LazyExpr[V] {
-    def containsQuotes = to.containsQuotes
-    def unquote = if (containsQuotes) to.unquote ; else this
-
-    def tracedEval = to.eval
-    def tracedContains[X](x: X): Expr[Boolean] = to.contains(x)
-    def set[X,O: TypeTag](x: X, o: Expr[O]): Expr[V] = to.set(x,o)
-    override def toString = from + " @@ (" + x + "," + o + ")  => " + to
-  }
-
-  case class Contains[V,X](expr: LazyExpr[V], x: X) extends LazyExpr[Boolean] {
-    def containsQuotes = false
-    def unquote = this
-
-    def tracedEval = expr.tracedContains(x)
-    def tracedContains[XX](x: XX) = this
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
-    override def toString = expr + " ? " + x
-  }
-
   case class Quote[V](expr: Expr[V]) extends Expr[V] {
     def containsQuotes = true
     def unquote = expr
 
     def eval = this
-    def contains[X](x: X) = expr.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]): Expr[V] = Quote(expr.set(x,e))
-    override def toString = expr +".\\"
-  }
-
-  case class Var[X,V](label: X, expr: Expr[V])(implicit vt: TypeTag[V]) extends LazyExpr[V] {
-    def containsQuotes = expr.containsQuotes
-    def unquote = if (containsQuotes) Var(label,expr.unquote) ; else this
-
-    def tracedEval = expr
-    def tracedContains[X](x: X) = {
-      if (label == x) BTrue ; else expr.contains(x)
-    }
-    def set[X,O](x: X, e: Expr[O])(implicit ot: TypeTag[O]): Expr[V] = {
-      def evt = vt.tpe
-      def ovt = ot.tpe
-      if ((label == x) && (evt <:< ovt)) Var(label,e).asInstanceOf[Expr[V]]
-      else Var(label,expr.set(x,e))
-    }
-    override def toString = label + "~" + expr
+    override def toString = "!" + expr
   }
 
   val vt = new WeakHashMap[Expr[_], WeakReference[Expr[_]]]
@@ -223,8 +174,6 @@ object IncrementalMemoization {
     def containsQuotes = false
     def unquote = this
     def tracedEval = this
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
-    def contains[X](x: X) = BFalse
     def normalize = this
     override def toString = "`" + evalValue.toString
   }
@@ -234,7 +183,7 @@ object IncrementalMemoization {
   trait F0[R] extends Expr[R] {
     def eval = this
     def evalValue: R
-    def unary_! : R = evalValue
+    def unary_~ : R = evalValue
   }
 
   trait F1[A, R] extends LazyExpr[R] {
@@ -271,33 +220,11 @@ object IncrementalMemoization {
     def tracedEval = {
       val aa = evalArg(a)
 
-      if (a == aa) {
-        aa match {
-          case fa: F0[A] => f(aa)
-          case _ => this
-        }
-      }
+      if (a == aa) f(aa)
       else %(f,aa)
     }
 
-    def tracedContains[X](x: X) = a.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
-      val aa = containsReplace(a,x,e)
-      if ((aa == a)) this
-      else %(f,aa)
-    }
     override def toString = f + "(" + a + ")"
-  }
-
-  def containsReplace[V,X,O: TypeTag](e: Expr[V], x: X, o: Expr[O]): Expr[V] = {
-    e.contains(x) match {
-      case f: F0[Boolean] => {
-        val b = f.evalValue
-        if (b) e.set(x,o)
-        else e
-      }
-      case _ => sys.error("illegal system state")
-    }
   }
 
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
@@ -310,24 +237,15 @@ object IncrementalMemoization {
       val aa = evalArg(a)
       val bb = evalArg(b)
 
-      if ((a == aa) && (b == bb)) {
-        (aa,bb) match {
-          case (fa: F0[A], fb: F0[B]) => f(aa,bb)
-          case _ => this
-        }
+      if ((a == aa) && (b == bb)) f(aa,bb)
+      else %(f,aa,bb)
+    }
+    override def toString = {
+      f match {
+        case i: Infix => "(" + a + " " + f + " " + b + ")"
+        case _ => f + "(" + a + "," + b + ")"
       }
-      else %(f,aa,bb)
     }
-
-    def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
-      val aa = containsReplace(a,x,e)
-      val bb = containsReplace(b,x,e)
-
-      if ((aa == a) && (bb == b)) this
-      else %(f,aa,bb)
-    }
-    override def toString = "(" + a + " " + f + " " + b + ")"
   }
 
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
@@ -336,28 +254,12 @@ object IncrementalMemoization {
 
     override def eraseTrail: Expr[R] = %(f,a.eraseTrail,b.eraseTrail,c.eraseTrail)
 
-
     def tracedEval = {
       val aa = evalArg(a)
       val bb = evalArg(b)
       val cc = evalArg(c)
 
-      if ((a == aa) && (b == bb) && (c == cc)) {
-        (aa,bb,cc) match {
-          case (fa: F0[A], fb: F0[B], fc: F0[C]) => f(aa,bb,cc)
-          case _ => this
-        }
-      }
-      else %(f,aa,bb,cc)
-    }
-
-    def tracedContains[X](x: X) = a.contains(x) ||| b.contains(x) ||| c.contains(x)
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = {
-      val aa = containsReplace(a,x,e)
-      val bb = containsReplace(b,x,e)
-      val cc = containsReplace(c,x,e)
-
-      if ((aa == a) && (bb == b) && (cc == c)) this
+      if ((a == aa) && (b == bb) && (c == cc))  f(aa,bb,cc)
       else %(f,aa,bb,cc)
     }
     override def toString = f + "(" + a + "," + b + "," + c + ")"
@@ -387,12 +289,6 @@ object IncrementalMemoization {
     def apply(a: F0[A], b: F0[B], c: F0[C]): Expr[X]
   }
 
-
-  implicit def toL[X,V](x: X): L[X] = L(x)
-
-  case class L[X](x: X) {
-    def ~[V: TypeTag](e: Expr[V]): Expr[V] = Var(x,e)
-  }
 
   type B = Expr[Boolean]
 
@@ -428,8 +324,6 @@ object IncrementalMemoization {
   private case class BWrap(origin: B) extends BExpr {
     def containsQuotes = error
 
-    def contains[X](x: X) = error
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = error
     def eval = error
     def unquote = error
     def error = sys.error("BWrap should not be used directly")
@@ -440,18 +334,18 @@ object IncrementalMemoization {
     case _ => BWrap(b)
   }
 
-  object or extends FA2[Boolean,Boolean,Boolean] {
+  object or extends FA2[Boolean,Boolean,Boolean] with Infix {
     def apply(a: F0B, b: F0B) = a.evalValue || b.evalValue
     override def toString = "|||"
   }
 
-  object and extends FA2[Boolean,Boolean,Boolean] {
+  object and extends FA2[Boolean,Boolean,Boolean] with Infix {
     def apply(a: F0B, b: F0B) = a.evalValue && b.evalValue
     override def toString = "&&&"
   }
 
   case class WB(i: Boolean) {
-    def unary_! = toB(i)
+    def unary_~ = toB(i)
   }
 
   implicit def toWB(i: Boolean): WB = WB(i)

@@ -15,8 +15,11 @@ object IncrementalArithmetic {
 
   trait IExpr extends Expr[Int] {
     def origin: I
+    def +(o: I): I = add(origin, o)
     def ++(o: I): I = %(add, origin, o)
+    def -(o: I): I =  sub(origin, o)
     def --(o: I): I = %(sub, origin, o)
+    def *(o: I): I = mul(origin, o)
     def **(o: I): I = %(mul, origin, o)
   }
 
@@ -50,23 +53,23 @@ object IncrementalArithmetic {
     case _ => IWrap(i)
   }
 
-  object add extends FA2[Int,Int,Int] {
+  object add extends FA2[Int,Int,Int] with Infix {
     def apply(a: F0I, b: F0I) = a.evalValue + b.evalValue
     override def toString = "++"
   }
 
-  object sub extends FA2[Int,Int,Int] {
+  object sub extends FA2[Int,Int,Int] with Infix  {
     def apply(a: F0I, b: F0I) = a.evalValue - b.evalValue
     override def toString = "--"
   }
 
-  object mul extends FA2[Int,Int,Int] {
+  object mul extends FA2[Int,Int,Int] with Infix {
     def apply(a: F0I, b: F0I) = a.evalValue * b.evalValue
     override def toString = "**"
   }
 
   case class WI(i: Int) {
-    def unary_! = II(i)
+    def unary_~ = II(i)
   }
 
   implicit def toWI(i: Int): WI = WI(i)
