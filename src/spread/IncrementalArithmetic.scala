@@ -15,12 +15,12 @@ object IncrementalArithmetic {
 
   trait IExpr extends Expr[Int] {
     def origin: I
-    def +(o: I): I = add(origin, o)
-    def ++(o: I): I = %(add, origin, o)
-    def -(o: I): I =  sub(origin, o)
-    def --(o: I): I = %(sub, origin, o)
-    def *(o: I): I = mul(origin, o)
-    def **(o: I): I = %(mul, origin, o)
+    def +(o: I): I = add1(origin, o)
+    def ++(o: I): I = %(add2, origin, o)
+    def -(o: I): I =  sub1(origin, o)
+    def --(o: I): I = %(sub2, origin, o)
+    def *(o: I): I = mul1(origin, o)
+    def **(o: I): I = %(mul2, origin, o)
   }
 
   type F0I = F0[Int]
@@ -44,7 +44,7 @@ object IncrementalArithmetic {
 
     def contains[X](x: X) = error
     def set[X,O: TypeTag](x: X, e: Expr[O]) = error
-    def eval = error
+    def eval(c: Context) = error
     def error = sys.error("IWrap should not be used directly")
   }
 
@@ -53,20 +53,21 @@ object IncrementalArithmetic {
     case _ => IWrap(i)
   }
 
-  object add extends FA2[Int,Int,Int] with Infix {
-    def apply(a: F0I, b: F0I) = a.evalValue + b.evalValue
-    override def toString = "++"
+  trait BI extends FA2[Int,Int,Int] with Infix {
+    def s: String
+    override def toString = s
   }
 
-  object sub extends FA2[Int,Int,Int] with Infix  {
-    def apply(a: F0I, b: F0I) = a.evalValue - b.evalValue
-    override def toString = "--"
-  }
+  trait add extends BI { def apply(a: F0I, b: F0I) = a.evalValue + b.evalValue }
+  trait sub extends BI { def apply(a: F0I, b: F0I) = a.evalValue - b.evalValue }
+  trait mul extends BI { def apply(a: F0I, b: F0I) = a.evalValue * b.evalValue }
 
-  object mul extends FA2[Int,Int,Int] with Infix {
-    def apply(a: F0I, b: F0I) = a.evalValue * b.evalValue
-    override def toString = "**"
-  }
+  object add1 extends add { def s: String = "+" }
+  object add2 extends add { def s = "++" }
+  object sub1 extends sub { def s: String = "-" }
+  object sub2 extends sub { def s = "--" }
+  object mul1 extends mul { def s: String = "*" }
+  object mul2 extends mul { def s = "**" }
 
   case class WI(i: Int) {
     def unary_~ = II(i)
