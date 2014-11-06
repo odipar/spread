@@ -1,13 +1,10 @@
 package spread
 
-import spread.Hashing._
-
 /*
   Copyright 2014: Robbert van Dalen
  */
 
 object IncrementalArithmetic {
-  import scala.reflect.runtime.universe.TypeTag
   import scala.language.implicitConversions
   import IncrementalMemoization._
 
@@ -26,11 +23,9 @@ object IncrementalArithmetic {
   type F0I = F0[Int]
 
   case class II(evalValue: Int) extends IExpr with F0I {
-    def containsQuotes = false
-    def unquote = this
+    def containsQuote = false
+    def containsBinding = false
 
-    def contains[X](x: X) = BFalse
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
     def origin = this
     override def toString = "" + evalValue
     override def hashCode = Hashing.jenkinsHash(evalValue)
@@ -39,12 +34,9 @@ object IncrementalArithmetic {
   implicit def toI(i: Int) = II(i)
 
   private case class IWrap(origin: I) extends IExpr {
-    def containsQuotes = error
-    def unquote = error
+    def containsQuote = error
+    def containsBinding = error
 
-    def contains[X](x: X) = error
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = error
-    def eval(c: Context) = error
     def error = sys.error("IWrap should not be used directly")
   }
 
@@ -62,11 +54,11 @@ object IncrementalArithmetic {
   trait sub extends BI { def apply(a: F0I, b: F0I) = a.evalValue - b.evalValue }
   trait mul extends BI { def apply(a: F0I, b: F0I) = a.evalValue * b.evalValue }
 
-  object add1 extends add { def s: String = "+" }
+  object add1 extends add { def s = "+" }
   object add2 extends add { def s = "++" }
-  object sub1 extends sub { def s: String = "-" }
+  object sub1 extends sub { def s = "-" }
   object sub2 extends sub { def s = "--" }
-  object mul1 extends mul { def s: String = "*" }
+  object mul1 extends mul { def s = "*" }
   object mul2 extends mul { def s = "**" }
 
   case class WI(i: Int) {
@@ -74,4 +66,5 @@ object IncrementalArithmetic {
   }
 
   implicit def toWI(i: Int): WI = WI(i)
+
 }

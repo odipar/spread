@@ -1,18 +1,23 @@
 package spread
 
+import spread.IncrementalMemoization._
+
 object IncrementalTreapMap {
   import Hashing._
   import scala.language.implicitConversions
+  import IncrementalMemoization._
 
   type T[K,V] = TreapMap[K,V]
   type PO[K,V] = PrioFactory[K,V]
 
   // Generic Set and Map implementation with super fast specialized Treaps
-  // Todo: add optional Reducer (Monoid) functionality
+  // TODO: add optional Reducer (Monoid) functionality
 
   trait Entry[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] {
     def key: K
     def value: V
+
+    def entry = this
   }
 
   trait TreeMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V, T <: TreeMap[K,V,T]] extends Entry[K,V] {
@@ -21,9 +26,10 @@ object IncrementalTreapMap {
     def first: K
     def last: K
     def isEmpty: Boolean
+    def isLeaf: Boolean
   }
 
-  trait TreapMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreeMap[K,V,TreapMap[K,V]] {
+  trait TreapMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreeMap[K,V,TreapMap[K,V]] with F0[TreapMap[K,V]] {
     def prio: Int
 
     def join(x: T[K,V])(implicit p: PO[K,V]): T[K,V]
@@ -31,6 +37,10 @@ object IncrementalTreapMap {
 
     def get(k: K)(implicit p: PO[K,V]): Option[V]
     def put(e: Entry[K,V])(implicit p: PO[K,V]): T[K,V]
+
+    def evalValue = this
+    def containsBinding = false
+    def containsQuote = false
   }
 
   type TreapSet[K] = TreapMap[K,K]
@@ -99,6 +109,7 @@ object IncrementalTreapMap {
     def first = sys.error("empty treap has no first")
     def last = sys.error("empty treap has no last")
     def isEmpty = true
+    def isLeaf = false
     override def toString = "'"
   }
 
@@ -106,6 +117,7 @@ object IncrementalTreapMap {
 
   trait LeafTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
     def isEmpty = false
+    def isLeaf = true
     def left = empty
     def right = empty
     def first = key
@@ -124,9 +136,10 @@ object IncrementalTreapMap {
 
   trait BinaryTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
     def isEmpty = false
+    def isLeaf = false
     def first = left.first
     def last = right.last
-    override def toString = left + " " + entryString + " " + right
+    override def toString = left + ":" + entryString + ":" + right
     override val hashCode = jh(left.hashCode ^ jh(value.hashCode - prio.hashCode) ^ jh(right.hashCode))
   }
 
@@ -136,9 +149,10 @@ object IncrementalTreapMap {
   trait BinLeftTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
     def right = empty
     def isEmpty = false
+    def isLeaf = false
     def first = left.first
     def last = key
-    override def toString = left + " " + entryString
+    override def toString = left + ":" + entryString
     override val hashCode = jh(left.hashCode ^ jh(value.hashCode - prio.hashCode))
   }
 
@@ -148,9 +162,10 @@ object IncrementalTreapMap {
   trait BinRightTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
     def left = empty
     def isEmpty = false
+    def isLeaf = false
     def first = key
     def last = right.last
-    override def toString = entryString + " " + right
+    override def toString = entryString + ":" + right
     override val hashCode = jh(value.hashCode ^ jh(right.hashCode - prio.hashCode))
   }
 
@@ -208,8 +223,61 @@ object IncrementalTreapMap {
   case class MapEntry[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V](key: K, value: V) extends Entry[K,V]
   case class SetEntry[@specialized(Int,Long,Double) K](key: K) extends Entry[K,K] { def value = key }
 
-  import IncrementalMemoization.{Expr,ei}
 
-  implicit def treap[K,V](x: TreapMap[K,V]): Expr[TreapMap[K,V]] = ei(x)
 
+  trait SetOperation[K,V] {
+    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]): T[K,V]
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]): T[K,V]
+  }
+
+  case class Intersect[K,V]() extends SetOperation[K,V] {
+    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = empty
+
+    override def toString = "intersect"
+  }
+
+  case class Union[K,V]() extends SetOperation[K,V] {
+    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1 join t2
+
+    override def toString = "union"
+  }
+
+  case class Difference[K,V]() extends SetOperation[K,V] {
+    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = empty
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1 join t2
+
+    override def toString = "diff"
+  }
+
+  case class ICombinator[K,V](op: SetOperation[K,V])(implicit pr: PrioFactory[K,V]) extends FA2[T[K,V],T[K,V],T[K,V]] with Infix {
+    val ijoin: FA2[T[K,V],T[K,V],T[K,V]] = join()
+
+    def apply(tt1: F0[T[K,V]], tt2: F0[T[K,V]]): Expr[T[K,V]] = {
+      val t1 = ~tt1
+      val t2 = ~tt2
+
+      if (t1 == t2) op.combineEqual(t1,t2) // fast reference equality
+      else if ((t1.isLeaf && t2.isLeaf) && (pr.compare(t1.key,t2.key) == 0)) op.combineEqual(t1,t2) // leaf equality
+      else if (t1.isEmpty || t2.isEmpty) op.combineDisjoint(t1,t2)
+      else if (pr.compare(t1.last,t2.first) < 0) op.combineDisjoint(t1,t2)
+      else if (pr.compare(t1.first,t2.last) > 0) op.combineDisjoint(t2,t1)
+      else {
+        val e = t2.entry
+        val (l,m,r) = t1.split(e.key)
+
+        val left = %(this,l,t2.left)
+        val middle = %(this,m,pr.create(e))
+        val right = %(this,r,t2.right)
+
+        %(ijoin,%(ijoin,left,middle),right)
+      }
+    }
+    override def toString = op.toString
+  }
+
+  case class join[K,V]()(implicit pr: PrioFactory[K,V]) extends FA2[T[K,V],T[K,V],T[K,V]] with Infix {
+    def apply(tt1: F0[T[K,V]],tt2: F0[T[K,V]]): Expr[T[K,V]] = ~tt1 join ~tt2
+  }
 }

@@ -1,6 +1,7 @@
 package spread
 
 import spread.Hashing._
+import spread.IncrementalMemoization.FA1
 import scala.collection.immutable.Map
 
 /*
@@ -19,106 +20,81 @@ import scala.collection.immutable.Map
   Copyright 2014: Robbert van Dalen
 */
 
-/*
- Ideas:
-  - (destructively) eraseTrail([((1 ++ 2) ** (3 ++ 4)) ~> [([(1 ++ 2) ~> 3] ** [(3 ++ 4) ~> 7]) ~> [(3 ** 7) ~> 21]]]) =>
-          [((1 ++ 2) ** (3 ++ 4)) ~> 21]
-  -
-
- */
 object IncrementalMemoization {
 
   import scala.language.implicitConversions
   import scala.collection.mutable.WeakHashMap
-  import scala.collection.mutable.HashMap
-  import scala.collection.mutable.HashSet
-
   import java.lang.ref.WeakReference
+
   import Hashing._
   import scala.reflect.runtime.universe.TypeTag
 
   trait Context {
-    def ref(parent: Expr[_], child: Expr[_]): Context
     def mput(e: Trace[_]): Context
-    def contains(e: Expr[_]): Boolean
-    def mget[X](e: Expr[X]): Trace[X]
+    def mget[X](e: Expr[X]): Option[Trace[X]]
+    def mref(parent: Expr[_], child: Expr[_]): Context
   }
 
   trait Expr[V] {
-    def eval(c: Context): (Context,Expr[V])
-    def backref(c: Context): Context = c
+    def containsQuote: Boolean
+    def containsBinding: Boolean
 
-    def unquote: Expr[V]
-    def containsQuotes: Boolean
-
-    def eraseTrail: Expr[V] = this
-
-    def quote: Expr[V] = hcons(Quote(this))
-
-    def unary_! : Expr[V] = quote
+    def unary_! : Expr[V] = hcons(Quote(this))
   }
 
-  trait Infix
-
-  trait Func {
-    override def toString = getClass.getSimpleName
-  }
-
-  var cachehit: Long = 0
-
-  trait LazyExpr[V] extends Expr[V] {
-
-    def eval(c: Context): (Context,Expr[V]) = {
-      if (c.contains(this)) {
-        cachehit = cachehit + 1
-        println("from cache " + cachehit )
-        (c,c.mget(this))
-      }
-      else {
-        val (nc,e) = tracedEval(c)
-        val t = trace(this,e)
-        (nc.mput(t),t)
-      }
-    }
-    def tracedEval(c: Context): (Context,Expr[V])
-  }
+  trait LazyExpr[V] extends Expr[V]
 
   trait Trace[V] extends Expr[V] {
-    def containsQuotes = to.containsQuotes
-    def unquote = if (containsQuotes) to.unquote ; else this
+    val containsQuote = to.containsQuote
+    val containsBinding = to.containsBinding
 
     def from: Expr[V]
     def to: Expr[V]
 
-    override def backref(c: Context): Context = to.backref(c)
+    override def toString = {
+      val (df,f) = getFrom(0,from)
+      val (dt,t) = getTo(0,to)
+      var r = "[" + f
 
-    override def eraseTrail: Expr[V] = trace(getFrom(from).eraseTrail,getTo(to).eraseTrail)
+      var s = df
+      var i = 0
+      while (i < s) {
+        r = r + " . "
+        i = i + 1
+      }
+      r = r + " ~> "
+      s = dt
+      i = 0
+      while (i < s) {
+        r = r + " . "
+        i = i + 1
+      }
+
+      r = r  + t.toString + "]"
+      r
+    }
 
     override val hashCode = jh(jh(jh(from)) ^ jh(to))
   }
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
     def evalValue = to.evalValue
-    override def toString = "[" + getFrom(from) + " ~> " + to + "]"
+   // override def toString = "[" + from + " ~> " + getTo(to) + "]"
   }
 
   case class Trace1[V](from: Expr[V], to: Expr[V]) extends Trace[V] with LazyExpr[V] {
-    def tracedEval(c: Context) = {
-      val (c1,te) = to.eval(c)
-      if (te == to) (c1,this)
-      else (c1,te)
-    }
-    override def toString = "[" + getFrom(from) + " => " + to + "]"
+    //override def toString = ".. -> " + to
+    //override def toString = "[" + from + " => " + getTo(to) + "]"
   }
 
-  def getFrom[V](e: Expr[V]): Expr[V] = e match {
-    case t: Trace[V] => getFrom(t.from)
-    case _ => e
+  def getFrom[V](d: Int, e: Expr[V]): (Int,Expr[V]) = e match {
+    case t: Trace[V] => getFrom(d+1,t.from)
+    case _ => (d,e)
   }
 
-  def getTo[V](e: Expr[V]): Expr[V] = e match {
-    case t: Trace[V] => getTo(t.to)
-    case _ => e
+  def getTo[V](d: Int, e: Expr[V]): (Int,Expr[V]) = e match {
+    case t: Trace[V] => getTo(d+1,t.to)
+    case _ => (d,e)
   }
 
   def trace[V](from: Expr[V], to: Expr[V]): Trace[V] = {
@@ -129,13 +105,17 @@ object IncrementalMemoization {
   }
 
   case class Quote[V](expr: Expr[V]) extends Expr[V] {
-    def containsQuotes = true
-    def unquote = expr
+    def containsQuote = true
+    val containsBinding = expr.containsBinding
 
-    override def backref(c: Context): Context = expr.backref(c)
-
-    def eval(c: Context) = (c,this)
     override def toString = "!" + expr
+  }
+
+  case class Var[X](a: Any, e: Expr[X]) extends Expr[X] {
+    def containsQuote = e.containsQuote
+    def containsBinding = true
+
+    override def toString = a + "~" + e
   }
 
   val vt = new WeakHashMap[Expr[_], WeakReference[Expr[_]]]
@@ -155,8 +135,6 @@ object IncrementalMemoization {
 
   def hcons2[V](c: Expr[V]): Expr[V] = { vt.put(c, new WeakReference(c)) ; c }
 
-  val rt = new WeakHashMap[Expr[_], WeakReference[Expr[_]]]
-
   def %[A, R](f: Expr[A] => Expr[R], a: Expr[A]): Expr[R] = hcons(FF1(f, a))
   def %[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]): Expr[R] = hcons(FF2(f, a, b))
   def %[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[R] = {
@@ -164,28 +142,25 @@ object IncrementalMemoization {
   }
 
   def evalArg[A](c: Context, e: Expr[A]): (Context,Expr[A]) = e match {
-    case t0: Trace[A] => (c,getTo(t0))
+    case t0: Trace[A] => (c,getTo(0,t0)._2)
     case _ => fullRed(c,e)
   }
 
   def fullRed[A](c: Context, e: Expr[A]): (Context,Expr[A]) = {
-    val (nc,ee) = e.eval(c)
+    val (nc,ee) = eval(c,e)
     if (ee == e) (nc,ee)
     else fullRed(nc,ee)
   }
 
   case class ExprImpl[X](evalValue: X) extends F0[X] {
-    def containsQuotes = false
-    def unquote = this
-    def tracedEval(c: Context) = this
-    def normalize = this
+    def containsQuote = false
+    def containsBinding = false
     override def toString = "`" + evalValue.toString
   }
 
   def ei[X](x: X): Expr[X] = ExprImpl(x)
 
   trait F0[R] extends Expr[R] {
-    def eval(c: Context) = (c,this)
     def evalValue: R
     def unary_~ : R = evalValue
   }
@@ -217,37 +192,18 @@ object IncrementalMemoization {
   type F_ = F0[_]
 
   case class FF1[A, R](f: Expr[A] => Expr[R], a: Expr[A]) extends F1[A, R] {
-    val containsQuotes = a.containsQuotes
-    def unquote = if (containsQuotes) %(f,a.unquote) ; else this
-    override def eraseTrail: Expr[R] = %(f,a.eraseTrail)
-
-    override def backref(c: Context): Context = c.ref(this,a)
-
-    def tracedEval(c: Context) = {
-      val (c1,aa) = evalArg(c,a)
-
-      if (a == aa) (c1,f(aa))
-      else (c1,%(f,aa))
-    }
+    val containsQuote = a.containsQuote
+    val containsBinding = a.containsBinding
 
     override def toString = f + "(" + a + ")"
   }
 
+  trait Infix
+
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
-    val containsQuotes = a.containsQuotes || b.containsQuotes
-    def unquote = if (containsQuotes) %(f,a.unquote,b.unquote) ; else this
+    val containsQuote = a.containsQuote || b.containsQuote
+    val containsBinding = a.containsBinding || b.containsBinding
 
-    override def backref(c: Context): Context = c.ref(this,a).ref(this,b)
-
-    override def eraseTrail: Expr[R] = %(f,a.eraseTrail,b.eraseTrail)
-
-    def tracedEval(c: Context) = {
-      val (ca,aa) = evalArg(c,a)
-      val (cb,bb) = evalArg(ca,b)
-
-      if ((a == aa) && (b == bb)) (cb,f(aa,bb))
-      else (cb,%(f,aa,bb))
-    }
     override def toString = {
       f match {
         case i: Infix => "(" + a + " " + f + " " + b + ")"
@@ -257,22 +213,13 @@ object IncrementalMemoization {
   }
 
   case class FF3[A, B, C, R](f: (Expr[A], Expr[B], Expr[C]) => Expr[R], a: Expr[A], b: Expr[B], c: Expr[C]) extends F3[A, B, C, R] {
-    val containsQuotes = a.containsQuotes || b.containsQuotes || c.containsQuotes
-    def unquote = if (containsQuotes) %(f,a.unquote,b.unquote,c.unquote) ; else this
+    val containsQuote = a.containsQuote || b.containsQuote || c.containsQuote
+    val containsBinding = a.containsBinding || b.containsBinding || c.containsBinding
 
-    override def eraseTrail: Expr[R] = %(f,a.eraseTrail,b.eraseTrail,c.eraseTrail)
-    override def backref(cc: Context): Context = cc.ref(this,a).ref(this,b).ref(this,c)
-
-    def tracedEval(co: Context) = {
-      val (ca,aa) = evalArg(co,a)
-      val (cb,bb) = evalArg(ca,b)
-      val (ccc,cc) = evalArg(cb,c)
-
-      if ((a == aa) && (b == bb) && (c == cc)) (ccc,f(aa,bb,cc))
-      else (ccc,%(f,aa,bb,cc))
-    }
     override def toString = f + "(" + a + "," + b + "," + c + ")"
   }
+
+  trait Func { override def toString = getClass.getSimpleName }
 
   trait FA1[A, X] extends (Expr[A] => Expr[X]) with Func {
     def apply(a: Expr[A]): Expr[X] = a match {
@@ -299,92 +246,201 @@ object IncrementalMemoization {
   }
 
 
-  type B = Expr[Boolean]
-
-  trait BExpr extends Expr[Boolean] {
-    def origin: B
-    def |||(o: B): B = %(or, origin, o)
-    def &&&(o: B): B = %(and, origin, o)
-  }
-
-  type F0B = F0[Boolean]
-
-  trait BB extends BExpr with F0B {
-    def containsQuotes = false
-    def unquote = this
-
-    def contains[X](x: X) = BFalse
-    def set[X,O: TypeTag](x: X, e: Expr[O]) = this
-    def origin = this
-  }
-
-  case object BTrue extends BB {
-    def evalValue = true
-    override def toString = "true"
-  }
-
-  case object BFalse extends BB {
-    def evalValue = false
-    override def toString = "false"
-  }
-
-  implicit def toB(b: Boolean) = if (b) BTrue ; else BFalse
-
-  private case class BWrap(origin: B) extends BExpr {
-    def containsQuotes = error
-
-    def eval(c: Context) = error
-    def unquote = error
-    def error = sys.error("BWrap should not be used directly")
-  }
-
-  implicit def toBWrap(b: B): BExpr = b match {
-    case bb: BExpr => bb
-    case _ => BWrap(b)
-  }
-
-  object or extends FA2[Boolean,Boolean,Boolean] with Infix {
-    def apply(a: F0B, b: F0B) = a.evalValue || b.evalValue
-    override def toString = "|||"
-  }
-
-  object and extends FA2[Boolean,Boolean,Boolean] with Infix {
-    def apply(a: F0B, b: F0B) = a.evalValue && b.evalValue
-    override def toString = "&&&"
-  }
-
-  case class WB(i: Boolean) {
-    def unary_~ = toB(i)
-  }
-
-  implicit def toWB(i: Boolean): WB = WB(i)
-
-  val cc = CC(Map(),Map())
+  def cc = CC(Map(),Map())
+  def cm = CM(Map())
 
   object NC extends Context {
-    def ref(parent: Expr[_], child: Expr[_]): Context = this
-    def mput(e: Trace[_]): Context = this
-    def contains(e: Expr[_]): Boolean = false
-    def mget[X](e: Expr[X]): Trace[X] = sys.error("no")
+    def mref(parent: Expr[_], child: Expr[_]) = this
+    def mput(e: Trace[_])= this
+    def mget[X](e: Expr[X]) = None
   }
 
   case class CC(h: Map[Expr[_],Trace[_]], b: Map[Expr[_],Set[Expr[_]]]) extends Context {
-    def ref(parent: Expr[_], child: Expr[_]): Context = {
-      if (b.contains(child)) {
-        val s = b.get(child).get
-        CC(h,b + (child -> (s + parent)))
+    def mref(parent: Expr[_], child: Expr[_]) = {
+      if (child.containsBinding) {
+        if (b.contains(child)) {
+          val s = b.get(child).get
+          CC(h,b + (child -> (s + parent)))
+        }
+        else {
+          val CC(_,b1) = backref(this,child)
+          CC(h,b1 + (child -> Set(parent)))
+        }
       }
-      else {
-        val CC(_,b1) = child.backref(this)
-        CC(h,b1 + (child -> Set(parent)))
-      }
+      else this
     }
 
-    def mput(e: Trace[_]): Context = {
+    def mput(e: Trace[_]) = {
       if (!h.contains(e.from)) CC(h + (e.from -> e) ,b)
       else this
     }
-    def contains(e: Expr[_]): Boolean = h.contains(e)
-    def mget[X](e: Expr[X]): Trace[X] = h.get(e).get.asInstanceOf[Trace[X]]
+
+    def mget[X](e: Expr[X]) = {
+     h.get(e).asInstanceOf[Option[Trace[X]]]
+    }
+
+    override def toString = {
+      var s = b.size + "\n"
+      for (i <- b) {
+        s = s + i  + "\n"
+      }
+      s
+    }
   }
+
+  case class CM(b: Map[Expr[_],Set[Expr[_]]]) extends Context {
+    val h = new WeakHashMap[Expr[_],WeakReference[Trace[_]]]
+    var c = 0
+
+    def mref(parent: Expr[_], child: Expr[_]) = {
+      if (child.containsBinding) {
+        if (b.contains(child)) {
+          val s = b.get(child).get
+          CM(b + (child -> (s + parent)))
+        }
+        else {
+          val CM(b1) = backref(this,child)
+          CM(b1 + (child -> Set(parent)))
+        }
+      }
+      else this
+    }
+
+    def mput(e: Trace[_]) = {
+      if (!h.contains(e.from)) h.put(e.from,new WeakReference(e))
+      this
+    }
+    def contains(e: Expr[_]) = h.contains(e)
+    def mget[X](e: Expr[X]) = {
+      h.get(e) match {
+        case None => None
+        case Some(x) => {
+          val wr: Trace[_] = x.get
+          if (wr == null) None
+          else Some(wr.asInstanceOf[Trace[X]])
+        }
+      }
+    }
+
+
+    /*override def toString = {
+      var s = "size: " + h.size  +"\n"
+      /*for (i <- h.keys) {
+        s = s + i  + " => " + h.get(i).get.get + "\n"
+      }
+      s + "final size: " + h.size + "\n"
+        */
+      s
+    } */
+  }
+
+  def backref[X](c: Context, e: Expr[X]): Context = {
+    e match {
+      case v: Var[X] => backref(c,v.e)
+      case t: Trace[X] => backref(c,t.to)
+      case f1: F1[_,X] => c.mref(e,f1.a)
+      case f2: F2[_,_,X] => c.mref(e,f2.a).mref(e,f2.b)
+      case f3: F3[_,_,_,X] => cc.mref(e,f3.a).mref(e,f3.b).mref(e,f3.c)
+      case _ => c
+    }
+  }
+
+  def removeQuotes[X](e: Expr[X]): Expr[X] = {
+    if (e.containsQuote) %(removeQuotes1(),e)
+    else e
+  }
+
+  case class removeQuotes1[X]() extends (Expr[X] => Expr[X]) with Func {
+    def apply(e: Expr[X]) = removeQuotes2(e)
+
+    override def toString = "removeQuotes"
+  }
+
+  def removeQuotes2[X](e: Expr[X]): Expr[X] = {
+    if (!e.containsQuote) e
+    else e match {
+      case t: Trace[X] => removeQuotes2(t.to)
+      case f1: F1[_,X] => %(f1.f,removeQuotes2(f1.a))
+      case f2: F2[_,_,X] => %(f2.f,removeQuotes2(f2.a),removeQuotes2(f2.b))
+      case f3: F3[_,_,_,X] => %(f3.f,removeQuotes2(f3.a),removeQuotes2(f3.b),removeQuotes2(f3.c))
+      case q: Quote[X] => q.expr
+      case _ => e
+    }
+  }
+
+  def memoize[X](c: Context, e: Expr[X]): Context = {
+    e match {
+      case t: Trace[X] => {
+        if (c.mget(t.from) != None) c
+        else memoize(memoize(c.mput(t),t.from),t.to)
+      }
+      case f1: F1[_,X] =>  memoize(c,f1.a)
+      case f2: F2[_,_,X] => memoize(memoize(c,f2.a),f2.b)
+      case f3: F3[_,_,_,X] => memoize(memoize(memoize(c,f3.a),f3.b),f3.c)
+      case _ => c
+    }
+  }
+
+  def eval[X](c: Context, e: Expr[X]): (Context,Expr[X]) = {
+    e match {
+      case v: Var[X] => {
+        (c,trace(v,v.e))
+      }
+      case le: LazyExpr[X] => {
+        val m = c.mget(e)
+        if (m == None) {
+          val (cc,ee) = tracedEval(c,e)
+          if (e == ee) (cc,e)
+          else {
+            val t = trace(e,ee)
+            // memoize
+            (cc.mput(t),t)
+          }
+        }
+        else {
+          //println("HIT: " + e)
+          (c,m.get)
+        }
+      }
+      case _ => (c,e)
+    }
+  }
+
+  def tracedEval[X](c: Context, e: Expr[X]): (Context,Expr[X]) = {
+    e match {
+      case t1: Trace1[X] => {
+        val (c1,te) = eval(c,t1.to)
+        if (te == t1.to) (c1,t1)
+        else (c1,te)
+      }
+      case f1: F1[_,X] => {
+        val (c1: Context,aa) = evalArg(c,f1.a)
+
+        if (f1.a == aa) (c1,f1.f(aa))
+        else (c1,%(f1.f,aa))
+      }
+      case f2: F2[_,_,X] => {
+        val (ca: Context,aa) = evalArg(c,f2.a)
+        val (cb: Context,bb) = evalArg(ca,f2.b)
+
+        if ((f2.a == aa) && (f2.b == bb)) (cb,f2.f(aa,bb))
+        else (cb,%(f2.f,aa,bb))
+      }
+      case f3: F3[_,_,_,X] => {
+        val (ca: Context,aa) = evalArg(c,f3.a)
+        val (cb: Context,bb) = evalArg(ca,f3.b)
+        val (ccc: Context,cc) = evalArg(cb,f3.c)
+
+        if ((f3.a == aa) && (f3.b == bb) && (f3.c == cc)) (ccc,f3.f(aa,bb,cc))
+        else (ccc,%(f3.f,aa,bb,cc))
+      }
+      case _ => (c,e)
+    }
+  }
+
+  case class Temp(x: Any) {
+    def ~ [X](e: Expr[X]) : Expr[X] = Var(x,e)
+  }
+
+  implicit def toTemp(x: Any): Temp = Temp(x)
 }

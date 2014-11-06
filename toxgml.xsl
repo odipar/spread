@@ -6,6 +6,7 @@
             <attribute key="Creator" type="String">SPREAD</attribute>
             <attribute key="Version" type="String">0.1</attribute>
             <section name="graph">
+                <xsl:apply-templates select="//group"/>
                 <xsl:apply-templates select="//node" mode="node"/>
                 <xsl:apply-templates select="//node" mode="edge"/>
             </section>
@@ -13,69 +14,71 @@
     </xsl:template>
 
     <xsl:template match="node" mode="node">
+        <xsl:param name="gid"/>
         <section name="node">
             <attribute key="id" type="int"><xsl:value-of select="@id"/></attribute>
             <xsl:apply-templates select="*" mode="node"/>
+            <attribute key="gid" type="int"><xsl:value-of select="@group"/></attribute>
         </section>
     </xsl:template>
 
     <xsl:template match="node" mode="edge">
+        <xsl:param name="gid"/>
         <xsl:apply-templates select="*" mode="edge"/>
     </xsl:template>
 
-    <!-- node mapping -->
-    <xsl:template match="treap" mode="node">
-        <xsl:call-template name="diamond">
-            <xsl:with-param name="label" select="content/@value"/>
-        </xsl:call-template>
-    </xsl:template>
-
-    <xsl:template match="iterate" mode="node">
+    <xsl:template match="trace" mode="node">
+        <xsl:param name="gid"/>
         <xsl:call-template name="rectangle">
             <xsl:with-param name="label" select="''"/>
             <xsl:with-param name="fill" select="'#66ccff'"/>
         </xsl:call-template>
     </xsl:template>
 
-    <xsl:template match="reduce" mode="node">
-        <xsl:call-template name="rectangle">
-            <xsl:with-param name="label" select="''"/>
-            <xsl:with-param name="fill" select="'#33cccc'"/>
-        </xsl:call-template>
-    </xsl:template>
-
-    <xsl:template match="finish" mode="node">
-        <xsl:call-template name="rectangle">
-            <xsl:with-param name="label" select="''"/>
-            <xsl:with-param name="fill" select="'#00ffff'"/>
-        </xsl:call-template>
-    </xsl:template>
-
     <xsl:template match="content" mode="node">
+        <xsl:param name="gid"/>
         <xsl:call-template name="octagon">
             <xsl:with-param name="label" select="@value"/>
         </xsl:call-template>
     </xsl:template>
 
     <xsl:template match="lazy1" mode="node">
+        <xsl:param name="gid"/>
         <xsl:call-template name="ellipse">
             <xsl:with-param name="label" select="function/@name"/>
         </xsl:call-template>
     </xsl:template>
 
     <xsl:template match="lazy2" mode="node">
+        <xsl:param name="gid"/>
         <xsl:call-template name="ellipse">
             <xsl:with-param name="label" select="function/@name"/>
         </xsl:call-template>
     </xsl:template>
 
     <xsl:template match="lazy3" mode="node">
+        <xsl:param name="gid"/>
         <xsl:call-template name="ellipse">
             <xsl:with-param name="label" select="function/@name"/>
         </xsl:call-template>
     </xsl:template>
 
+    <xsl:template match="group">
+        <xsl:param name="gid"/>
+
+        <section name="node">
+            <attribute key="id" type="int"><xsl:value-of select="@id"/></attribute>
+            <xsl:call-template name="rectangle">
+                <xsl:with-param name="fill" select="'#FFFFFF'"/>
+                <xsl:with-param name="label" select="@id"/>
+            </xsl:call-template>
+            <attribute key="isGroup" type="boolean">true</attribute>
+            <attribute key="gid" type="int"><xsl:value-of select="@gid"/></attribute>
+        </section>
+    </xsl:template>
+
     <xsl:template name="ellipse">
+        <xsl:param name="gid"/>
         <xsl:param name="label"/>
 
         <section name="graphics">
@@ -95,6 +98,7 @@
     </xsl:template>
 
     <xsl:template name="rectangle">
+        <xsl:param name="gid"/>
         <xsl:param name="label"/>
         <xsl:param name="fill"/>
 
@@ -114,6 +118,7 @@
     </xsl:template>
 
     <xsl:template name="diamond">
+        <xsl:param name="gid"/>
         <xsl:param name="label"/>
 
         <section name="graphics">
@@ -133,6 +138,7 @@
     </xsl:template>
 
     <xsl:template name="octagon">
+        <xsl:param name="gid"/>
         <xsl:param name="label"/>
 
             <section name="graphics">
@@ -151,53 +157,26 @@
             </section>
     </xsl:template>
 
-    <!-- edge mapping -->
-    <xsl:template match="treap" mode="edge">
-        <xsl:if test="left">
-        <section name="edge">
-            <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
-            <attribute key="target" type="int"><xsl:value-of select="left/@id"/></attribute>
-            <attribute key="label" type="String">smaller</attribute>
-        </section>
-        </xsl:if>
-        <xsl:if test="right">
-        <section name="edge">
-            <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
-            <attribute key="target" type="int"><xsl:value-of select="right/@id"/></attribute>
-            <attribute key="label" type="String">bigger</attribute>
-        </section>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template match="iterate" mode="edge">
+    <xsl:template match="trace" mode="edge">
+        <xsl:param name="gid"/>
         <xsl:call-template name="trace">
-            <xsl:with-param name="from" select="'iter'"/>
         </xsl:call-template>
     </xsl:template>
 
-    <xsl:template match="reduce" mode="edge">
-        <xsl:call-template name="trace">
-            <xsl:with-param name="from" select="'red'"/>
-        </xsl:call-template>
-    </xsl:template>
-
-    <xsl:template match="finish" mode="edge">
-        <xsl:call-template name="trace">
-            <xsl:with-param name="from" select="'fin'"/>
-        </xsl:call-template>
-    </xsl:template>
 
     <xsl:template name="trace">
+        <xsl:param name="gid"/>
+
         <xsl:param name="from" select="'from'"/>
-        <section name="edge">
-            <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
-            <attribute key="target" type="int"><xsl:value-of select="from/@id"/></attribute>
-            <attribute key="label" type="String"><xsl:value-of select="$from"/></attribute>
-        </section>
         <section name="edge">
             <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
             <attribute key="target" type="int"><xsl:value-of select="to/@id"/></attribute>
             <attribute key="label" type="String">to</attribute>
+        </section>
+        <section name="edge">
+            <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
+            <attribute key="target" type="int"><xsl:value-of select="from/@id"/></attribute>
+            <attribute key="label" type="String">from</attribute>
         </section>
     </xsl:template>
 
@@ -210,6 +189,8 @@
     </xsl:template>
 
     <xsl:template match="lazy2" mode="edge">
+        <xsl:param name="gid"/>
+
         <section name="edge">
             <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
             <attribute key="target" type="int"><xsl:value-of select="arg1/@id"/></attribute>
@@ -224,6 +205,7 @@
 
 
     <xsl:template match="lazy3" mode="edge">
+        <xsl:param name="gid"/>
         <section name="edge">
             <attribute key="source" type="int"><xsl:value-of select="../@id"/></attribute>
             <attribute key="target" type="int"><xsl:value-of select="arg1/@id"/></attribute>

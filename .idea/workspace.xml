@@ -2,15 +2,27 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/spread/IncrementalLogic.scala" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/scala_sdk.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/toxgml2.xsl" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" afterPath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/scala_compiler.xml" afterPath="$PROJECT_DIR$/.idea/scala_compiler.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.iml" afterPath="$PROJECT_DIR$/spread.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.xgml" afterPath="$PROJECT_DIR$/spread.xgml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.xml" afterPath="$PROJECT_DIR$/spread.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/toxgml.xsl" afterPath="$PROJECT_DIR$/toxgml.xsl" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
+    <ignored path="$PROJECT_DIR$/out/" />
+    <ignored path="$PROJECT_DIR$/src/build/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,98 +104,51 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Test.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Test.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5906902" vertical-offset="682" max-vertical-offset="1440">
-              <caret line="71" column="26" selection-start-line="71" selection-start-column="24" selection-end-line="71" selection-end-column="24" />
-              <folding>
-                <element signature="e#156#197#0" expanded="true" />
-                <element signature="e#1238#1242#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="List.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/immutable/List.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="4905" max-vertical-offset="9990">
-              <caret line="327" column="0" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.6666667" vertical-offset="1077" max-vertical-offset="4500">
+              <caret line="104" column="52" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1350" max-vertical-offset="5910">
-              <caret line="362" column="0" selection-start-line="362" selection-start-column="0" selection-end-line="362" selection-end-column="0" />
-              <folding>
-                <element signature="e#673#714#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Hashing.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="360" max-vertical-offset="1305">
-              <caret line="47" column="27" selection-start-line="47" selection-start-column="27" selection-end-line="47" selection-end-column="43" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="4515" max-vertical-offset="6765">
+              <caret line="301" column="42" selection-start-line="301" selection-start-column="42" selection-end-line="301" selection-end-column="42" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="spread.avail" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/avail/spread.avail">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1815" max-vertical-offset="2490">
-              <caret line="121" column="24" selection-start-line="121" selection-start-column="24" selection-end-line="121" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalTreapMap.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="IncrementalTreapMap.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2115" max-vertical-offset="3315">
-              <caret line="80" column="8" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
-              <folding>
-                <element signature="e#47#63#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="2508" max-vertical-offset="4305">
+              <caret line="251" column="3" selection-start-line="251" selection-start-column="3" selection-end-line="251" selection-end-column="3" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IncrementalArithmetic.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="IncrementalArithmetic.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="585" max-vertical-offset="1215">
-              <caret line="49" column="11" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="1140">
+              <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Treap.avail" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/avail/Treap.avail">
+      <file leaf-file-name="IncrementalLogic.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2940" max-vertical-offset="8235">
-              <caret line="196" column="0" selection-start-line="196" selection-start-column="0" selection-end-line="231" selection-end-column="15" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="toxgml.xsl" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/toxgml.xsl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="3112" max-vertical-offset="3735">
-              <caret line="241" column="19" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="825" max-vertical-offset="1245">
+              <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -197,7 +162,6 @@
     </FindUsagesManager>
   </component>
   <component name="Git.Settings">
-    <option name="SYNC_SETTING" value="DONT" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitLogSettings">
@@ -206,31 +170,8 @@
     </option>
   </component>
   <component name="IdeDocumentHistory">
-    <option name="changedFiles">
+    <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/spread/SpreadREPL.scala" />
-        <option value="$PROJECT_DIR$/src/spread/HTMLOutput.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Engine_v3.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization_v2.scala" />
-        <option value="$PROJECT_DIR$/src/spread/FunctionalSpread.scala" />
-        <option value="$PROJECT_DIR$/src/spread/AbstractImmutableSequence.scala" />
-        <option value="$PROJECT_DIR$/src/spread/FunctionalTreap.scala" />
-        <option value="$PROJECT_DIR$/spread.iml" />
-        <option value="$PROJECT_DIR$/toxgml.xsl" />
-        <option value="$PROJECT_DIR$/toxgml2.xsl" />
-        <option value="$PROJECT_DIR$/avail/Treap.avail" />
-        <option value="$PROJECT_DIR$/avail/spread.avail" />
-        <option value="$PROJECT_DIR$/src/spread/Test2.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Serializer.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalTreeView.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalLogic.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Hashing.scala" />
-        <option value="$PROJECT_DIR$/src/IncrementalLongMap.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalLongMap.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalTreap.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala" />
         <option value="$PROJECT_DIR$/src/spread/Test.scala" />
       </list>
     </option>
@@ -239,8 +180,8 @@
     <treeState />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="width" value="1440" />
-    <option name="height" value="900" />
+    <option name="width" value="1280" />
+    <option name="height" value="800" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -320,6 +261,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -353,7 +304,7 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -363,39 +314,15 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="avail" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -403,7 +330,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.last.edited" value="Global Libraries" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="94" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="96" />
     <property name="project.structure.proportion" value="0.15" />
@@ -434,7 +361,7 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
-    <property name="options.lastSelected" value="org.jetbrains.plugins.scala.settings.ScalaProjectSettingsConfigurable" />
+    <property name="options.lastSelected" value="configurable.group.editor" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="restartRequiresConfirmation" value="true" />
@@ -442,6 +369,8 @@
     <property name="options.searchVisible" value="true" />
     <property name="SearchEverywhereHistory" value="" />
     <property name="LayoutCode.rearrangeEntriesScala" value="false" />
+    <property name="SearchEverywhereHistoryKey" value="new look at multimaps&#9;FILE&#9;file:///Users/rapido/spread/A new look at multimaps.pdf" />
+    <property name="LayoutCode.rearrangeEntriesXML" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -484,6 +413,8 @@
       <method />
     </configuration>
     <configuration default="true" type="Specs2RunConfiguration" factoryName="Specs2">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
       <module name="" />
       <setting name="path" value="" />
       <setting name="package" value="" />
@@ -494,25 +425,24 @@
       <setting name="testName" value="" />
       <setting name="testKind" value="Class" />
       <setting name="showProgressMessages" value="true" />
+      <envs />
       <method />
     </configuration>
-    <configuration default="true" type="XSLT" factoryName="XSLT">
-      <option name="myOutputFile" />
-      <option name="myOpenOutputFile" value="false" />
-      <option name="myOpenInBrowser" value="false" />
-      <option name="mySmartErrorHandling" value="true" />
-      <option name="myRunnerPort" value="34873" />
-      <option name="myVmArguments" />
-      <option name="myWorkingDirectory" />
-      <option name="myModule" />
-      <option name="myJdk" />
-      <parameters />
-      <OutputType value="CONSOLE" save-to-file="false" />
-      <FileType name="XML" />
-      <JdkChoice value="FROM_MODULE" />
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -539,20 +469,24 @@
       <listeners />
       <method />
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
+    <configuration default="true" type="XSLT" factoryName="XSLT">
+      <option name="myOutputFile" />
+      <option name="myOpenOutputFile" value="false" />
+      <option name="myOpenInBrowser" value="false" />
+      <option name="mySmartErrorHandling" value="true" />
+      <option name="myRunnerPort" value="34873" />
+      <option name="myVmArguments" />
+      <option name="myWorkingDirectory" />
+      <option name="myModule" />
+      <option name="myJdk" />
+      <parameters />
+      <OutputType value="CONSOLE" save-to-file="false" />
+      <FileType name="XML" />
+      <JdkChoice value="FROM_MODULE" />
       <method />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -593,7 +527,29 @@
       <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
+    <configuration default="true" type="JarApplication" factoryName="JAR Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <method />
+    </configuration>
     <configuration default="true" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="Types" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -608,6 +564,8 @@
       <method />
     </configuration>
     <configuration default="true" type="uTestRunConfiguration" factoryName="utest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
       <module name="" />
       <setting name="path" value="" />
       <setting name="package" value="" />
@@ -618,6 +576,23 @@
       <setting name="testName" value="" />
       <setting name="testKind" value="Class" />
       <setting name="showProgressMessages" value="true" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
@@ -640,20 +615,8 @@
       <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
-    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="package" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
-      <setting name="searchForTest" value="Across module dependencies" />
-      <setting name="testName" value="" />
-      <setting name="testKind" value="Class" />
-      <setting name="showProgressMessages" value="true" />
-      <method />
-    </configuration>
     <configuration default="false" name="Test" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="spread.Test" />
       <option name="VM_PARAMETERS" value="-Xmx2048M" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -679,11 +642,6 @@
       <item index="0" class="java.lang.String" itemvalue="Application.Test" />
       <item index="1" class="java.lang.String" itemvalue="Scala Console.Scala Console" />
     </list>
-    <recent_temporary>
-      <list size="1">
-        <item index="0" class="java.lang.String" itemvalue="Scala Console.Scala Console" />
-      </list>
-    </recent_temporary>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
       <Port>5050</Port>
@@ -697,594 +655,880 @@
     <task active="true" id="Default" summary="Default task">
       <changelist id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="types" />
       <created>1351125871725</created>
+      <option name="number" value="Default" />
       <updated>1351125871725</updated>
     </task>
     <task id="LOCAL-00001" summary="setting up">
       <created>1351126479922</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
       <updated>1351126479922</updated>
     </task>
     <task id="LOCAL-00002" summary="setting up">
       <created>1351127503926</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
       <updated>1351127503926</updated>
     </task>
     <task id="LOCAL-00003" summary="setting up">
       <created>1351127742468</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
       <updated>1351127742468</updated>
     </task>
     <task id="LOCAL-00004" summary="types">
       <created>1351127962710</created>
+      <option name="number" value="00004" />
+      <option name="project" value="LOCAL" />
       <updated>1351127962710</updated>
     </task>
     <task id="LOCAL-00005" summary="types">
       <created>1351128052816</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
       <updated>1351128052816</updated>
     </task>
     <task id="LOCAL-00006" summary="types">
       <created>1351816298671</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
       <updated>1351816298671</updated>
     </task>
     <task id="LOCAL-00008" summary="types">
       <created>1351847685446</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
       <updated>1351847685446</updated>
     </task>
     <task id="LOCAL-00009" summary="New changelist">
       <created>1351847694460</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
       <updated>1351847694460</updated>
     </task>
     <task id="LOCAL-00010" summary="New changelist">
       <created>1351864708029</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
       <updated>1351864708029</updated>
     </task>
     <task id="LOCAL-00012" summary="New changelist">
       <created>1351870053403</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
       <updated>1351870053403</updated>
     </task>
     <task id="LOCAL-00013" summary="New changelist">
       <created>1351969524222</created>
+      <option name="number" value="00013" />
+      <option name="project" value="LOCAL" />
       <updated>1351969524222</updated>
     </task>
     <task id="LOCAL-00014" summary="new wording">
       <created>1351970001096</created>
+      <option name="number" value="00014" />
+      <option name="project" value="LOCAL" />
       <updated>1351970001096</updated>
     </task>
     <task id="LOCAL-00015" summary="start of implementation">
       <created>1351970174099</created>
+      <option name="number" value="00015" />
+      <option name="project" value="LOCAL" />
       <updated>1351970174099</updated>
     </task>
     <task id="LOCAL-00016" summary="start of implementation">
       <created>1351970305260</created>
+      <option name="number" value="00016" />
+      <option name="project" value="LOCAL" />
       <updated>1351970305260</updated>
     </task>
     <task id="LOCAL-00017" summary="start of implementation">
       <created>1351972975596</created>
+      <option name="number" value="00017" />
+      <option name="project" value="LOCAL" />
       <updated>1351972975596</updated>
     </task>
     <task id="LOCAL-00018" summary="abstract types">
       <created>1352011925450</created>
+      <option name="number" value="00018" />
+      <option name="project" value="LOCAL" />
       <updated>1352011925450</updated>
     </task>
     <task id="LOCAL-00019" summary="abstract expressions">
       <created>1352038906003</created>
+      <option name="number" value="00019" />
+      <option name="project" value="LOCAL" />
       <updated>1352038906003</updated>
     </task>
     <task id="LOCAL-00020" summary="expressions with labels">
       <created>1352039793190</created>
+      <option name="number" value="00020" />
+      <option name="project" value="LOCAL" />
       <updated>1352039793190</updated>
     </task>
     <task id="LOCAL-00021" summary="fixed import">
       <created>1352040111016</created>
+      <option name="number" value="00021" />
+      <option name="project" value="LOCAL" />
       <updated>1352040111016</updated>
     </task>
     <task id="LOCAL-00022" summary="integer test framwork&#10;">
       <created>1352045692399</created>
+      <option name="number" value="00022" />
+      <option name="project" value="LOCAL" />
       <updated>1352045692399</updated>
     </task>
     <task id="LOCAL-00023" summary="integer test framework&#10;">
       <created>1352045795218</created>
+      <option name="number" value="00023" />
+      <option name="project" value="LOCAL" />
       <updated>1352045795218</updated>
     </task>
     <task id="LOCAL-00024" summary="clone from the oer framework">
       <created>1352056602382</created>
+      <option name="number" value="00024" />
+      <option name="project" value="LOCAL" />
       <updated>1352056602382</updated>
     </task>
     <task id="LOCAL-00025" summary="clone from the oer framework">
       <created>1352056614157</created>
+      <option name="number" value="00025" />
+      <option name="project" value="LOCAL" />
       <updated>1352056614157</updated>
     </task>
     <task id="LOCAL-00026" summary="clone from the oer framework">
       <created>1352056633164</created>
+      <option name="number" value="00026" />
+      <option name="project" value="LOCAL" />
       <updated>1352056633164</updated>
     </task>
     <task id="LOCAL-00027" summary="incremental computation with divide and conquer memoization">
       <created>1352477383252</created>
+      <option name="number" value="00027" />
+      <option name="project" value="LOCAL" />
       <updated>1352477383252</updated>
     </task>
     <task id="LOCAL-00028" summary="parameterized priority hash type">
       <created>1352747360613</created>
+      <option name="number" value="00028" />
+      <option name="project" value="LOCAL" />
       <updated>1352747360613</updated>
     </task>
     <task id="LOCAL-00029" summary="monadic threading of a context (similar to the State monad)">
       <created>1352909321698</created>
+      <option name="number" value="00029" />
+      <option name="project" value="LOCAL" />
       <updated>1352909321698</updated>
     </task>
     <task id="LOCAL-00030" summary="sequences based on weight balanced trees: first cut">
       <created>1353006706073</created>
+      <option name="number" value="00030" />
+      <option name="project" value="LOCAL" />
       <updated>1353006706073</updated>
     </task>
     <task id="LOCAL-00031" summary="sequences based on weight balanced trees: first cut">
       <created>1353006715938</created>
+      <option name="number" value="00031" />
+      <option name="project" value="LOCAL" />
       <updated>1353006715938</updated>
     </task>
     <task id="LOCAL-00032" summary="wording + small tweaks">
       <created>1353010345752</created>
+      <option name="number" value="00032" />
+      <option name="project" value="LOCAL" />
       <updated>1353010345752</updated>
     </task>
     <task id="LOCAL-00033" summary="implemented ordering on sequences">
       <created>1353014864296</created>
+      <option name="number" value="00033" />
+      <option name="project" value="LOCAL" />
       <updated>1353014864296</updated>
     </task>
     <task id="LOCAL-00034" summary="A new look at multimaps">
       <created>1353278806903</created>
+      <option name="number" value="00034" />
+      <option name="project" value="LOCAL" />
       <updated>1353278806903</updated>
     </task>
     <task id="LOCAL-00035" summary="small typo">
       <created>1353311456795</created>
+      <option name="number" value="00035" />
+      <option name="project" value="LOCAL" />
       <updated>1353311456795</updated>
     </task>
     <task id="LOCAL-00036" summary="other typo">
       <created>1353312006378</created>
+      <option name="number" value="00036" />
+      <option name="project" value="LOCAL" />
       <updated>1353312006378</updated>
     </task>
     <task id="LOCAL-00037" summary="other typo">
       <created>1353532576394</created>
+      <option name="number" value="00037" />
+      <option name="project" value="LOCAL" />
       <updated>1353532576394</updated>
     </task>
     <task id="LOCAL-00038" summary="wildberger rationals">
       <created>1353532596474</created>
+      <option name="number" value="00038" />
+      <option name="project" value="LOCAL" />
       <updated>1353532596474</updated>
     </task>
     <task id="LOCAL-00039" summary="typo">
       <created>1353532618288</created>
+      <option name="number" value="00039" />
+      <option name="project" value="LOCAL" />
       <updated>1353532618288</updated>
     </task>
     <task id="LOCAL-00040" summary="move implicit">
       <created>1353532693653</created>
+      <option name="number" value="00040" />
+      <option name="project" value="LOCAL" />
       <updated>1353532693653</updated>
     </task>
     <task id="LOCAL-00041" summary="renamed to wheels algebraic structure">
       <created>1353590716474</created>
+      <option name="number" value="00041" />
+      <option name="project" value="LOCAL" />
       <updated>1353590716474</updated>
     </task>
     <task id="LOCAL-00042" summary="renamed NegInfW to InfW">
       <created>1353590776386</created>
+      <option name="number" value="00042" />
+      <option name="project" value="LOCAL" />
       <updated>1353590776386</updated>
     </task>
     <task id="LOCAL-00043" summary="Birth of a new number system without zeros">
       <created>1353747808744</created>
+      <option name="number" value="00043" />
+      <option name="project" value="LOCAL" />
       <updated>1353747808744</updated>
     </task>
     <task id="LOCAL-00044" summary="Birth of a new number system without zeros">
       <created>1353791256405</created>
+      <option name="number" value="00044" />
+      <option name="project" value="LOCAL" />
       <updated>1353791256405</updated>
     </task>
     <task id="LOCAL-00045" summary="some experimenting on expressions">
       <created>1354997148139</created>
+      <option name="number" value="00045" />
+      <option name="project" value="LOCAL" />
       <updated>1354997148139</updated>
     </task>
     <task id="LOCAL-00046" summary="moved to scala-2.10 and intellij 12">
       <created>1356699031685</created>
+      <option name="number" value="00046" />
+      <option name="project" value="LOCAL" />
       <updated>1356699031685</updated>
     </task>
     <task id="LOCAL-00047" summary="first cut">
       <created>1366121171874</created>
+      <option name="number" value="00047" />
+      <option name="project" value="LOCAL" />
       <updated>1366121171874</updated>
     </task>
     <task id="LOCAL-00048" summary="first cut - new engine">
       <created>1366121201991</created>
+      <option name="number" value="00048" />
+      <option name="project" value="LOCAL" />
       <updated>1366121201991</updated>
     </task>
     <task id="LOCAL-00049" summary="more elaborate example">
       <created>1366137069421</created>
+      <option name="number" value="00049" />
+      <option name="project" value="LOCAL" />
       <updated>1366137069421</updated>
     </task>
     <task id="LOCAL-00050" summary="more elaborate example (fixed)">
       <created>1366137623590</created>
+      <option name="number" value="00050" />
+      <option name="project" value="LOCAL" />
       <updated>1366137623590</updated>
     </task>
     <task id="LOCAL-00051" summary="very rough cut with an example&#10;">
       <created>1366400311181</created>
+      <option name="number" value="00051" />
+      <option name="project" value="LOCAL" />
       <updated>1366400311181</updated>
     </task>
     <task id="LOCAL-00052" summary="new version: very rough cut&#10;">
       <created>1366705196768</created>
+      <option name="number" value="00052" />
+      <option name="project" value="LOCAL" />
       <updated>1366705196768</updated>
     </task>
     <task id="LOCAL-00053" summary="new tracing order, first source then reduced version">
       <created>1366752262589</created>
+      <option name="number" value="00053" />
+      <option name="project" value="LOCAL" />
       <updated>1366752262590</updated>
     </task>
     <task id="LOCAL-00054" summary="fixed  equality checks for alternatives">
       <created>1366757743993</created>
+      <option name="number" value="00054" />
+      <option name="project" value="LOCAL" />
       <updated>1366757743994</updated>
     </task>
     <task id="LOCAL-00055" summary="fixed  equality checks for alternatives">
       <created>1366757830917</created>
+      <option name="number" value="00055" />
+      <option name="project" value="LOCAL" />
       <updated>1366757830917</updated>
     </task>
     <task id="LOCAL-00056" summary="Added parser + lots of progress">
       <created>1366834891027</created>
+      <option name="number" value="00056" />
+      <option name="project" value="LOCAL" />
       <updated>1366834891028</updated>
     </task>
     <task id="LOCAL-00057" summary="checkin before refactoring">
       <created>1366977676584</created>
+      <option name="number" value="00057" />
+      <option name="project" value="LOCAL" />
       <updated>1366977676584</updated>
     </task>
     <task id="LOCAL-00058" summary="refactored - more refactoring needs to be done">
       <created>1367094740848</created>
+      <option name="number" value="00058" />
+      <option name="project" value="LOCAL" />
       <updated>1367094740849</updated>
     </task>
     <task id="LOCAL-00059" summary="added pack and unpack and done some more refactoring">
       <created>1367179662946</created>
+      <option name="number" value="00059" />
+      <option name="project" value="LOCAL" />
       <updated>1367179662946</updated>
     </task>
     <task id="LOCAL-00060" summary="refactoring + new higher-operator order + GUI">
       <created>1367615471823</created>
+      <option name="number" value="00060" />
+      <option name="project" value="LOCAL" />
       <updated>1367615471823</updated>
     </task>
     <task id="LOCAL-00061" summary="refactoring + new higher-operator order + GUI">
       <created>1367615493473</created>
+      <option name="number" value="00061" />
+      <option name="project" value="LOCAL" />
       <updated>1367615493473</updated>
     </task>
     <task id="LOCAL-00062" summary="refactoring + new higher-operator order + GUI">
       <created>1367615532766</created>
+      <option name="number" value="00062" />
+      <option name="project" value="LOCAL" />
       <updated>1367615532766</updated>
     </task>
     <task id="LOCAL-00063" summary="some more refactoring  + additional operators">
       <created>1368131494552</created>
+      <option name="number" value="00063" />
+      <option name="project" value="LOCAL" />
       <updated>1368131494552</updated>
     </task>
     <task id="LOCAL-00064" summary="reworked parser +  trace binding">
       <created>1368179935029</created>
+      <option name="number" value="00064" />
+      <option name="project" value="LOCAL" />
       <updated>1368179935030</updated>
     </task>
     <task id="LOCAL-00065" summary="got the major stuff working - know what?">
       <created>1368198341708</created>
+      <option name="number" value="00065" />
+      <option name="project" value="LOCAL" />
       <updated>1368198341709</updated>
     </task>
     <task id="LOCAL-00066" summary="Applet">
       <created>1368222576321</created>
+      <option name="number" value="00066" />
+      <option name="project" value="LOCAL" />
       <updated>1368222576322</updated>
     </task>
     <task id="LOCAL-00067" summary="Applet">
       <created>1368222589847</created>
+      <option name="number" value="00067" />
+      <option name="project" value="LOCAL" />
       <updated>1368222589847</updated>
     </task>
     <task id="LOCAL-00068" summary="Start of engine v3&#10;">
       <created>1368825797331</created>
+      <option name="number" value="00068" />
+      <option name="project" value="LOCAL" />
       <updated>1368825797331</updated>
     </task>
     <task id="LOCAL-00069" summary="powerful expr&lt;-&gt;subexpr evaluation">
       <created>1369000542703</created>
+      <option name="number" value="00069" />
+      <option name="project" value="LOCAL" />
       <updated>1369000542703</updated>
     </task>
     <task id="LOCAL-00070" summary="alternatives evaluation">
       <created>1369379138717</created>
+      <option name="number" value="00070" />
+      <option name="project" value="LOCAL" />
       <updated>1369379138718</updated>
     </task>
     <task id="LOCAL-00071" summary="multimap evaluation">
       <created>1369422138313</created>
+      <option name="number" value="00071" />
+      <option name="project" value="LOCAL" />
       <updated>1369422138313</updated>
     </task>
     <task id="LOCAL-00072" summary="fixed evaluation + concatenate">
       <created>1369514133222</created>
+      <option name="number" value="00072" />
+      <option name="project" value="LOCAL" />
       <updated>1369514133222</updated>
     </task>
     <task id="LOCAL-00073" summary="optimized measures">
       <created>1369650769544</created>
+      <option name="number" value="00073" />
+      <option name="project" value="LOCAL" />
       <updated>1369650769545</updated>
     </task>
     <task id="LOCAL-00074" summary="engine v3">
       <created>1369723521612</created>
+      <option name="number" value="00074" />
+      <option name="project" value="LOCAL" />
       <updated>1369723521613</updated>
     </task>
     <task id="LOCAL-00075" summary="clean-up + additional ops implementation such as bind">
       <created>1370034503261</created>
+      <option name="number" value="00075" />
+      <option name="project" value="LOCAL" />
       <updated>1370034503261</updated>
     </task>
     <task id="LOCAL-00076" summary="added dependency tracking">
       <created>1370291024475</created>
+      <option name="number" value="00076" />
+      <option name="project" value="LOCAL" />
       <updated>1370291024477</updated>
     </task>
     <task id="LOCAL-00077" summary="better trace handling">
       <created>1370373868016</created>
+      <option name="number" value="00077" />
+      <option name="project" value="LOCAL" />
       <updated>1370373868016</updated>
     </task>
     <task id="LOCAL-00078" summary="bignums">
       <created>1370375870655</created>
+      <option name="number" value="00078" />
+      <option name="project" value="LOCAL" />
       <updated>1370375870655</updated>
     </task>
     <task id="LOCAL-00079" summary="first cut at visualising spread expressions - code is *very* rough and not structured">
       <created>1371286587460</created>
+      <option name="number" value="00079" />
+      <option name="project" value="LOCAL" />
       <updated>1371286587460</updated>
     </task>
     <task id="LOCAL-00080" summary="thrown away old stuff + refactoring&#10;">
       <created>1371323108522</created>
+      <option name="number" value="00080" />
+      <option name="project" value="LOCAL" />
       <updated>1371323108522</updated>
     </task>
     <task id="LOCAL-00081" summary="refactored generic and HTML pretty printing">
       <created>1371413411020</created>
+      <option name="number" value="00081" />
+      <option name="project" value="LOCAL" />
       <updated>1371413411021</updated>
     </task>
     <task id="LOCAL-00082" summary=" MultiSet bug fix&#10;">
       <created>1371760128702</created>
+      <option name="number" value="00082" />
+      <option name="project" value="LOCAL" />
       <updated>1371760128702</updated>
     </task>
     <task id="LOCAL-00083" summary="new git version">
       <created>1371889534107</created>
+      <option name="number" value="00083" />
+      <option name="project" value="LOCAL" />
       <updated>1371889534108</updated>
     </task>
     <task id="LOCAL-00084" summary="new git version">
       <created>1382967999915</created>
+      <option name="number" value="00084" />
+      <option name="project" value="LOCAL" />
       <updated>1382967999915</updated>
     </task>
     <task id="LOCAL-00085" summary="Incremental memoization *is* a spreadsheet: supersedes all previous work">
       <created>1382968361185</created>
+      <option name="number" value="00085" />
+      <option name="project" value="LOCAL" />
       <updated>1382968361185</updated>
     </task>
     <task id="LOCAL-00086" summary="efficient incremental memoization without space leaks">
       <created>1382970846547</created>
+      <option name="number" value="00086" />
+      <option name="project" value="LOCAL" />
       <updated>1382970846547</updated>
     </task>
     <task id="LOCAL-00087" summary="barbage collectable incremental tracing memoization">
       <created>1382973752528</created>
+      <option name="number" value="00087" />
+      <option name="project" value="LOCAL" />
       <updated>1382973752529</updated>
     </task>
     <task id="LOCAL-00088" summary="show case">
       <created>1382973816120</created>
+      <option name="number" value="00088" />
+      <option name="project" value="LOCAL" />
       <updated>1382973816121</updated>
     </task>
     <task id="LOCAL-00089" summary="garbage collectable incremental tracing memoization">
       <created>1382973895905</created>
+      <option name="number" value="00089" />
+      <option name="project" value="LOCAL" />
       <updated>1382973895906</updated>
     </task>
     <task id="LOCAL-00090" summary="reworked to be more generic">
       <created>1383515160005</created>
+      <option name="number" value="00090" />
+      <option name="project" value="LOCAL" />
       <updated>1383515160005</updated>
     </task>
     <task id="LOCAL-00091" summary="fixed typos">
       <created>1383515932333</created>
+      <option name="number" value="00091" />
+      <option name="project" value="LOCAL" />
       <updated>1383515932333</updated>
     </task>
     <task id="LOCAL-00092" summary="refactor with compressed type signatures">
       <created>1383516317964</created>
+      <option name="number" value="00092" />
+      <option name="project" value="LOCAL" />
       <updated>1383516317964</updated>
     </task>
     <task id="LOCAL-00093" summary="moved imports">
       <created>1383516451645</created>
+      <option name="number" value="00093" />
+      <option name="project" value="LOCAL" />
       <updated>1383516451645</updated>
     </task>
     <task id="LOCAL-00094" summary="visualization">
       <created>1383642679257</created>
+      <option name="number" value="00094" />
+      <option name="project" value="LOCAL" />
       <updated>1383642679257</updated>
     </task>
     <task id="LOCAL-00095" summary="types + visualization">
       <created>1383731360979</created>
+      <option name="number" value="00095" />
+      <option name="project" value="LOCAL" />
       <updated>1383731360979</updated>
     </task>
     <task id="LOCAL-00096" summary="reworked types">
       <created>1384335658812</created>
+      <option name="number" value="00096" />
+      <option name="project" value="LOCAL" />
       <updated>1384335658812</updated>
     </task>
     <task id="LOCAL-00097" summary="wording">
       <created>1384336213163</created>
+      <option name="number" value="00097" />
+      <option name="project" value="LOCAL" />
       <updated>1384336213163</updated>
     </task>
     <task id="LOCAL-00098" summary="- reworked model &#10;- lazy forcing + evaluation">
       <created>1384594609958</created>
+      <option name="number" value="00098" />
+      <option name="project" value="LOCAL" />
       <updated>1384594609958</updated>
     </task>
     <task id="LOCAL-00099" summary="some more tree node types">
       <created>1384596055697</created>
+      <option name="number" value="00099" />
+      <option name="project" value="LOCAL" />
       <updated>1384596055697</updated>
     </task>
     <task id="LOCAL-00100" summary="some more tree node types">
       <created>1384596063053</created>
+      <option name="number" value="00100" />
+      <option name="project" value="LOCAL" />
       <updated>1384596063053</updated>
     </task>
     <task id="LOCAL-00101" summary="lazy treap join exposition">
       <created>1384733819448</created>
+      <option name="number" value="00101" />
+      <option name="project" value="LOCAL" />
       <updated>1384733819448</updated>
     </task>
     <task id="LOCAL-00102" summary="tracing treap implementation">
       <created>1384929364590</created>
+      <option name="number" value="00102" />
+      <option name="project" value="LOCAL" />
       <updated>1384929364590</updated>
     </task>
     <task id="LOCAL-00103" summary="new implementation">
       <created>1385337046002</created>
+      <option name="number" value="00103" />
+      <option name="project" value="LOCAL" />
       <updated>1385337046002</updated>
     </task>
     <task id="LOCAL-00104" summary="fully traceable treaps, first try">
       <created>1385396751706</created>
+      <option name="number" value="00104" />
+      <option name="project" value="LOCAL" />
       <updated>1385396751706</updated>
     </task>
     <task id="LOCAL-00105" summary="refactoring">
       <created>1385492796848</created>
+      <option name="number" value="00105" />
+      <option name="project" value="LOCAL" />
       <updated>1385492796848</updated>
     </task>
     <task id="LOCAL-00106" summary="some more refactoring">
       <created>1385493208353</created>
+      <option name="number" value="00106" />
+      <option name="project" value="LOCAL" />
       <updated>1385493208353</updated>
     </task>
     <task id="LOCAL-00107" summary="and more refactoring">
       <created>1385494679623</created>
+      <option name="number" value="00107" />
+      <option name="project" value="LOCAL" />
       <updated>1385494679623</updated>
     </task>
     <task id="LOCAL-00108" summary="and more refactoring">
       <created>1385495118551</created>
+      <option name="number" value="00108" />
+      <option name="project" value="LOCAL" />
       <updated>1385495118551</updated>
     </task>
     <task id="LOCAL-00109" summary="cleanup">
       <created>1385495154692</created>
+      <option name="number" value="00109" />
+      <option name="project" value="LOCAL" />
       <updated>1385495154692</updated>
     </task>
     <task id="LOCAL-00110" summary="xml serialization">
       <created>1385624537969</created>
+      <option name="number" value="00110" />
+      <option name="project" value="LOCAL" />
       <updated>1385624537969</updated>
     </task>
     <task id="LOCAL-00111" summary="avail and other experiment">
       <created>1401302885838</created>
+      <option name="number" value="00111" />
+      <option name="project" value="LOCAL" />
       <updated>1401302885838</updated>
     </task>
     <task id="LOCAL-00112" summary="avail and other experiments">
       <created>1401303014187</created>
+      <option name="number" value="00112" />
+      <option name="project" value="LOCAL" />
       <updated>1401303014187</updated>
     </task>
     <task id="LOCAL-00113" summary="small typos">
       <created>1401303348431</created>
+      <option name="number" value="00113" />
+      <option name="project" value="LOCAL" />
       <updated>1401303348431</updated>
     </task>
     <task id="LOCAL-00114" summary="small typos">
       <created>1401304343026</created>
+      <option name="number" value="00114" />
+      <option name="project" value="LOCAL" />
       <updated>1401304343026</updated>
     </task>
     <task id="LOCAL-00115" summary="small typos">
       <created>1401304551686</created>
+      <option name="number" value="00115" />
+      <option name="project" value="LOCAL" />
       <updated>1401304551686</updated>
     </task>
     <task id="LOCAL-00116" summary="- removed rehash&#10;- split now returns three parts&#10;- additional set operations">
       <created>1401458992649</created>
+      <option name="number" value="00116" />
+      <option name="project" value="LOCAL" />
       <updated>1401458992649</updated>
     </task>
     <task id="LOCAL-00117" summary="spread v0.1 - first cut">
       <created>1401915670341</created>
+      <option name="number" value="00117" />
+      <option name="project" value="LOCAL" />
       <updated>1401915670341</updated>
     </task>
     <task id="LOCAL-00118" summary="fixed typo + additional example">
       <created>1401916226982</created>
+      <option name="number" value="00118" />
+      <option name="project" value="LOCAL" />
       <updated>1401916226982</updated>
     </task>
     <task id="LOCAL-00119" summary="removed ()">
       <created>1401916779056</created>
+      <option name="number" value="00119" />
+      <option name="project" value="LOCAL" />
       <updated>1401916779056</updated>
     </task>
     <task id="LOCAL-00120" summary="reworked reduction">
       <created>1403464760091</created>
+      <option name="number" value="00120" />
+      <option name="project" value="LOCAL" />
       <updated>1403464760091</updated>
     </task>
     <task id="LOCAL-00121" summary="some more examples">
       <created>1403470915094</created>
+      <option name="number" value="00121" />
+      <option name="project" value="LOCAL" />
       <updated>1403470915094</updated>
     </task>
     <task id="LOCAL-00122" summary="weak parent pointers + replacement">
       <created>1403767570448</created>
+      <option name="number" value="00122" />
+      <option name="project" value="LOCAL" />
       <updated>1403767570448</updated>
     </task>
     <task id="LOCAL-00123" summary="some new ideas:&#10;- memoization via a state monad&#10;- staging">
       <created>1403994748679</created>
+      <option name="number" value="00123" />
+      <option name="project" value="LOCAL" />
       <updated>1403994748679</updated>
     </task>
     <task id="LOCAL-00124" summary="- staging">
       <created>1404049757244</created>
+      <option name="number" value="00124" />
+      <option name="project" value="LOCAL" />
       <updated>1404049757244</updated>
     </task>
     <task id="LOCAL-00125" summary="- promoted prototype to current model">
       <created>1404072202766</created>
+      <option name="number" value="00125" />
+      <option name="project" value="LOCAL" />
       <updated>1404072202766</updated>
     </task>
     <task id="LOCAL-00126" summary="- refactoring and renaming">
       <created>1404076762200</created>
+      <option name="number" value="00126" />
+      <option name="project" value="LOCAL" />
       <updated>1404076762200</updated>
     </task>
     <task id="LOCAL-00127" summary="- replacement + scala 2.11">
       <created>1404631340288</created>
+      <option name="number" value="00127" />
+      <option name="project" value="LOCAL" />
       <updated>1404631340288</updated>
     </task>
     <task id="LOCAL-00128" summary="- type-safe replace">
       <created>1404643064856</created>
+      <option name="number" value="00128" />
+      <option name="project" value="LOCAL" />
       <updated>1404643064857</updated>
     </task>
     <task id="LOCAL-00129" summary="- nested replace">
       <created>1404677070037</created>
+      <option name="number" value="00129" />
+      <option name="project" value="LOCAL" />
       <updated>1404677070037</updated>
     </task>
     <task id="LOCAL-00130" summary="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d">
       <created>1405206071568</created>
+      <option name="number" value="00130" />
+      <option name="project" value="LOCAL" />
       <updated>1405206071568</updated>
     </task>
     <task id="LOCAL-00131" summary="lazy eval = reduce">
       <created>1405978167038</created>
+      <option name="number" value="00131" />
+      <option name="project" value="LOCAL" />
       <updated>1405978167038</updated>
     </task>
     <task id="LOCAL-00132" summary="lazy eval = reduce">
       <created>1405978393046</created>
+      <option name="number" value="00132" />
+      <option name="project" value="LOCAL" />
       <updated>1405978393046</updated>
     </task>
     <task id="LOCAL-00133" summary="lazy eval = reduce">
       <created>1405978556778</created>
+      <option name="number" value="00133" />
+      <option name="project" value="LOCAL" />
       <updated>1405978556778</updated>
     </task>
     <task id="LOCAL-00134" summary="the quest continues">
       <created>1406575585634</created>
+      <option name="number" value="00134" />
+      <option name="project" value="LOCAL" />
       <updated>1406575585635</updated>
     </task>
     <task id="LOCAL-00135" summary="cool example">
       <created>1406579850943</created>
+      <option name="number" value="00135" />
+      <option name="project" value="LOCAL" />
       <updated>1406579850943</updated>
     </task>
     <task id="LOCAL-00136" summary="replacement with typetags">
       <created>1407524909452</created>
+      <option name="number" value="00136" />
+      <option name="project" value="LOCAL" />
       <updated>1407524909452</updated>
     </task>
     <task id="LOCAL-00137" summary="reworked Treap">
       <created>1407831823175</created>
+      <option name="number" value="00137" />
+      <option name="project" value="LOCAL" />
       <updated>1407831823175</updated>
     </task>
     <task id="LOCAL-00138" summary="first cut">
       <created>1409058427336</created>
+      <option name="number" value="00138" />
+      <option name="project" value="LOCAL" />
       <updated>1409058427336</updated>
     </task>
     <task id="LOCAL-00139" summary="chunked treaps">
       <created>1409082437362</created>
+      <option name="number" value="00139" />
+      <option name="project" value="LOCAL" />
       <updated>1409082437362</updated>
     </task>
     <task id="LOCAL-00140" summary="some more experiments on chunked treaps">
       <created>1410458815353</created>
+      <option name="number" value="00140" />
+      <option name="project" value="LOCAL" />
       <updated>1410458815353</updated>
     </task>
     <task id="LOCAL-00141" summary="removed chunked treaps (premature optimization ....)&#10;removed non-essential methods">
       <created>1411480032718</created>
+      <option name="number" value="00141" />
+      <option name="project" value="LOCAL" />
       <updated>1411480032718</updated>
     </task>
-    <option name="localTasksCounter" value="142" />
+    <task id="LOCAL-00142" summary="- optimized treap&#10;- eval memoization context + backreferences">
+      <created>1412109135538</created>
+      <option name="number" value="00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1412109135538</updated>
+    </task>
+    <option name="localTasksCounter" value="143" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1440" height="900" extended-state="0" />
+    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39390388" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2098476" sideWeight="0.46666667" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.4671875" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32348597" sideWeight="0.48958334" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20164126" sideWeight="0.46944445" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20053121" sideWeight="0.46875" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24166666" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2098476" sideWeight="0.53333336" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22734375" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.5328125" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32597622" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -1305,7 +1549,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="small typos" />
     <MESSAGE value="- removed rehash&#10;- split now returns three parts&#10;- additional set operations" />
     <MESSAGE value="spread v0.1 - first cut" />
     <MESSAGE value="fixed typo + additional example" />
@@ -1330,7 +1573,8 @@
     <MESSAGE value="chunked treaps" />
     <MESSAGE value="some more experiments on chunked treaps" />
     <MESSAGE value="removed chunked treaps (premature optimization ....)&#10;removed non-essential methods" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed chunked treaps (premature optimization ....)&#10;removed non-essential methods" />
+    <MESSAGE value="- optimized treap&#10;- eval memoization context + backreferences" />
+    <option name="LAST_COMMIT_MESSAGE" value="- optimized treap&#10;- eval memoization context + backreferences" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1344,78 +1588,51 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="15" />
+      <option name="time" value="17" />
     </breakpoint-manager>
+    <watches-manager />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1792" max-vertical-offset="2415">
-          <caret line="20" column="64" selection-start-line="20" selection-start-column="64" selection-end-line="20" selection-end-column="64" />
-          <folding>
-            <element signature="e#47#63#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="1185">
-          <caret line="32" column="57" selection-start-line="32" selection-start-column="57" selection-end-line="32" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/avail/Treap.avail">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2940" max-vertical-offset="8235">
-          <caret line="196" column="0" selection-start-line="196" selection-start-column="0" selection-end-line="231" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/toxgml.xsl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="3112" max-vertical-offset="3735">
-          <caret line="241" column="19" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/immutable/List.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="4905" max-vertical-offset="9990">
-          <caret line="327" column="0" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4680">
+          <caret line="186" column="91" selection-start-line="186" selection-start-column="18" selection-end-line="186" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="3495">
-          <caret line="103" column="37" selection-start-line="103" selection-start-column="37" selection-end-line="103" selection-end-column="37" />
-          <folding>
-            <element signature="e#673#714#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="783" max-vertical-offset="1320">
-          <caret line="80" column="3" selection-start-line="80" selection-start-column="3" selection-end-line="80" selection-end-column="3" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="4515" max-vertical-offset="6765">
+          <caret line="301" column="46" selection-start-line="301" selection-start-column="42" selection-end-line="301" selection-end-column="42" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/avail/spread.avail">
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1518" max-vertical-offset="2490">
-          <caret line="121" column="24" selection-start-line="121" selection-start-column="24" selection-end-line="121" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="4050" max-vertical-offset="4335">
+          <caret line="270" column="48" selection-start-line="270" selection-start-column="43" selection-end-line="270" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="1140">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="825" max-vertical-offset="1245">
+          <caret line="55" column="46" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
           <folding />
         </state>
       </provider>
@@ -1432,7 +1649,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="576" max-vertical-offset="8235">
           <caret line="330" column="12" selection-start-line="330" selection-start-column="2" selection-end-line="330" selection-end-column="2" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1440,7 +1656,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="3288" max-vertical-offset="3735">
           <caret line="241" column="35" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1455,7 +1670,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2880" max-vertical-offset="3735">
           <caret line="192" column="52" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1463,10 +1677,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#156#197#0" expanded="true" />
-            <element signature="e#1238#1242#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1474,9 +1685,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2775">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#673#714#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1499,7 +1708,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2880" max-vertical-offset="3735">
           <caret line="192" column="52" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1507,10 +1715,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#156#197#0" expanded="true" />
-            <element signature="e#1238#1242#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1518,9 +1723,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="780" max-vertical-offset="2775">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#673#714#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1550,7 +1753,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2880" max-vertical-offset="3735">
           <caret line="192" column="52" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1565,10 +1767,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="450" max-vertical-offset="1665">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#156#197#0" expanded="true" />
-            <element signature="e#1238#1242#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1583,9 +1782,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="780" max-vertical-offset="2775">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#673#714#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1608,7 +1805,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2880" max-vertical-offset="3735">
           <caret line="192" column="52" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1623,7 +1819,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <caret line="80" column="47" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1676,89 +1871,106 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/toxgml2.xsl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="3105" max-vertical-offset="3255">
-          <caret line="207" column="18" selection-start-line="207" selection-start-column="18" selection-end-line="207" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/scala-2.10.0-RC5/src/scala-library-src.jar!/scala/collection/immutable/List.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="4626" max-vertical-offset="9855">
           <caret line="327" column="0" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.1/lib/scala-library.jar!/scala/Function2.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="45" max-vertical-offset="240">
+          <caret line="3" column="6" selection-start-line="3" selection-start-column="6" selection-end-line="3" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.idea/copyright/profiles_settings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="523">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="165">
+          <caret line="5" column="77" selection-start-line="5" selection-start-column="77" selection-end-line="5" selection-end-column="77" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="360" max-vertical-offset="1305">
-          <caret line="47" column="27" selection-start-line="47" selection-start-column="27" selection-end-line="47" selection-end-column="43" />
-          <folding />
+          <caret line="45" column="13" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/avail/spread.avail">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1518" max-vertical-offset="2490">
-          <caret line="121" column="24" selection-start-line="121" selection-start-column="24" selection-end-line="121" selection-end-column="25" />
-          <folding />
+          <caret line="127" column="25" selection-start-line="127" selection-start-column="25" selection-end-line="127" selection-end-column="25" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/avail/Treap.avail">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2880" max-vertical-offset="8235">
-          <caret line="196" column="0" selection-start-line="196" selection-start-column="0" selection-end-line="231" selection-end-column="15" />
-          <folding />
+        <state vertical-scroll-proportion="0.0" vertical-offset="7691" max-vertical-offset="8235">
+          <caret line="539" column="12" selection-start-line="539" selection-start-column="12" selection-end-line="539" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spread.xgml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="90">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/toxgml.xsl">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="3112" max-vertical-offset="3735">
-          <caret line="241" column="19" selection-start-line="241" selection-start-column="19" selection-end-line="241" selection-end-column="19" />
+        <state vertical-scroll-proportion="0.36044362" vertical-offset="0" max-vertical-offset="3465">
+          <caret line="13" column="38" selection-start-line="13" selection-start-column="19" selection-end-line="13" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="825" max-vertical-offset="1245">
+          <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="540" max-vertical-offset="1215">
-          <caret line="49" column="11" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1140">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="5182" max-vertical-offset="5910">
-          <caret line="362" column="0" selection-start-line="362" selection-start-column="0" selection-end-line="362" selection-end-column="0" />
-          <folding>
-            <element signature="e#673#714#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="4515" max-vertical-offset="6765">
+          <caret line="301" column="42" selection-start-line="301" selection-start-column="42" selection-end-line="301" selection-end-column="42" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2115" max-vertical-offset="3315">
-          <caret line="80" column="8" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
-          <folding>
-            <element signature="e#47#63#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="2508" max-vertical-offset="4305">
+          <caret line="251" column="3" selection-start-line="251" selection-start-column="3" selection-end-line="251" selection-end-column="3" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5906902" vertical-offset="682" max-vertical-offset="1440">
-          <caret line="71" column="26" selection-start-line="71" selection-start-column="24" selection-end-line="71" selection-end-column="24" />
-          <folding>
-            <element signature="e#156#197#0" expanded="true" />
-            <element signature="e#1238#1242#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.6666667" vertical-offset="1077" max-vertical-offset="4500">
+          <caret line="104" column="52" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1779,7 +1991,7 @@
       </state>
       <state key="FacetStructureConfigurable.UI">
         <settings>
-          <last-edited>Scala (spread)|Scala</last-edited>
+          <last-edited>Detection</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1803,7 +2015,7 @@
       </state>
       <state key="JdkListConfigurable.UI">
         <settings>
-          <last-edited>1.6</last-edited>
+          <last-edited>1.8</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1815,7 +2027,7 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>Scala|spread</last-edited>
+          <last-edited>spread</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1839,7 +2051,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>xstream-1.4.5</last-edited>
+          <last-edited>scala-sdk</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1852,4 +2064,3 @@
     </states>
   </component>
 </project>
-
