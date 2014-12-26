@@ -22,11 +22,14 @@ object IncrementalTreapMap {
 
   trait TreeMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V, T <: TreeMap[K,V,T]] extends Entry[K,V] {
     def left: T
+    def middle: T
     def right: T
     def first: K
     def last: K
-    def isEmpty: Boolean
-    def isLeaf: Boolean
+    def size: Long
+
+    def isEmpty: Boolean = size == 0
+    def isLeaf: Boolean  = size == 1
   }
 
   trait TreapMap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreeMap[K,V,TreapMap[K,V]] with F0[TreapMap[K,V]] {
@@ -45,7 +48,7 @@ object IncrementalTreapMap {
 
   type TreapSet[K] = TreapMap[K,K]
 
-  trait PrioFactory[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] {
+  trait PrioFactory[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends Ordering[K] {
     def prio(k: K): Int
     def compare(k1: K, k2: K): Int
 
@@ -105,20 +108,20 @@ object IncrementalTreapMap {
     def value = sys.error("empty treap has no value")
     def prio = 0
     def left = this
+    def middle = this
     def right = this
     def first = sys.error("empty treap has no first")
     def last = sys.error("empty treap has no last")
-    def isEmpty = true
-    def isLeaf = false
+    def size = 0
     override def toString = "'"
   }
 
   def empty[K,V] = NTreap.asInstanceOf[T[K,V]]
 
   trait LeafTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
-    def isEmpty = false
-    def isLeaf = true
+    def size = 1
     def left = empty
+    def middle = this
     def right = empty
     def first = key
     def last = key
@@ -135,11 +138,11 @@ object IncrementalTreapMap {
   case class LSetTreap[@specialized(Int,Long,Double) K](key: K,prio: Int) extends LeafTreap[K,K] with SetTreap[K]
 
   trait BinaryTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
-    def isEmpty = false
-    def isLeaf = false
+    val size = left.size + right.size + 1
     def first = left.first
     def last = right.last
-    override def toString = left + ":" + entryString + ":" + right
+    def middle = LTreap(key,value,prio)
+    override def toString = left + " " + entryString + " " + right
     override val hashCode = jh(left.hashCode ^ jh(value.hashCode - prio.hashCode) ^ jh(right.hashCode))
   }
 
@@ -147,12 +150,12 @@ object IncrementalTreapMap {
   case class BSetTreap[@specialized(Int,Long,Double) K](left: T[K,K],key: K,prio: Int,right: T[K,K]) extends BinaryTreap[K,K] with SetTreap[K]
 
   trait BinLeftTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
+    val size = left.size + 1
     def right = empty
-    def isEmpty = false
-    def isLeaf = false
     def first = left.first
     def last = key
-    override def toString = left + ":" + entryString
+    def middle = LTreap(key,value,prio)
+    override def toString = left + " " + entryString
     override val hashCode = jh(left.hashCode ^ jh(value.hashCode - prio.hashCode))
   }
 
@@ -160,19 +163,23 @@ object IncrementalTreapMap {
   case class BSetLeftTreap[@specialized(Int,Long,Double) K](left: T[K,K],key: K,prio: Int) extends BinLeftTreap[K,K] with SetTreap[K]
 
   trait BinRightTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends TreapImpl[K,V] {
+    val size = right.size + 1
     def left = empty
-    def isEmpty = false
-    def isLeaf = false
     def first = key
     def last = right.last
-    override def toString = entryString + ":" + right
+    def middle = LTreap(key,value,prio)
+    override def toString = entryString + " " + right
     override val hashCode = jh(value.hashCode ^ jh(right.hashCode - prio.hashCode))
   }
 
   case class BRightTreap[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V](key: K, value: V,prio: Int,right: T[K,V]) extends BinRightTreap[K,V]
   case class BSetRightTreap[@specialized(Int,Long,Double) K](key: K, prio: Int,right: T[K,K]) extends BinRightTreap[K,K] with SetTreap[K]
 
-  trait SetPrioFactoryImpl[@specialized(Int,Long,Double) K] extends PrioFactory[K,K] {
+  trait SetPrioFactory[@specialized(Int,Long,Double) K] extends PrioFactory[K,K] {
+    def create(k: K): T[K,K]
+  }
+
+  trait SetPrioFactoryImpl[@specialized(Int,Long,Double) K] extends SetPrioFactory[K] {
     def create(e: Entry[K,K]): T[K,K] =  LSetTreap(e.key,prio(e.key))
     def create(k: T[K,K]): T[K,K] = LSetTreap(k.key,k.prio)
     def create(l: T[K,K],kk: T[K,K],r: T[K,K]): T[K,K] = {
@@ -187,8 +194,11 @@ object IncrementalTreapMap {
     }
     def create(k: K): T[K,K] = LSetTreap(k,prio(k))
   }
+  trait MapPrioFactory[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends PrioFactory[K,V]{
+    def create(k: K, v: V): T[K,V]
+  }
 
-  trait MapPrioFactoryImpl[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends PrioFactory[K,V] {
+  trait MapPrioFactoryImpl[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends MapPrioFactory[K,V] {
     def create(e: Entry[K,V]): T[K,V] = LTreap(e.key,e.value,prio(e.key))
     def create(k: T[K,V]): T[K,V] = LTreap(k.key,k.value,k.prio)
     def create(l: T[K,V], kk: T[K,V],r: T[K,V]): T[K,V] = {
@@ -210,7 +220,7 @@ object IncrementalTreapMap {
     def compare(k1: Int, k2: Int) = k1.compare(k2)
   }
 
-  case class ISetPrioFactory[@specialized(Int,Long,Double) V]() extends SetPrioFactoryImpl[Int] {
+  case object ISetPrioFactory extends SetPrioFactoryImpl[Int] {
     def prio(k: Int): Int = jenkinsHash(k)
     def compare(k1: Int, k2: Int) = k1.compare(k2)
   }
@@ -226,32 +236,60 @@ object IncrementalTreapMap {
 
 
   trait SetOperation[K,V] {
-    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]): T[K,V]
-    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]): T[K,V]
+    implicit def pf: PrioFactory[K,V]
+
+    def combineEqual(t1: T[K,V], t2: T[K,V]): T[K,V]
+    def combineDisjoint(t1: T[K,V], t2: T[K,V]): T[K,V]
   }
 
-  case class Intersect[K,V]() extends SetOperation[K,V] {
-    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1
-    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = empty
+  case class Intersect[K,V](implicit pf: PrioFactory[K,V]) extends SetOperation[K,V] {
+
+    def combineEqual(t1: T[K,V], t2: T[K,V]) = t1
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])= empty
 
     override def toString = "intersect"
   }
 
-  case class Union[K,V]() extends SetOperation[K,V] {
-    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1
-    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1 join t2
+  case class Union[K,V](implicit pf: PrioFactory[K,V]) extends SetOperation[K,V] {
+
+    def combineEqual(t1: T[K,V], t2: T[K,V]) = t1
+    def combineDisjoint(t1: T[K,V], t2: T[K,V])= t1 join t2
 
     override def toString = "union"
   }
 
-  case class Difference[K,V]() extends SetOperation[K,V] {
-    def combineEqual(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = empty
-    def combineDisjoint(t1: T[K,V], t2: T[K,V])(implicit p: PrioFactory[K,V]) = t1 join t2
+  case class Difference[K,V](implicit pf: PrioFactory[K,V]) extends SetOperation[K,V] {
+
+    def combineEqual(t1: T[K,V], t2: T[K,V]) = empty
+    def combineDisjoint(t1: T[K,V], t2: T[K,V]) = t1 join t2
 
     override def toString = "diff"
   }
 
-  case class ICombinator[K,V](op: SetOperation[K,V])(implicit pr: PrioFactory[K,V]) extends FA2[T[K,V],T[K,V],T[K,V]] with Infix {
+  case class ICombinator[K,V](op: SetOperation[K,V])  {
+    implicit def pr = op.pf
+
+    def apply(t1: T[K,V], t2: T[K,V]): T[K,V] = {
+      if (t1 == t2) op.combineEqual(t1,t2) // fast reference equality
+      else if ((t1.isLeaf && t2.isLeaf) && (pr.compare(t1.key,t2.key) == 0)) op.combineEqual(t1,t2) // leaf equality
+      else if (t1.isEmpty || t2.isEmpty) op.combineDisjoint(t1,t2)
+      else if (pr.compare(t1.last,t2.first) < 0) op.combineDisjoint(t1,t2)
+      else if (pr.compare(t1.first,t2.last) > 0) op.combineDisjoint(t2,t1)
+      else {
+        val e = t2.entry
+        val (l,m,r) = t1.split(e.key)
+
+        val left = apply(l,t2.left)
+        val middle = apply(m,t2.middle)
+        val right = apply(r,t2.right)
+
+        left join middle join right
+      }
+    }
+    override def toString = op.toString
+  }
+
+  /*case class ICombinator[K,V](op: SetOperation[K,V])(implicit pr: PrioFactory[K,V]) extends FA2[T[K,V],T[K,V],T[K,V]] with Infix {
     val ijoin: FA2[T[K,V],T[K,V],T[K,V]] = join()
 
     def apply(tt1: F0[T[K,V]], tt2: F0[T[K,V]]): Expr[T[K,V]] = {
@@ -268,14 +306,14 @@ object IncrementalTreapMap {
         val (l,m,r) = t1.split(e.key)
 
         val left = %(this,l,t2.left)
-        val middle = %(this,m,pr.create(e))
+        val middle = %(this,m,t2.middle)
         val right = %(this,r,t2.right)
 
         %(ijoin,%(ijoin,left,middle),right)
       }
     }
     override def toString = op.toString
-  }
+  }  */
 
   case class join[K,V]()(implicit pr: PrioFactory[K,V]) extends FA2[T[K,V],T[K,V],T[K,V]] with Infix {
     def apply(tt1: F0[T[K,V]],tt2: F0[T[K,V]]): Expr[T[K,V]] = ~tt1 join ~tt2

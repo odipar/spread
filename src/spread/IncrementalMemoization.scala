@@ -32,7 +32,9 @@ object IncrementalMemoization {
   trait Context {
     def mput(e: Trace[_]): Context
     def mget[X](e: Expr[X]): Option[Trace[X]]
+
     def mref(parent: Expr[_], child: Expr[_]): Context
+    def dependencies(a: Any): Set[Expr[_]] = Set()
   }
 
   trait Expr[V] {
