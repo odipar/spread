@@ -57,7 +57,7 @@ Method "compare tuple_with_" is
   ];
 
   compare |s1| with |s2|
-  ] : ordering;
+] : ordering;
 
 /* compare two tuples *with* semantic restrictions */
 Method "compare_with_" is
@@ -89,7 +89,7 @@ Method "_is comparable with_" is [
   t1: ttype, t2: ttype
 |
   $body : boolean;
-  
+    
   t1l ::= t1's leading types ++ <t1's default type>;
   t2l ::= t2's leading types ++ <t2's default type>;
   
@@ -142,19 +142,21 @@ Method "_'s⁇entries are comparable" is [ lt: <tuple…|0..∞>'s type |
   
   leading ::= lt's leading types;
   default ::= lt's default type;
-      
+
   From 1 to |leading| do [ index : natural number |
     cmp ::= leading[index] is comparable with default;
     If cmp = false then [Exit body with false];
   ];
 
-  true
+  default is comparable with default
 ] : boolean;
 
 /* sort tuples, by comparing tuples */
 Method "sort_" is [ list: <tuple…|0..∞> |
   merge sort list with [ t1: tuple, t2: tuple | compare tuple t1 with t2 ≤ 0 ]
-];
+] : <tuple…|0..∞>;
+
+tty ::= <integer…|1>; 
 
 Semantic restriction "sort_" is [ lt: <tuple…|0..∞>'s type |
   Unless lt's entries are comparable then
@@ -164,14 +166,28 @@ Semantic restriction "sort_" is [ lt: <tuple…|0..∞>'s type |
     with lt
   ];
 
-  ⊤ 
+  leading ::= lt's leading types;  
+  uniontype : any's type := lt's default type;
+      
+  From 1 to |leading| do [ index : natural number |
+    uniontype := leading[index] ∪ uniontype;
+  ]; 
+     
+  <uniontype…|0..∞>
 ];
 
+
 Public method "test ordering" is 
-[                               
-  t1 ::= <3,<2,3>,"b",<1,2>>;
-  t2 ::= <2,<1>>;
-  t3 ::= <3,<2,2,1>,"a">;
+[  
+  t1 ::= <1>;
+  t2 ::= <4>;
+  t3 ::= <5>;
     
-  sort <t1,t2,t3>
+  t5 ::= <t1,t2,t3>;
+  t6 ::= sort t5;
+  t7 ::= t6 ++ <<2,"A">>; 
+  
+  t8 ::= sort t7;
+  
+  t8
 ];
