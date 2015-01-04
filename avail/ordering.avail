@@ -8,7 +8,7 @@
 
 Module "ordering"
 Uses
-	"Avail"
+  "Avail"
 Names
   "compare_with_",
   "_>_",
@@ -18,7 +18,7 @@ Names
   "sort_",
   "test ordering"
 Entries
- "test ordering"
+  "test ordering"
 Body
 
 /* aliases */
@@ -35,29 +35,29 @@ Method "compare_with_" is [ n1: number, n2: number |
 
 /* compare two characters */
 Method "compare_with_" is [ c1: character, c2: character | 
-		cp1 ::= c1's code point;
-		cp2 ::= c2's code point;                              
-		if cp1 > cp2 then [1] else if [cp1 < cp2] then [-1] else [0]	
+  cp1 ::= c1's code point;
+  cp2 ::= c2's code point;
+  if cp1 > cp2 then [1] else if [cp1 < cp2] then [-1] else [0]
 ] : ordering;
 
 /* compare two tuples *without* semantic restrictions */
 Method "compare tuple_with_" is
 [
-	s1 : tuple,
-	s2 : tuple
+  s1 : tuple,
+  s2 : tuple
 |
-	$body : ordering;
-	
-	From 1 to |s1| min |s2| do [ index : natural number |
-		cp1 ::= s1[index];
-		cp2 ::= s2[index];
-		cmp ::= compare cp1 with cp2;
+  $body : ordering;
 
-		If cmp ≠ 0 then [Exit body with cmp];
-	];
-	
-	compare |s1| with |s2|
-] : ordering;
+  From 1 to |s1| min |s2| do [ index : natural number |
+    cp1 ::= s1[index];
+    cp2 ::= s2[index];
+    cmp ::= compare cp1 with cp2;
+
+    If cmp ≠ 0 then [Exit body with cmp];
+  ];
+
+  compare |s1| with |s2|
+  ] : ordering;
 
 /* compare two tuples *with* semantic restrictions */
 Method "compare_with_" is
@@ -93,10 +93,10 @@ Method "_is comparable with_" is [
   t1l ::= t1's leading types ++ <t1's default type>;
   t2l ::= t2's leading types ++ <t2's default type>;
   
-	From 1 to |t1l| min |t2l| do [ index : natural number |
-		If (t1l[index] is comparable with t2l[index]) = false 
-		then [Exit body with false];
-	];
+  From 1 to |t1l| min |t2l| do [ index : natural number |
+    If (t1l[index] is comparable with t2l[index]) = false
+    then [Exit body with false];
+  ];
 
   true
 ] : boolean;
@@ -143,17 +143,17 @@ Method "_'s⁇entries are comparable" is [ lt: <tuple…|0..∞>'s type |
   leading ::= lt's leading types;
   default ::= lt's default type;
       
-	From 1 to |leading| do [ index : natural number |
-	  cmp ::= leading[index] is comparable with default;
-		If cmp = false then [Exit body with false];
-	];
+  From 1 to |leading| do [ index : natural number |
+    cmp ::= leading[index] is comparable with default;
+    If cmp = false then [Exit body with false];
+  ];
 
   true
 ] : boolean;
 
 /* sort tuples, by comparing tuples */
 Method "sort_" is [ list: <tuple…|0..∞> |
- merge sort list with [ t1: tuple, t2: tuple | compare tuple t1 with t2 ≤ 0 ]
+  merge sort list with [ t1: tuple, t2: tuple | compare tuple t1 with t2 ≤ 0 ]
 ];
 
 Semantic restriction "sort_" is [ lt: <tuple…|0..∞>'s type |
