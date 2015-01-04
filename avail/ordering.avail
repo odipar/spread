@@ -62,10 +62,10 @@ Method "compare tuple_with_" is
 /* compare two tuples *with* semantic restrictions */
 Method "compare_with_" is
 [
-	t1 : tuple,
-	t2 : tuple
+  t1 : tuple,
+  t2 : tuple
 |
-	compare tuple t1 with t2
+  compare tuple t1 with t2
 ] : ordering;
 
 /* any types are *not* comparable */
