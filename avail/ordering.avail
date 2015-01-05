@@ -1,6 +1,6 @@
 /**********************************************************************
  * 
- * generic tuple ordering - v0.1
+ * generic tuple ordering - v0.2
  * 
  * author: robbert van dalen
  *
@@ -90,15 +90,18 @@ Method "_is comparable with_" is [
 |
   $body : boolean;
     
-  t1l ::= t1's leading types ++ <t1's default type>;
-  t2l ::= t2's leading types ++ <t2's default type>;
-  
-  From 1 to |t1l| min |t2l| do [ index : natural number |
-    If (t1l[index] is comparable with t2l[index]) = false
-    then [Exit body with false];
-  ];
-
-  true
+  if |t1| min |t2| > 0 then [ 
+    t1l ::= t1's leading types ++ <t1's default type>;
+    t2l ::= t2's leading types ++ <t2's default type>;
+    
+    From 1 to |t1l| min |t2l| do [ index : natural number |
+      If (t1l[index] is comparable with t2l[index]) = false
+      then [Exit body with false];
+    ];
+    
+    true
+  ]
+  else [ true ]
 ] : boolean;
 
 /* check whether two tuples are comparable. otherwise throw a parse rejection */
@@ -140,23 +143,24 @@ Semantic restriction "_≤_" is [ t1 : ttype, t2 : ttype | check t1 is comparabl
 Method "_'s⁇entries are comparable" is [ lt: <tuple…|0..∞>'s type |
   $body : boolean;
   
-  leading ::= lt's leading types;
-  default ::= lt's default type;
-
-  From 1 to |leading| do [ index : natural number |
-    cmp ::= leading[index] is comparable with default;
-    If cmp = false then [Exit body with false];
-  ];
-
-  default is comparable with default
+  if |lt| > 0 then [
+    leading ::= lt's leading types;
+    default ::= lt's default type;
+    
+    From 1 to |leading| do [ index : natural number |
+      cmp ::= leading[index] is comparable with default;
+      If cmp = false then [Exit body with false];
+    ];
+    
+    default is comparable with default
+  ]
+  else [ true ]
 ] : boolean;
 
 /* sort tuples, by comparing tuples */
 Method "sort_" is [ list: <tuple…|0..∞> |
   merge sort list with [ t1: tuple, t2: tuple | compare tuple t1 with t2 ≤ 0 ]
 ] : <tuple…|0..∞>;
-
-tty ::= <integer…|1>; 
 
 Semantic restriction "sort_" is [ lt: <tuple…|0..∞>'s type |
   Unless lt's entries are comparable then
@@ -175,11 +179,10 @@ Semantic restriction "sort_" is [ lt: <tuple…|0..∞>'s type |
      
   <uniontype…|0..∞>
 ];
-
-
-Public method "test ordering" is 
+  
+Public method "test ordering" is
 [  
-  t1 ::= <1>;
+  t1 ::= <10,"B">;
   t2 ::= <4>;
   t3 ::= <5>;
     
