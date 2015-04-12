@@ -42,7 +42,7 @@ object IncrementalVector{
 
   def treevector[X](a: Array[IVector[X]], s: Array[Int]) = TreeVector(a,s)
 
-  /* nicked from Avail's TreeTuple: by Mark van Gullik */
+  /* nicked from Avail's TreeTuple: by Mark van Gulik */
   case class TreeVector[X](childs: Array[IVector[X]], sizes: Array[Int]) extends IVector[X] {
     val size = sizes(sizes.length-1)
 
