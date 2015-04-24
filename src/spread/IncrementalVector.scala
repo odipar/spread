@@ -1,24 +1,28 @@
 package spread
 
+import spread.IncrementalArithmetic._
 
 object IncrementalVector{
 
   import scala.reflect.ClassTag
+  import IncrementalMemoization._
 
   var ic: Long = 0
+  var iic: Long = 0
+  var iiic: Long = 0
 
   trait IVector[@specialized(Int,Long,Double) X] {
     {
       ic = ic + 1
     }
     def size: Int
-    def append(o: IVector[X]): IVector[X]
-    def slice(start: Int, end: Int): IVector[X]
     def level: Int
+    def append(o: IVector[X]): IVector[X]
+    def split: Array[IVector[X]]
+    def slice(start: Int, end: Int): IVector[X]
     def map[@specialized(Int,Long,Double) Y: ClassTag](f: X => Y): IVector[Y]
     def fold[@specialized(Int,Long,Double) Y: ClassTag](s: Y, f: (Y,X) => Y): Y
   }
-
 
   final def minWidthOfNonRoot = 16
   final def maxWidth = 64
@@ -32,7 +36,6 @@ object IncrementalVector{
     var s = a.length
     while (i < s) {
       val aa = a(i)
-      if (aa.size == 2) { sys.error("no")}
       ts = ts + aa.size
       sz(i) = ts
       i = i + 1
@@ -44,12 +47,14 @@ object IncrementalVector{
 
   /* nicked from Avail's TreeTuple: by Mark van Gulik */
   case class TreeVector[X](childs: Array[IVector[X]], sizes: Array[Int]) extends IVector[X] {
+    { iic = iic + 1 }
     val size = sizes(sizes.length-1)
 
     val level = childs(0).level + 1
     def childAt(i: Int): IVector[X] = childs(i-1)
     def append(o: IVector[X]): IVector[X] = appendAtLeastOneTree(this,o)
     def slice(start: Int, end: Int) = sliceTree(this,start,end)
+    def split = childs
     def map[@specialized(Int,Long,Double) Y: ClassTag](f: X => Y): IVector[Y] = {
       val nr = new Array[IVector[Y]](childs.length)
       var i = 0
@@ -139,6 +144,7 @@ object IncrementalVector{
   }
 
   def appendAtLeastOneTree[@specialized(Int,Long,Double) X](vv1: IVector[X], vv2: IVector[X]): TreeVector[X] = {
+
     val size1 = vv1.size
     val size2 = vv2.size
     val level1 = vv1.level
@@ -204,9 +210,24 @@ object IncrementalVector{
 
         var accumulator = leftPart
         var childIndex = lowChildIndex + 1
-        while (childIndex < highChildIndex) {
-          accumulator = accumulator.append(v1.childAt(childIndex))
-          childIndex = childIndex + 1
+
+        if (lowChildIndex + 5 < highChildIndex)
+        {
+          val nc: Array[IVector[X]] = new Array(highChildIndex-lowChildIndex-1)
+          var dst = 0
+          while (childIndex < highChildIndex) {
+            nc(dst) = v1.childAt(childIndex)
+            dst = dst + 1
+            childIndex = childIndex + 1
+          }
+          accumulator = accumulator.append(treevector(nc))
+        }
+        else
+        {
+          while (childIndex < highChildIndex) {
+            accumulator = accumulator.append(v1.childAt(childIndex))
+            childIndex = childIndex + 1
+          }
         }
         accumulator.append(rightPart)
       }
@@ -215,6 +236,8 @@ object IncrementalVector{
   var pp: Long = 0
 
   def createPair[X](v1: TreeVector[X], v2: TreeVector[X]) = {
+    { pp = pp + 1 }
+
     val c: Array[IVector[X]] = Array(v1,v2)
     treevector(c)
   }
@@ -224,6 +247,7 @@ object IncrementalVector{
     def first = a(0)
     def last = a(size.toInt - 1)
     def level: Int = 0
+    def split = Array()
     def append(o: IVector[X]): IVector[X] = {
       val ts = size + o.size
       if (ts <= 64) {
@@ -274,6 +298,7 @@ object IncrementalVector{
       ArrayVector(Array[X](x)).append(o)
     }
 
+    def split = Array()
     def slice(start: Int, end: Int): IVector[X] = {
       val s = start max 1
       val e = end min 1
@@ -299,7 +324,11 @@ object IncrementalVector{
   }
 
   object Add4 extends ((Int,Int) => Int) {
-    final def apply(a1: Int, a2: Int) = a1 + a2
+    final def apply(a1: Int, a2: Int) = {
+      iiic = iiic + 1
+
+      a1 + a2
+    }
   }
 
   object Concatenate extends ((IVector[Double],Double) => IVector[Double]) {
@@ -314,45 +343,107 @@ object IncrementalVector{
     }
   }
 
-  final def main(args: Array[String]): Unit ={
+  object fib extends FA1[Int,Int] {
+    def apply(i: F0I) = {
+      if (~i < 2) i
+      else %(fib,i - 1) + %(fib,i - 2)
+    }
+    override def toString = "fib"
+  }
+
+  object sum extends FA1[IVector[Int],Int] {
+    def apply(v: F0[IVector[Int]]): I = {
+        val vv = ~v
+        if (vv.level == 0) vv.fold(0,Add4)
+        else {
+          val spl: Array[IVector[Int]] = vv.split
+          var i = 1
+          var s = spl.size
+          var r = %(sum,ei(spl(0)))
+
+          while (i < s) {
+            r = r + %(sum,ei(spl(i)))
+            i = i + 1
+          }
+
+          r
+        }
+    }
+  }
+
+  final def main(args: Array[String]): Unit = {
+    var k = new Array[Int](500)
     var i = 0
-    var ii = 1
-    var k: IVector[Int] = LeafVector(ii)
-    var kk: IVector[Int] = LeafVector(ii)
 
-    ii = ii + 1
+    while (i < k.length) {
+      k(i) = i
+      i = i + 1
+    }
+    println(part(k))
+  }
 
-    var l = 0
+  abstract class Foreach[@specialized(Int,Long,Double) X, @specialized(Int,Long,Double) Y] extends (Array[X] => Y) {
+    def apply(a: Array[X]): Y
+  }
 
-    var k2: Array[Int] = new Array(128)
+  /*case class FMap[X,Y: ClassTag](f: X => Y) extends Foreach[X,Array[Y]] {
+    def apply(a: Array[X]): Array[Y] = {
 
-    while (l < 1)  {
-      i = 0
-      while (i < 128) {
-        k2(i) = ii
-        ii = ii + 1
-        i = i + 1
+    }
+  } */
+
+  object mp extends (Unit => Int) {
+    def apply(a: Unit) = a.hashCode
+  }
+
+  // Canonical B-Tree
+  trait CBTree
+
+  val multiplier = 1664525
+
+  val wsize = 16
+
+  val mm = {
+    var i = 0
+    var m = multiplier
+    while (i < wsize) {
+      m = m * multiplier
+      i = i + 1
+    }
+    m
+  }
+
+  def part[X: ClassTag](a: Array[X]) = {
+    import Hashing.jh
+
+    var r: List[ArrayVector[X]] = List()
+    var i = 0
+    var s = a.length
+    var h: Int = 0
+    var w = wsize
+    var ii = 0
+
+    while (i < s) {
+      h = (h + jh(jh(a(i)))) * multiplier
+      if (i >= wsize) {
+        h = h - (jh(jh(a(i-w))) * mm)
       }
-      k = k.append(ArrayVector(k2))
-      l = l + 1
+
+      if (((h >> 5) & 7) == 3) {
+        println("i: " + i)
+        println("ii: " + ii)
+
+        val na: Array[X] = new Array[X](i-ii)
+        r = r :+ new ArrayVector(na)
+        ii = i
+      }
+
+      i = i + 1
     }
 
-    l = 0
+    val na: Array[X] = new Array[X](i-ii)
+    r = r :+ new ArrayVector(na)
 
-    while (l < 1000000) {
-      i = 0
-      while (i < 128) {
-        k2(i) = ii
-        ii = ii + 1
-        i = i + 1
-      }
-      kk = kk.append(ArrayVector(k2))
-      l = l + 1
-    }
-
-    println("ic: " + ic)
-    println(k.append(kk).size)
-    println("ic: " + ic)
-
+    r
   }
 }

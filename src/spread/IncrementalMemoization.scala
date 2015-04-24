@@ -319,21 +319,23 @@ object IncrementalMemoization {
         case Some(x) => {
           val wr: Trace[_] = x.get
           if (wr == null) None
-          else Some(wr.asInstanceOf[Trace[X]])
+          else {
+            Some(wr.asInstanceOf[Trace[X]])
+          }
         }
       }
     }
 
 
-    /*override def toString = {
+    override def toString = {
       var s = "size: " + h.size  +"\n"
-      /*for (i <- h.keys) {
+      for (i <- h.keys) {
         s = s + i  + " => " + h.get(i).get.get + "\n"
       }
       s + "final size: " + h.size + "\n"
-        */
+
       s
-    } */
+    }
   }
 
   def backref[X](c: Context, e: Expr[X]): Context = {

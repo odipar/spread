@@ -19,28 +19,65 @@ object IncrementalTreapRelation {
     def orderingB: Ordering[B]
 
     def compare(k1: Tuple[A,B], k2: Tuple[A,B]): Int = {
-      compare(k1.asInstanceOf[SomeTuple[A,B]],k2.asInstanceOf[SomeTuple[A,B]])
+      compare(k1.asInstanceOf[FullTuple[A,B]],k2.asInstanceOf[FullTuple[A,B]])
     }
-    def compare(k1: SomeTuple[A,B], k2: SomeTuple[A,B]): Int = {
+    def compare(k1: FullTuple[A,B], k2: FullTuple[A,B]): Int = {
       val c = orderingA.compare(k1.first,k2.first)
       if (c != 0) c
       else orderingB.compare(k1.second,k2.second)
     }
   }
 
-  trait Tuple[@specialized(Int,Long,Double) +A ,@specialized(Int,Long,Double) +B] {
-    def asSome[A,B]: SomeTuple[A,B] = this.asInstanceOf[SomeTuple[A,B]]
+  trait Tuple[@specialized(Int,Long,Double) +A, @specialized(Int,Long,Double) +B] {
+    def firstOption: Option[A]
+    def secondOption: Option[B]
+
+    def asFull[A,B]: FullTuple[A,B] = this.asInstanceOf[FullTuple[A,B]]
+
+    def entryString: String
+    override def toString = entryString
   }
-  trait NoneTuple extends Tuple[Nothing,Nothing]
-  trait SomeTuple[+A,+B] extends Tuple[A,B] {
+
+  trait OptionTuple[@specialized(Int,Long,Double) +A, @specialized(Int,Long,Double) +B] extends Tuple[A,B]
+
+  trait SomeTuple[@specialized(Int,Long,Double) +A, @specialized(Int,Long,Double) +B] extends Tuple[A,B]
+
+  trait NoneTuple extends OptionTuple[Nothing,Nothing] {
+    def firstOption = None
+    def secondOption = None
+    def entryString = ""
+  }
+
+  trait LeftTuple[@specialized(Int,Long,Double) +A] extends SomeTuple[A,Nothing] {
+    def first: A
+    def firstOption = Some(first)
+    def secondOption = None
+    def entryString = first.toString + ":null"
+  }
+
+  trait RightTuple[@specialized(Int,Long,Double) +B] extends SomeTuple[Nothing,B] {
+    def second: B
+    def firstOption = None
+    def secondOption = Some(second)
+    def entryString = "null:" + second.toString
+  }
+
+  trait FullTuple[@specialized(Int,Long,Double)+A,@specialized(Int,Long,Double)+B] extends SomeTuple[A,B]
+  {
     def first: A
     def second: B
+
+    def firstOption = Some(first)
+    def secondOption = Some(second)
 
     def entryString: String = first + ":" + second
     override def toString = entryString
   }
 
-  case class RTuple[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](first: A, second: B) extends SomeTuple[A,B]
+  case object NoneT extends NoneTuple
+  case class LeftT[@specialized(Int,Long,Double) A](first: A) extends LeftTuple[A]
+  case class RightT[@specialized(Int,Long,Double) B](second: B) extends RightTuple[B]
+  case class FullT[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](first: A, second: B) extends FullTuple[A,B]
 
   trait TreeRel[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B, T <: TreeRel[A,B,T]] extends Tuple[A,B] {
     def left: T
@@ -58,9 +95,10 @@ object IncrementalTreapRelation {
     def prio: Int
 
     def join(x: T[A,B])(implicit p: PO[A,B]): T[A,B]
-    def split(a: SomeTuple[A,B])(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B])
+    def split(a: FullTuple[A,B])(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B])
+    def splitA(a: A)(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B])
 
-    def put(e: SomeTuple[A,B])(implicit p: PO[A,B]): T[A,B]
+    def put(e: FullTuple[A,B])(implicit p: PO[A,B]): T[A,B]
     def getMin(a: A)(implicit p: PO[A,B]): Tuple[A,B]
     def getMax(a: A)(implicit p: PO[A,B]): Tuple[A,B]
 
@@ -72,7 +110,7 @@ object IncrementalTreapRelation {
   trait PrioFactory[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends RelOrdering[A,B] {
     def prio(a: A, b: B): Int
 
-    def create(e: SomeTuple[A,B]): T[A,B]
+    def create(e: FullTuple[A,B]): T[A,B]
     def create(k: T[A,B]): T[A,B]
     def create(l: T[A,B], k: T[A,B], r: T[A,B]): T[A,B]
 
@@ -88,7 +126,7 @@ object IncrementalTreapRelation {
       else if (prio > x.prio) p.create(left,this,right join x)
       else p.create(this join x.left,x,x.right)
     }
-    def split(t: SomeTuple[A,B])(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B]) = {
+    def split(t: FullTuple[A,B])(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B]) = {
       if (isEmpty) (this,this,this)
       else {
         def cc = p.compare(this,t)
@@ -99,15 +137,34 @@ object IncrementalTreapRelation {
         else { val (l,m,r) = right.split(t) ; (left join nt join l,m,r) }
       }
     }
+    def splitA(t: A)(implicit p: PO[A,B]): (T[A,B],T[A,B],T[A,B]) = {
+      if (isEmpty) (this,this,this)
+      else {
+        val a: A = asFull.first
+        val cc = p.orderingA.compare(a,t)
+        val nt = p.create(this)
 
+        if (cc == 0) {
+          val min = getMin(a).asFull
+          val max = getMax(a).asFull
+
+          val (l,m,r) = split(min)
+          val (ml,mm,mr) = r.split(max)
+          val smiddle = m join ml join mm
+          (l,smiddle,mr)
+        }
+        else if (cc > 0) { val (l,m,r) = left.splitA(t) ; (l,m,r join nt join right) }
+        else { val (l,m,r) = right.splitA(t) ; (left join nt join l,m,r) }
+      }
+    }
     def getMin(a: A)(implicit p: PO[A,B]): Tuple[A,B] = {
       if (isEmpty) empty
       else {
-        val c = p.orderingA.compare(a,asSome.first)
+        val c = p.orderingA.compare(a,asFull.first)
         if (c == 0) {
           left.getMin(a) match {
-            case n: NoneTuple => RTuple(asSome.first,asSome.second)
-            case k: SomeTuple[A,B] => k
+            case n: NoneTuple => FullT(asFull.first,asFull.second)
+            case k: FullTuple[A,B] => k
           }
         }
         else if (c > 0) right.getMin(a)
@@ -117,18 +174,18 @@ object IncrementalTreapRelation {
     def getMax(a: A)(implicit p: PO[A,B]): Tuple[A,B] = {
       if (isEmpty) empty
       else {
-        val c = p.orderingA.compare(a,asSome.first)
+        val c = p.orderingA.compare(a,asFull.first)
         if (c == 0) {
           right.getMax(a) match {
-            case n: NoneTuple => RTuple(asSome.first,asSome.second)
-            case k: SomeTuple[A,B] => k
+            case n: NoneTuple => FullT(asFull.first,asFull.second)
+            case k: FullTuple[A,B] => k
           }
         }
         else if (c > 0) right.getMax(a)
         else left.getMax(a)
       }
     }
-    def put(e: SomeTuple[A,B])(implicit p: PO[A,B]) = {
+    def put(e: FullTuple[A,B])(implicit p: PO[A,B]) = {
       val te = p.create(e)
       if (isEmpty) te
       else {
@@ -160,9 +217,9 @@ object IncrementalTreapRelation {
 
   def empty[A,B] = NTreap.asInstanceOf[T[A,B]]
 
-  trait SomeTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends TreapImpl[A,B] with SomeTuple[A,B]
+  trait FullTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends TreapImpl[A,B] with FullTuple[A,B]
 
-  trait LeafTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends SomeTreap[A,B] {
+  trait LeafTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends FullTreap[A,B] {
     def isEmpty = false
     def isLeaf = true
 
@@ -174,14 +231,14 @@ object IncrementalTreapRelation {
     override def toString = entryString
   }
 
-  trait SetTreap[A] extends TreapImpl[A,A] with SomeTreap[A,A] {
+  trait SetTreap[A] extends TreapImpl[A,A] with FullTreap[A,A] {
     def second = first
   }
 
   case class LTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](first: A, second: B,prio: Int) extends LeafTreap[A,B]
   case class LSetTreap[@specialized(Int,Long,Double) A](first: A,prio: Int) extends LeafTreap[A,A] with SetTreap[A]
 
-  trait BinaryTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends SomeTreap[A,B] {
+  trait BinaryTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends FullTreap[A,B] {
     def isEmpty = false
     def isLeaf = false
 
@@ -195,7 +252,7 @@ object IncrementalTreapRelation {
   case class BTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](left: T[A,B],first: A, second: B,prio: Int,right: T[A,B]) extends BinaryTreap[A,B]
   case class BSetTreap[@specialized(Int,Long,Double) A](left: T[A,A],first: A,prio: Int,right: T[A,A]) extends BinaryTreap[A,A] with SetTreap[A]
 
-  trait BinLeftTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends SomeTreap[A,B] {
+  trait BinLeftTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends FullTreap[A,B] {
     def isEmpty = false
     def isLeaf = false
     def right = empty
@@ -209,7 +266,7 @@ object IncrementalTreapRelation {
   case class BLeftTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](left: T[A,B],first: A, second: B,prio: Int) extends BinLeftTreap[A,B]
   case class BSetLeftTreap[@specialized(Int,Long,Double) A](left: T[A,A],first: A,prio: Int) extends BinLeftTreap[A,A] with SetTreap[A]
 
-  trait BinRightTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends SomeTreap[A,B] {
+  trait BinRightTreap[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends FullTreap[A,B] {
     def isEmpty = false
     def isLeaf = false
 
@@ -230,12 +287,12 @@ object IncrementalTreapRelation {
   }
 
   trait PrioFactoryImpl[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B] extends MapPrioFactory[A,B] {
-    def create(e: SomeTuple[A,B]): T[A,B] = LTreap(e.first,e.second,prio(e.first,e.second))
+    def create(e: FullTuple[A,B]): T[A,B] = LTreap(e.first,e.second,prio(e.first,e.second))
     def create(k: T[A,B]): T[A,B] = k match {
-      case s: SomeTreap[A,B] => LTreap(s.first,s.second,s.prio)
+      case s: FullTreap[A,B] => LTreap(s.first,s.second,s.prio)
     }
     def create(l: T[A,B], s: T[A,B],r: T[A,B]): T[A,B] = s match {
-      case kk: SomeTreap[A,B] => {
+      case kk: FullTreap[A,B] => {
         val k = kk.first
         val v = kk.second
         val p = kk.prio
@@ -256,6 +313,40 @@ object IncrementalTreapRelation {
     def orderingB = b
   }
 
+  case class FullTupleOrdering[A,B](implicit oo1: Ordering[A], oo2: Ordering[B]) extends Ordering[FullTuple[A,B]] {
+    def o1 = oo1
+    def o2 = oo2
+
+    def compare(t1: FullTuple[A,B], t2: FullTuple[A,B]): Int = {
+      val c = o1.compare(t1.first,t2.first)
+      if (c != 0) c
+      else o2.compare(t1.second,t2.second)
+    }
+  }
+
+  def compareOption[X](t1: Option[X], t2: Option[X])(implicit o: Ordering[X]): Int = (t1,t2) match {
+    case (None,None) => 0
+    case (None,_) => -1
+    case (_,None) => 1
+    case (Some(x),Some(y)) => o.compare(x,y)
+  }
+
+  case class SomeTupleOrdering[A,B](implicit oo1: Ordering[A], oo2: Ordering[B]) extends Ordering[SomeTuple[A,B]] {
+    def o1 = oo1
+    def o2 = oo2
+
+    def compare(t1: SomeTuple[A,B], t2: SomeTuple[A,B]): Int = {
+      val c = compareOption(t1.firstOption,t2.firstOption)
+      if (c != 0) c
+      else compareOption(t1.secondOption,t2.secondOption)
+    }
+  }
+
+  implicit def fullTupleOrdering[A,B](implicit o1: Ordering[A], o2: Ordering[B]): FullTupleOrdering[A,B] = FullTupleOrdering()
+  implicit def someTupleOrdering[A,B](implicit o1: Ordering[A], o2: Ordering[B]): SomeTupleOrdering[A,B] = SomeTupleOrdering()
+
+  //implicit def fromFullToSomeOrdering[A,B](implicit o: FullTupleOrdering[A,B]): SomeTupleOrdering[A,B] = SomeTupleOrdering()(o.o1,o.o2)
+  //implicit def fromSomeToFullOrdering[A,B](implicit o: SomeTupleOrdering[A,B]): FullTupleOrdering[A,B] = FullTupleOrdering()(o.o1,o.o2)
 
   implicit def prioFact[@specialized(Int,Long,Double) A, @specialized(Int,Long,Double) B](implicit a: Ordering[A], b: Ordering[B]): PrioFactory[A,B] = {
   // TODO: optimize with a memoization cache
@@ -293,7 +384,7 @@ object IncrementalTreapRelation {
       else if (pr.compare(t1.max,t2.min) < 0) op.combineDisjoint(t1,t2)
       else if (pr.compare(t1.min,t2.max) > 0) op.combineDisjoint(t2,t1)
       else {
-        val (l,m,r) = t1.split(t2.asSome)
+        val (l,m,r) = t1.split(t2.asFull)
 
         val left = apply(l,t2.left)
         val middle = apply(m,t2.middle)
@@ -334,5 +425,6 @@ object IncrementalTreapRelation {
   case class join[A,B]()(implicit pr: PrioFactory[A,B]) extends FA2[T[A,B],T[A,B],T[A,B]] with Infix {
     def apply(tt1: F0[T[A,B]],tt2: F0[T[A,B]]): Expr[T[A,B]] = ~tt1 join ~tt2
   } */
+
 
 }

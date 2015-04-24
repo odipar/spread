@@ -57,8 +57,8 @@ object Test {
       i2 = 0
       while (i2 < 10) {
 
-        e1 = e1.put(RTuple(i1+5,i2+5))
-        e2 = e2.put(RTuple(i1,i2))
+        e1 = e1.put(FullT(i1+5,i2+5))
+        e2 = e2.put(FullT(i1,i2))
         i2 = i2 + 1
       }
       i1 = i1 + 1
@@ -292,7 +292,16 @@ object Relation {
     import IncrementalTreapRelation.Tuple
     import IncrementalTreapRelation.NoneTuple
     import IncrementalTreapRelation.SomeTuple
+    import IncrementalTreapRelation.LeftTuple
+    import IncrementalTreapRelation.RightTuple
+    import IncrementalTreapRelation.OptionTuple
+    import IncrementalTreapRelation.FullTuple
     import IncrementalTreapRelation.RelOrdering
+    import IncrementalTreapRelation.NoneT
+    import IncrementalTreapRelation.FullT
+    import IncrementalTreapRelation.LeftT
+    import IncrementalTreapRelation.RightT
+
 
     type Rel[A,B] <: Relation[A,B]
     type RelOrd[A,B] <: RelOrdering[A,B]
@@ -300,12 +309,16 @@ object Relation {
     trait Relation[A,B] extends Split[A,B] {
       def self: Rel[A,B]
 
+      def isEmpty: Boolean
+      def isLeaf: Boolean
+
       def min: Tuple[A,B]
       def some: Tuple[A,B]
       def max: Tuple[A,B]
 
       def union(r: Rel[A,B])(implicit p: RelOrd[A,B]): Rel[A,B]
-      def split(a: SomeTuple[A,B])(implicit p: RelOrd[A,B]): Split[A,B]
+      def split(a: FullTuple[A,B])(implicit p: RelOrd[A,B]): Split[A,B]
+      def splitA(a: A)(implicit p: RelOrd[A,B]): Split[A,B]
 
       def getMin(a: A)(implicit p: RelOrd[A,B]): Tuple[A,B]
       def getMax(a: A)(implicit p: RelOrd[A,B]): Tuple[A,B]
@@ -314,22 +327,31 @@ object Relation {
 
     case class BinOps[A,B](o: Rel[A,B]) {
       def swap(implicit o1: RelOrd[B,A]): Rel[B,A] = swapImpl(o)
-      def extend[C](f: B => C)(implicit o1: RelOrd[A,Rel[B,C]], o2: RelOrd[B,C]): Rel[A,Rel[B,C]] = extendImpl(o,f)
+      def extend[E](f: A => E)(implicit o1: RelOrd[A,FullTuple[E,B]], o2: RelOrd[E,B]): Rel[A,FullTuple[E,B]] = extendImpl(o,f)
       def group[C](implicit p1: RelOrd[A,B], p2: RelOrd[A,Rel[A,B]]): Rel[A,Rel[A,B]] = groupImpl(o)
-      def map[C,D](f: SomeTuple[A,B] => Rel[C,D])(implicit o1: RelOrd[A,B], o2: RelOrd[C,D]): Rel[C,D] = mapImpl(o,f)
+      def map[C,D](f: FullTuple[A,B] => Rel[C,D])(implicit o1: RelOrd[A,B], o2: RelOrd[C,D]): Rel[C,D] = mapImpl(o,f)
       def count: Long = countImpl(o)
+      def join[C](ot: Rel[A,C])(implicit o0: RelOrd[A,B], o1: RelOrd[A,C], o2: RelOrd[B,C], o3: RelOrd[A,FullTuple[B,C]]): Rel[A,FullTuple[B,C]] = joinImpl(o,ot)
+      def joinOuter[C](ot: Rel[A,C])(implicit p0: RelOrd[A,B], p1: RelOrd[A,C], p3: RelOrd[A,SomeTuple[B,C]], p4: RelOrd[A,FullTuple[B,C]]): Rel[A,SomeTuple[B,C]] = joinOuterImpl(o,ot)
+
+      def compose[C](r2: Rel[B,C])(implicit o0: RelOrd[A,B], o1: RelOrd[B,A], o2: RelOrd[B,C], o3: RelOrd[A,C], o4: RelOrd[B,SomeTuple[A,C]], o5: RelOrd[C,SomeTuple[B,A]], o6: RelOrd[C,A], o7: RelOrd[B,FullTuple[A,C]]): Rel[A,C] = composeImpl(o,r2)
+
+        //def compose[C](r2: Rel[B,C]): Rel[A,C] = o.swap.joinOuter(r2).rol.drop.swap
 
       //def ==(o2: Rel[A,B])(implicit p1: RelOrd[A,B]) = compareRel(o,o2) == 0
       def >(o2: Rel[A,B])(implicit p1: RelOrd[A,B]) = compareRel(o,o2) > 0
       def <(o2: Rel[A,B])(implicit p1: RelOrd[A,B]) = compareRel(o,o2) < 0
     }
 
-    case class TerOps[A,B,C](o: Rel[A,Rel[B,C]]) {
+    case class TerOps[A,B,C](o: Rel[A,SomeTuple[B,C]]) {
       def drop(implicit o0: RelOrd[B,C],o1: RelOrd[A,C]): Rel[A,C] = dropImpl(o)
+      def rol(implicit o0: RelOrd[C,SomeTuple[A,B]]): Rel[C,SomeTuple[A,B]] = rolImpl(o)
+      def ror(implicit o0: RelOrd[B,SomeTuple[C,A]]): Rel[B,SomeTuple[C,A]] = rorImpl(o)
     }
 
+
     implicit def binOps[A,B](o: Rel[A,B]): BinOps[A,B] = BinOps(o)
-    implicit def terOps[A,B,C](o: Rel[A,Rel[B,C]]): TerOps[A,B,C] = TerOps(o)
+    implicit def terOps[A,B,C](o: Rel[A,SomeTuple[B,C]]): TerOps[A,B,C] = TerOps(o)
 
     trait Split[A,B] {
       def left: Rel[A,B]
@@ -346,11 +368,11 @@ object Relation {
     def intersect[A,B] (r1: Rel[A,B], r2: Rel[A,B]): Rel[A,B] = r1
       */
 
-    def groupImpl[A,B]      (r: Rel[A,B])(implicit p1: RelOrd[A,B], p2: RelOrd[A,Rel[A,B]]): Rel[A,Rel[A,B]] = r.some match {
+    def groupImpl[A,B](r: Rel[A,B])(implicit p1: RelOrd[A,B], p2: RelOrd[A,Rel[A,B]]): Rel[A,Rel[A,B]] = r.some match {
       case n: NoneTuple => emptyRel[A,Rel[A,B]]
-      case s: SomeTuple[A,B] => {
-        def min = r.getMin(s.first).asSome
-        def max = r.getMax(s.first).asSome
+      case s: FullTuple[A,B] => {
+        def min = r.getMin(s.first).asFull
+        def max = r.getMax(s.first).asFull
 
         val smin = r.split(min)
         val smax = smin.right.split(max)
@@ -364,77 +386,165 @@ object Relation {
       }
     }
 
-    def extendImpl[A,B,C] (r: Rel[A,B],f: B => C)(implicit o1: RelOrd[A,Rel[B,C]], o2: RelOrd[B,C]): Rel[A,Rel[B,C]] = {
-      object Extend extends (SomeTuple[A,B] => Rel[A,Rel[B,C]]) {
-        def apply(t: SomeTuple[A,B]) =  create(t.first,create(t.second,f(t.second)))
+    def extendImpl[A,B,E] (r: Rel[A,B],f: A => E)(implicit o1: RelOrd[A,FullTuple[E,B]]): Rel[A,FullTuple[E,B]] = {
+      object Extend extends (FullTuple[A,B] => Rel[A,FullTuple[E,B]]) {
+        def apply(t: FullTuple[A,B]) =  create(t.first,FullT(f(t.first),t.second))
       }
       mapImpl(r,Extend)
     }
 
-    def mapImpl[A,B,C,D] (r: Rel[A,B],f: SomeTuple[A,B] => Rel[C,D])(implicit o2: RelOrd[C,D]): Rel[C,D] = {
+    def mapImpl[A,B,C,D] (r: Rel[A,B],f: FullTuple[A,B] => Rel[C,D])(implicit o2: RelOrd[C,D]): Rel[C,D] = {
       object RMonoid extends RelMonoid[C,D]
-
       reduceImpl(r,f,RMonoid)
     }
 
-    /*def equal_join[A,B,C](r1: Rel[A,B], r2: Rel[A,C]): Rel[A,Rel[B,C]] = (r1.some,r2.some) match {
-      case (n1: NoneTuple, _) => emptyRel[A,Rel[B,C]]
-      case (_, n2: NoneTuple) => emptyRel[A,Rel[B,C]]
-      case (s1: SomeTuple[A,B], s2: SomeTuple[A,C]) => {
-        //val (l,m,r) = split(r2)
-        val md = {
-          val c = r1.ordering.orderingA.compare(s1.first,s2.first)
+    def joinImpl[A,B,C](r1: Rel[A,B], r2: Rel[A,C])(implicit p0: RelOrd[A,B], p1: RelOrd[A,C], p2: RelOrd[B,C], p3: RelOrd[A,FullTuple[B,C]]): Rel[A,FullTuple[B,C]] = {
+      if (r1.isEmpty || r2.isEmpty) emptyRel
+      else if (p0.orderingA.compare(r1.max.asFull.first,r2.min.asFull.first) < 0) emptyRel
+      else if (p0.orderingA.compare(r1.min.asFull.first,r2.max.asFull.first) > 0) emptyRel
+      else {
+        val a: A = r2.some.asFull.first
 
-          if (c == 0) {
-          }
-          else emptyRel[A,Rel[B,C]]
+        val s1 = r1.splitA(a)
+        val s2 = r2.splitA(a)
+
+        val left = joinImpl(s1.left,s2.left)
+        val middle = joinEqualImpl(a,s1.middle,s2.middle)
+        val right  = joinImpl(s1.right,s2.right)
+
+        left union middle union right
+      }
+    }
+    def leftOuter[A,B,C](r1: Rel[A,B])(implicit p0: RelOrd[A,B], p3: RelOrd[A,SomeTuple[B,C]]): Rel[A,SomeTuple[B,C]] = {
+      object Left extends (FullTuple[A,B] => Rel[A,SomeTuple[B,C]]) {
+        def apply(t: FullTuple[A,B]) = create(t.first,LeftT(t.second))
+      }
+
+      reduceImpl(r1,Left,RelMonoid[A,SomeTuple[B,C]]())
+    }
+
+    def rightOuter[A,B,C](r1: Rel[A,C])(implicit p0: RelOrd[A,B], p1: RelOrd[A,C], p3: RelOrd[A,SomeTuple[B,C]]): Rel[A,SomeTuple[B,C]] = {
+      object Right extends (FullTuple[A,C] => Rel[A,SomeTuple[B,C]]) {
+        def apply(t: FullTuple[A,C]) = create(t.first,RightT(t.second))
+      }
+
+      reduceImpl(r1,Right,RelMonoid[A,SomeTuple[B,C]]())
+    }
+
+    // TODO: UNIFY with joinImpl
+    def joinOuterImpl[A,B,C](r1: Rel[A,B], r2: Rel[A,C])(implicit p0: RelOrd[A,B], p1: RelOrd[A,C], p3: RelOrd[A,SomeTuple[B,C]], p4: RelOrd[A,FullTuple[B,C]]): Rel[A,SomeTuple[B,C]] = {
+      if (r1.isEmpty) {
+        if (r2.isEmpty) emptyRel
+        else rightOuter(r2)
+      }
+      else if (r2.isEmpty) leftOuter(r1)
+      else if (p0.orderingA.compare(r1.max.asFull.first,r2.min.asFull.first) < 0) leftOuter(r1) union rightOuter(r2)
+      else if (p0.orderingA.compare(r1.min.asFull.first,r2.max.asFull.first) > 0) leftOuter(r1) union rightOuter(r2)
+      else {
+        val a: A = r2.some.asFull.first
+
+        val s1 = r1.splitA(a)
+        val s2 = r2.splitA(a)
+
+        val left = joinOuterImpl(s1.left,s2.left)
+        val middle = {
+          if (!s1.middle.isEmpty && !s2.middle.isEmpty) joinEqualImpl(a,s1.middle,s2.middle).asInstanceOf[Rel[A,SomeTuple[B,C]]]
+          else joinOuterImpl(s1.middle,s2.middle)
+        }
+        val right  = joinOuterImpl(s1.right,s2.right)
+        left union middle union right
+      }
+    }
+
+    def joinEqualImpl[A,B,C](a: A, r1: Rel[A,B], r2: Rel[A,C])(implicit o0: RelOrd[A,FullTuple[B,C]]): Rel[A,FullTuple[B,C]] ={
+      if (r1.isEmpty || r2.isEmpty) emptyRel
+      else if (r1.isLeaf) {
+        if (r2.isLeaf) {
+          val lt = r1.some.asFull
+          val rt = r2.some.asFull
+
+          create(a,FullT(lt.second,rt.second))
+        }
+        else {
+          val left = joinEqualImpl(a,r1,r2.left)
+          val middle = joinEqualImpl(a,r1,r2.middle)
+          val right = joinEqualImpl(a,r1,r2.right)
+          left union middle union right
         }
       }
-    } */
-
+      else {
+        val left = joinEqualImpl(a,r1.left,r2)
+        val middle = joinEqualImpl(a,r1.middle,r2)
+        val right = joinEqualImpl(a,r1.right,r2)
+        left union middle union right
+      }
+    }
 
     def swapImpl[A,B](r: Rel[A,B])(implicit o1: RelOrd[B,A]): Rel[B,A] = reduceImpl(r,SwapTuple()(o1),RelMonoid()(o1))
 
-    def dropImpl[A,B,C](r: Rel[A,Rel[B,C]])(implicit o0: RelOrd[B,C],o1: RelOrd[A,C]): Rel[A,C] = {
+    def dropImpl[A,B,C](r: Rel[A,SomeTuple[B,C]])(implicit o0: RelOrd[B,C],o1: RelOrd[A,C]): Rel[A,C] = {
       object RMonoid extends RelMonoid[A,C]
 
-      object Drop extends (SomeTuple[A,Rel[B,C]] => Rel[A,C]) {
-        def apply(t: SomeTuple[A,Rel[B,C]]): Rel[A,C] = {
-          reduceImpl(t.second,{ x: SomeTuple[B,C] => create(t.first,x.second) },RMonoid)
+      object Drop extends (FullTuple[A,SomeTuple[B,C]] => Rel[A,C]) {
+        def apply(t: FullTuple[A,SomeTuple[B,C]]): Rel[A,C] = t.second match {
+          case l: LeftTuple[B] => emptyRel
+          case r: RightTuple[C] => create(t.first,r.second)
+          case f: FullTuple[B,C] => create(t.first,f.second)
         }
       }
 
       reduceImpl(r,Drop,RMonoid)
     }
 
+    def createTuple[A,B](a: A, b: Option[B]): SomeTuple[A,B] = b match {
+      case None => LeftT(a)
+      case Some(x) => FullT(a,x)
+    }
 
+    def createTuple[C,A](c: Option[C], a: A): SomeTuple[C,A] = c match {
+      case None => RightT(a)
+      case Some(x) => FullT(x,a)
+    }
 
-    /*def second[A,B,C]  (r: Rel[A,Rel[B,C]]): Rel[A,C]
-      */
+    def composeImpl[A,B,C](r1: Rel[A,B], r2: Rel[B,C])(implicit o0: RelOrd[A,B], o1: RelOrd[B,A], o2: RelOrd[B,C], o3: RelOrd[A,C], o4: RelOrd[B,SomeTuple[A,C]], o5: RelOrd[C,SomeTuple[B,A]], o6: RelOrd[C,A], o7: RelOrd[B,FullTuple[A,C]]): Rel[A,C] ={
+      r1.swap.joinOuter(r2).rol.drop.swap
+    }
 
-    /*
-          (c1.some, c2.some) match {
-        case (None,None) => 0
-        case (None,_) => -1
-        case (_,None) => 1
-        case (Some(s),_) => {
-          val f1 = c1.first.get
-          val f2 = c2.first.get
-          val c = compare(f1.second,f2.second)
-          if (c != 0)  c
-          else compareCompoundExpr(c1.split(f1)._3,c2.split(f2)._3)
+    def rolImpl[A,B,C](r: Rel[A,SomeTuple[B,C]])(implicit o0: RelOrd[C,SomeTuple[A,B]]): Rel[C,SomeTuple[A,B]] = {
+      object RMonoid extends RelMonoid[C,SomeTuple[A,B]]
+
+      object Rol extends (FullTuple[A,SomeTuple[B,C]] => Rel[C,SomeTuple[A,B]]) {
+        def apply(t: FullTuple[A,SomeTuple[B,C]]): Rel[C,SomeTuple[A,B]] = t.second.secondOption match {
+          case None => emptyRel
+          case Some(c) => create(c,createTuple(t.first,t.second.firstOption))
         }
       }
-     */
+
+      reduceImpl(r,Rol,RMonoid)
+    }
+
+    def rorImpl[A,B,C](r: Rel[A,SomeTuple[B,C]])(implicit o0: RelOrd[B,SomeTuple[C,A]]): Rel[B,SomeTuple[C,A]] = {
+      object RMonoid extends RelMonoid[B,SomeTuple[C,A]]
+
+      object Ror extends (FullTuple[A,SomeTuple[B,C]] => Rel[B,SomeTuple[C,A]]) {
+        def apply(t: FullTuple[A,SomeTuple[B,C]]): Rel[B,SomeTuple[C,A]] = t.second.firstOption match {
+          case None => emptyRel
+          case Some(b) => create(b,createTuple(t.second.secondOption,t.first))
+        }
+      }
+
+      reduceImpl(r,Ror,RMonoid)
+    }
+
 
     // TODO: optimize via common prefix determination
     def compareRel[A,B](r1: Rel[A,B], r2: Rel[A,B])(implicit p: RelOrd[A,B]): Int = (r1.some,r2.some) match {
       case (n1: NoneTuple, n2: NoneTuple) => 0
       case (n1: NoneTuple, _) => -1
       case (_, n2: NoneTuple) => 1
-      case (s: SomeTuple[A,B],_) => {
-        val m1 = r1.min.asSome
-        val m2 = r2.min.asSome
+      case (s: FullTuple[A,B],_) => {
+        val m1 = r1.min.asFull
+        val m2 = r2.min.asFull
 
         val c = p.compare(m1,m2)
         if (c != 0) c
@@ -448,9 +558,9 @@ object Relation {
 
     implicit def relOrd[A,B](implicit p2: RelOrd[A,B]): Ordering[Rel[A,B]] = RelOrdering2()
 
-    def reduceImpl[A,B,M](r: Rel[A,B], f: SomeTuple[A,B] => M, m: Monoid[M]): M = r.some match {
+    def reduceImpl[A,B,M](r: Rel[A,B], f: FullTuple[A,B] => M, m: Monoid[M]): M = r.some match {
       case n: NoneTuple => m.zero
-      case s: SomeTuple[A,B] => {
+      case s: FullTuple[A,B] => {
         val ls = reduceImpl(r.left,f,m)
         val ms = m.append(m.zero,f(s))
         val rs = reduceImpl(r.right,f,m)
@@ -459,14 +569,14 @@ object Relation {
     }
 
     def countImpl[A,B](r: Rel[A,B]): Long = {
-      object CountTuple extends (SomeTuple[Any,Any] => Long) { def apply(t: SomeTuple[Any,Any]) = 1 }
+      object CountTuple extends (FullTuple[Any,Any] => Long) { def apply(t: FullTuple[Any,Any]) = 1 }
       object AddLong extends Monoid[Long] { def zero: Long = 0 ; def append(a1: Long, a2: Long): Long = a1 + a2 }
 
       reduceImpl(r,CountTuple,AddLong)
     }
 
-    case class SwapTuple[A,B](implicit p: RelOrd[B,A]) extends (SomeTuple[A,B] => Rel[B,A]) {
-      def apply(t: SomeTuple[A,B]): Rel[B,A] = create(t.second,t.first)
+    case class SwapTuple[A,B](implicit p: RelOrd[B,A]) extends (FullTuple[A,B] => Rel[B,A]) {
+      def apply(t: FullTuple[A,B]): Rel[B,A] = create(t.second,t.first)
     }
 
     case class RelMonoid[A,B](implicit p: RelOrd[A,B]) extends Monoid[Rel[A,B]] {
@@ -494,6 +604,9 @@ object Relation {
 
       def treap: TreapRelation[A,B]
 
+      def isEmpty: Boolean = treap.isEmpty
+      def isLeaf: Boolean = treap.isLeaf
+
       def left = createRel(treap.left)
       def middle = createRel(treap.middle)
       def right = createRel(treap.right)
@@ -511,16 +624,23 @@ object Relation {
 
     case object TreapRel0 extends TreapRel[Nothing,Nothing] {
       def treap = empty
-      def split(a: SomeTuple[Nothing,Nothing])(implicit p: RelOrd[Nothing,Nothing]): Split[Nothing,Nothing] = SplitImpl[Nothing,Nothing](this,this,this)
+      def split(a: FullTuple[Nothing,Nothing])(implicit p: RelOrd[Nothing,Nothing]): Split[Nothing,Nothing] = SplitImpl[Nothing,Nothing](this,this,this)
+      def splitA(a: Nothing)(implicit p: RelOrd[Nothing,Nothing]): Split[Nothing,Nothing] = SplitImpl[Nothing,Nothing](this,this,this)
+
       def union(r: Rel[Nothing,Nothing])(implicit p: RelOrd[Nothing,Nothing]): Rel[Nothing,Nothing] = r
     }
 
     case class TreapRel1[A,B](treap: TreapRelation[A,B]) extends TreapRel[A,B] {
-      def split(a: SomeTuple[A,B])(implicit p: RelOrd[A,B]): Split[A,B] = {
+      def split(a: FullTuple[A,B])(implicit p: RelOrd[A,B]): Split[A,B] = {
         val (l,m,r) = treap.split(a)
         SplitImpl(createRel(l),createRel(m),createRel(r))
       }
-      def union(r: Rel[A,B])(implicit p: RelOrd[A,B]): Rel[A,B] = createRel(p.union(treap,r.treap))
+      def splitA(a: A)(implicit p: RelOrd[A,B]): Split[A,B] = {
+        val (l,m,r) = treap.splitA(a)
+        SplitImpl(createRel(l),createRel(m),createRel(r))
+      }
+
+        def union(r: Rel[A,B])(implicit p: RelOrd[A,B]): Rel[A,B] = createRel(p.union(treap,r.treap))
     }
 
     def createRel[A,B](t: TreapRelation[A,B]): TreapRel[A,B] = {
@@ -528,48 +648,38 @@ object Relation {
       else TreapRel1(t)
     }
 
-   // implicit def relOrd2[A,B,C](implicit a: Ordering[A], r: Ordering[Rel[B,C]]): PrioFactory[A,Rel[B,C]] = DefaultPrioFact()(a,r)
-    //implicit def relOrd3[A,B,C](implicit a: Ordering[Rel[A,B]], r: Ordering[C]): PrioFactory[Rel[A,B],C] = DefaultPrioFact()(a,r)
-
     type Rel[A,B] = TreapRel[A,B]
     type RelOrd[A,B] = PrioFactory[A,B]
 
     def emptyRel[A,B] = createRel(empty)
-    def create[A,B](a: A, b: B)(implicit p: RelOrd[A,B]): Rel[A,B] = createRel(empty.put(RTuple(a,b)))
+    def create[A,B](a: A, b: B)(implicit p: RelOrd[A,B]): Rel[A,B] = createRel(empty.put(FullT(a,b)))
   }
 
   object Test{
 
     import SimpleAlgebra._
+    import IncrementalTreapRelation._
 
     final def main(): Unit ={
-      val a = create(1,-1)
-      val b = create(1,2)
-      val c = create(2,3)
-      val d = create(2,4)
-      val e = create(0,1)
-      val f = create(3,1)
-      val g = create(-1,-1)
-      val h = create(-1,1)
+      val ado = create("a",0) union create("b",1) union create("c",2) union create("d",3) union create("e",4) union create("f",5)
 
-      val f0 = a union b union c union f union g union h
-      val f1 = c union d union e union f union g union h
-      val f2 = f0 union f1
+      val s_ado = ado.swap
+      val parent = create(4,1) union create(4,2) union create(5,1)
+      val s_parent = parent.swap
 
-      val aa = create(0,f0)
-      val bb = create(0,f1)
-      val cc = aa union bb
+      val last: Rel[Int,Float] = create(0,1.2f) union create(2,3.3f)
+      val currency = create(0,0) union create(1,2) union create(2,1) union create(3,0)
 
-      println("f0: " + f0)
-      println("f1: " + f1)
-      println("f2: " + f2)
-      //println("f2.swap: " + swap(f2))
-      println("f2.count: " + f2.count)
-      println("f2.group" + f2.group)
-      //println("f2.swap.group" + group(swap(f2)))
+      val currencyEnum = create(0,"USD") union create(1,"EUR") union create(2,"GBP")
 
-      println(f2.extend(x=>x+2).drop.extend(x=>x-2).drop == f2)
+      val s_currency = currency.compose(currencyEnum)
+
+      val adoJoin = s_ado.joinOuter(last).joinOuter(s_currency).joinOuter(s_parent)
+
+      println(adoJoin)
     }
   }
+
+
 
 }
