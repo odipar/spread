@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalVector.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalVector.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/scala_sdk.xml" afterPath="$PROJECT_DIR$/.idea/libraries/scala_sdk.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/scala_sdk_2_11_4.xml" afterPath="$PROJECT_DIR$/.idea/libraries/scala_sdk_2_11_4.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.iml" afterPath="$PROJECT_DIR$/spread.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spread.xml" afterPath="$PROJECT_DIR$/spread.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/projectFilesBackup/.idea/codeStyleSettings.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/projectFilesBackup1/spread.iml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
@@ -115,11 +110,9 @@
       <file leaf-file-name="IncrementalVector.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalVector.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6825397">
-              <caret line="431" column="29" selection-start-line="431" selection-start-column="29" selection-end-line="431" selection-end-column="29" />
-              <folding>
-                <element signature="e#84#113#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.81950206">
+              <caret line="433" column="0" selection-start-line="433" selection-start-column="0" selection-end-line="433" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -138,7 +131,7 @@
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="63" column="66" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
+              <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -159,9 +152,7 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-              <folding>
-                <element signature="e#44#75#0" expanded="true" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -169,7 +160,7 @@
       <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="59.444443">
+            <state vertical-scroll-proportion="0.0">
               <caret line="159" column="43" selection-start-line="159" selection-start-column="34" selection-end-line="159" selection-end-column="43" />
               <folding />
             </state>
@@ -320,16 +311,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -408,6 +389,16 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -427,22 +418,22 @@
   </component>
   <component name="PropertiesComponent">
     <property name="project.structure.last.edited" value="Artifacts" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="62" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="211" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="38" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="102" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="52" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="54" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="last_opened_file_path" value="$USER_HOME$/Avail/Avail" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="42" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="413" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="256" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="54" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="52" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="44" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="415" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="396" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="57" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="54" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
@@ -689,18 +680,6 @@
       <created>1351125871725</created>
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
-    </task>
-    <task id="LOCAL-00105" summary="refactoring">
-      <created>1385492796848</created>
-      <option name="number" value="00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1385492796848</updated>
-    </task>
-    <task id="LOCAL-00106" summary="some more refactoring">
-      <created>1385493208353</created>
-      <option name="number" value="00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1385493208353</updated>
     </task>
     <task id="LOCAL-00107" summary="and more refactoring">
       <created>1385494679623</created>
@@ -984,7 +963,19 @@
       <option name="project" value="LOCAL" />
       <updated>1428872088198</updated>
     </task>
-    <option name="localTasksCounter" value="154" />
+    <task id="LOCAL-00154" summary="temp check to get to github">
+      <created>1429916498206</created>
+      <option name="number" value="00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1429916498210</updated>
+    </task>
+    <task id="LOCAL-00155" summary="small test commit">
+      <created>1429944693144</created>
+      <option name="number" value="00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1429944693145</updated>
+    </task>
+    <option name="localTasksCounter" value="156" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -995,11 +986,10 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17529881" sideWeight="0.3546875" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.55625" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32270917" sideWeight="0.52265626" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32270917" sideWeight="0.48046875" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.44375" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32270917" sideWeight="0.47734374" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21953125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
@@ -1007,14 +997,15 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3930943" sideWeight="0.49375" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934928" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3930943" sideWeight="0.49375" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.44375" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296875" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32536522" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1034,8 +1025,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- refactoring and renaming" />
-    <MESSAGE value="- replacement + scala 2.11" />
     <MESSAGE value="- type-safe replace" />
     <MESSAGE value="- nested replace" />
     <MESSAGE value="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d" />
@@ -1059,7 +1048,9 @@
     <MESSAGE value="- empty tuple handling" />
     <MESSAGE value="- some seriously new performant stuff" />
     <MESSAGE value="Gullik -&gt; Gulik" />
-    <option name="LAST_COMMIT_MESSAGE" value="Gullik -&gt; Gulik" />
+    <MESSAGE value="temp check to get to github" />
+    <MESSAGE value="small test commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="small test commit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1418,9 +1409,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-          <folding>
-            <element signature="e#44#75#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1435,7 +1424,7 @@
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="63" column="66" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
+          <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
           <folding />
         </state>
       </provider>
@@ -1466,7 +1455,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="59.444443">
+        <state vertical-scroll-proportion="0.0">
           <caret line="159" column="43" selection-start-line="159" selection-start-column="34" selection-end-line="159" selection-end-column="43" />
           <folding />
         </state>
@@ -1474,11 +1463,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalVector.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6825397">
-          <caret line="431" column="29" selection-start-line="431" selection-start-column="29" selection-end-line="431" selection-end-column="29" />
-          <folding>
-            <element signature="e#84#113#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.81950206">
+          <caret line="433" column="0" selection-start-line="433" selection-start-column="0" selection-end-line="433" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
