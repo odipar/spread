@@ -431,7 +431,6 @@ object IncrementalVector{
 
       if (((h >> 5) & 7) == 3) {
         println("i: " + i)
-        println("ii: " + ii)
 
         val na: Array[X] = new Array[X](i-ii)
         r = r :+ new ArrayVector(na)
