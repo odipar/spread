@@ -228,7 +228,7 @@ object FingerprintTree {
 
 
   /*
-   * Appends a CompressedString[X] to the output List, merging a Block with another Block or Repetition where possible.
+   * Appends a CompressedChunk[X] to the output List, merging a Block with another Block or Repetition where possible.
    */
 
   def append[X](a: List[CompressedChunk[X]],i: CompressedChunk[X]): List[CompressedChunk[X]] ={
