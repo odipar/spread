@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/projectFilesBackup/.idea/codeStyleSettings.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/projectFilesBackup1/spread.iml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/IncrementalVector.scala" afterPath="$PROJECT_DIR$/src/spread/IncrementalVector.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -101,7 +100,7 @@
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="285" column="7" selection-start-line="285" selection-start-column="7" selection-end-line="285" selection-end-column="7" />
+              <caret line="11" column="7" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -110,9 +109,112 @@
       <file leaf-file-name="IncrementalVector.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalVector.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.81950206">
-              <caret line="433" column="0" selection-start-line="433" selection-start-column="0" selection-end-line="433" selection-end-column="0" />
+            <state vertical-scroll-proportion="22.275862">
+              <caret line="495" column="34" selection-start-line="495" selection-start-column="34" selection-end-line="495" selection-end-column="34" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ScalaRunTime.class" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/runtime/ScalaRunTime.class">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="planktree.graphml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/planktree.graphml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="String.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/lang/String.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="1953" column="0" selection-start-line="1953" selection-start-column="0" selection-end-line="1954" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#123952#0" expanded="false" />
+                <element signature="imports" expanded="false" />
+                <element signature="e#4677#4678#0" expanded="false" />
+                <element signature="e#4717#4718#0" expanded="false" />
+                <element signature="e#5690#5691#0" expanded="false" />
+                <element signature="e#5753#5754#0" expanded="false" />
+                <element signature="e#12762#12763#0" expanded="false" />
+                <element signature="e#12814#12815#0" expanded="false" />
+                <element signature="e#18445#18446#0" expanded="false" />
+                <element signature="e#18498#18499#0" expanded="false" />
+                <element signature="e#20391#20392#0" expanded="false" />
+                <element signature="e#20435#20436#0" expanded="false" />
+                <element signature="e#21625#21626#0" expanded="false" />
+                <element signature="e#21705#21706#0" expanded="false" />
+                <element signature="e#22450#22451#0" expanded="false" />
+                <element signature="e#22485#22486#0" expanded="false" />
+                <element signature="e#22736#22737#0" expanded="false" />
+                <element signature="e#22776#22777#0" expanded="false" />
+                <element signature="e#29126#29127#0" expanded="false" />
+                <element signature="e#29197#29198#0" expanded="false" />
+                <element signature="e#36057#36058#0" expanded="false" />
+                <element signature="e#36123#36124#0" expanded="false" />
+                <element signature="e#38033#38034#0" expanded="false" />
+                <element signature="e#38087#38088#0" expanded="false" />
+                <element signature="e#47179#47180#0" expanded="false" />
+                <element signature="e#47243#47244#0" expanded="false" />
+                <element signature="e#55441#55442#0" expanded="false" />
+                <element signature="e#55485#55486#0" expanded="false" />
+                <element signature="e#56078#56079#0" expanded="false" />
+                <element signature="e#56155#56156#0" expanded="false" />
+                <element signature="e#58122#58123#0" expanded="false" />
+                <element signature="e#58159#58160#0" expanded="false" />
+                <element signature="e#62501#62502#0" expanded="false" />
+                <element signature="e#62557#62558#0" expanded="false" />
+                <element signature="e#66098#66099#0" expanded="false" />
+                <element signature="e#66136#66137#0" expanded="false" />
+                <element signature="e#70390#70391#0" expanded="false" />
+                <element signature="e#70443#70444#0" expanded="false" />
+                <element signature="e#77881#77882#0" expanded="false" />
+                <element signature="e#77940#77941#0" expanded="false" />
+                <element signature="e#82257#82258#0" expanded="false" />
+                <element signature="e#82308#82309#0" expanded="false" />
+                <element signature="e#82612#82613#0" expanded="false" />
+                <element signature="e#82661#82662#0" expanded="false" />
+                <element signature="e#94239#94240#0" expanded="false" />
+                <element signature="e#94277#94278#0" expanded="false" />
+                <element signature="e#104316#104317#0" expanded="false" />
+                <element signature="e#104371#104372#0" expanded="false" />
+                <element signature="e#110837#110838#0" expanded="false" />
+                <element signature="e#110892#110893#0" expanded="false" />
+                <element signature="e#112984#112985#0" expanded="false" />
+                <element signature="e#113011#113012#0" expanded="false" />
+                <element signature="e#117534#117535#0" expanded="false" />
+                <element signature="e#117596#117597#0" expanded="false" />
+                <element signature="e#118046#118047#0" expanded="false" />
+                <element signature="e#118085#118086#0" expanded="false" />
+                <element signature="e#119097#119098#0" expanded="false" />
+                <element signature="e#119151#119152#0" expanded="false" />
+                <element signature="e#119800#119801#0" expanded="false" />
+                <element signature="e#119854#119855#0" expanded="false" />
+                <element signature="e#120123#120124#0" expanded="false" />
+                <element signature="e#120162#120163#0" expanded="false" />
+                <element signature="e#120530#120531#0" expanded="false" />
+                <element signature="e#120573#120574#0" expanded="false" />
+                <element signature="e#121368#121369#0" expanded="false" />
+                <element signature="e#121410#121411#0" expanded="false" />
+                <element signature="e#121825#121826#0" expanded="false" />
+                <element signature="e#121864#121865#0" expanded="false" />
+                <element signature="e#122286#122287#0" expanded="false" />
+                <element signature="e#122326#122327#0" expanded="false" />
+                <element signature="e#122756#122757#0" expanded="false" />
+                <element signature="e#122797#122798#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -121,7 +223,7 @@
         <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="15" column="14" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="14" />
+              <caret line="2" column="7" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -137,41 +239,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ManifestFactory.class" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/reflect/ManifestFactory.class">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="22" column="20" selection-start-line="22" selection-start-column="20" selection-end-line="22" selection-end-column="20" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalLogic.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="159" column="43" selection-start-line="159" selection-start-column="34" selection-end-line="159" selection-end-column="43" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalTreapRelation.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="423" column="0" selection-start-line="423" selection-start-column="0" selection-end-line="423" selection-end-column="0" />
+              <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -389,16 +461,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -409,6 +471,16 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="spread" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -458,6 +530,8 @@
     <property name="LayoutCode.rearrangeEntriesScala" value="false" />
     <property name="SearchEverywhereHistoryKey" value="new look at multimaps&#9;FILE&#9;file:///Users/rapido/spread/A new look at multimaps.pdf" />
     <property name="LayoutCode.rearrangeEntriesXML" value="false" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -641,7 +715,7 @@
     <configuration default="false" name="Vector" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="spread.IncrementalVector" />
-      <option name="VM_PARAMETERS" value="-server -Xmx2048M" />
+      <option name="VM_PARAMETERS" value="-server -Xmx4048M" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -680,12 +754,6 @@
       <created>1351125871725</created>
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
-    </task>
-    <task id="LOCAL-00107" summary="and more refactoring">
-      <created>1385494679623</created>
-      <option name="number" value="00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1385494679623</updated>
     </task>
     <task id="LOCAL-00108" summary="and more refactoring">
       <created>1385495118551</created>
@@ -975,7 +1043,13 @@
       <option name="project" value="LOCAL" />
       <updated>1429944693145</updated>
     </task>
-    <option name="localTasksCounter" value="156" />
+    <task id="LOCAL-00156" summary="removed files">
+      <created>1429944726959</created>
+      <option name="number" value="00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1429944726960</updated>
+    </task>
+    <option name="localTasksCounter" value="157" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -984,12 +1058,13 @@
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17529881" sideWeight="0.3546875" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17529881" sideWeight="0.28671876" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32270917" sideWeight="0.52265626" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38512617" sideWeight="0.55625" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32270917" sideWeight="0.47734374" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32270917" sideWeight="0.47734374" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38512617" sideWeight="0.44375" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21953125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
@@ -997,15 +1072,14 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3930943" sideWeight="0.490625" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934928" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3930943" sideWeight="0.49375" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20982736" sideWeight="0.44375" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296875" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32536522" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1025,7 +1099,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="- type-safe replace" />
     <MESSAGE value="- nested replace" />
     <MESSAGE value="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d" />
     <MESSAGE value="lazy eval = reduce" />
@@ -1050,7 +1123,8 @@
     <MESSAGE value="Gullik -&gt; Gulik" />
     <MESSAGE value="temp check to get to github" />
     <MESSAGE value="small test commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="small test commit" />
+    <MESSAGE value="removed files" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1059,6 +1133,12 @@
           <url>file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala</url>
           <properties />
           <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/spread/IncrementalVector.scala</url>
+          <line>6</line>
+          <properties />
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/spread/Test.scala</url>
@@ -1070,7 +1150,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="26" />
+      <option name="time" value="27" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1091,37 +1171,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="428" column="0" selection-start-line="428" selection-start-column="0" selection-end-line="428" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="89" column="10" selection-start-line="89" selection-start-column="0" selection-end-line="90" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1401,7 +1450,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="22" column="20" selection-start-line="22" selection-start-column="20" selection-end-line="22" selection-end-column="20" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="423" column="0" selection-start-line="423" selection-start-column="0" selection-end-line="423" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -1409,14 +1464,21 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="33" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="285" column="7" selection-start-line="285" selection-start-column="7" selection-end-line="285" selection-end-column="7" />
+          <caret line="2" column="7" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
           <folding />
         </state>
       </provider>
@@ -1429,10 +1491,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="423" column="0" selection-start-line="423" selection-start-column="0" selection-end-line="423" selection-end-column="0" />
+          <caret line="11" column="7" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
           <folding />
         </state>
       </provider>
@@ -1445,26 +1507,114 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
+    <entry file="file://$PROJECT_DIR$/planktree.graphml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="14" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="14" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/runtime/ScalaRunTime.class">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="159" column="43" selection-start-line="159" selection-start-column="34" selection-end-line="159" selection-end-column="43" />
+          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40243903">
+          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/lang/String.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1953" column="0" selection-start-line="1953" selection-start-column="0" selection-end-line="1954" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#123952#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4677#4678#0" expanded="false" />
+            <element signature="e#4717#4718#0" expanded="false" />
+            <element signature="e#5690#5691#0" expanded="false" />
+            <element signature="e#5753#5754#0" expanded="false" />
+            <element signature="e#12762#12763#0" expanded="false" />
+            <element signature="e#12814#12815#0" expanded="false" />
+            <element signature="e#18445#18446#0" expanded="false" />
+            <element signature="e#18498#18499#0" expanded="false" />
+            <element signature="e#20391#20392#0" expanded="false" />
+            <element signature="e#20435#20436#0" expanded="false" />
+            <element signature="e#21625#21626#0" expanded="false" />
+            <element signature="e#21705#21706#0" expanded="false" />
+            <element signature="e#22450#22451#0" expanded="false" />
+            <element signature="e#22485#22486#0" expanded="false" />
+            <element signature="e#22736#22737#0" expanded="false" />
+            <element signature="e#22776#22777#0" expanded="false" />
+            <element signature="e#29126#29127#0" expanded="false" />
+            <element signature="e#29197#29198#0" expanded="false" />
+            <element signature="e#36057#36058#0" expanded="false" />
+            <element signature="e#36123#36124#0" expanded="false" />
+            <element signature="e#38033#38034#0" expanded="false" />
+            <element signature="e#38087#38088#0" expanded="false" />
+            <element signature="e#47179#47180#0" expanded="false" />
+            <element signature="e#47243#47244#0" expanded="false" />
+            <element signature="e#55441#55442#0" expanded="false" />
+            <element signature="e#55485#55486#0" expanded="false" />
+            <element signature="e#56078#56079#0" expanded="false" />
+            <element signature="e#56155#56156#0" expanded="false" />
+            <element signature="e#58122#58123#0" expanded="false" />
+            <element signature="e#58159#58160#0" expanded="false" />
+            <element signature="e#62501#62502#0" expanded="false" />
+            <element signature="e#62557#62558#0" expanded="false" />
+            <element signature="e#66098#66099#0" expanded="false" />
+            <element signature="e#66136#66137#0" expanded="false" />
+            <element signature="e#70390#70391#0" expanded="false" />
+            <element signature="e#70443#70444#0" expanded="false" />
+            <element signature="e#77881#77882#0" expanded="false" />
+            <element signature="e#77940#77941#0" expanded="false" />
+            <element signature="e#82257#82258#0" expanded="false" />
+            <element signature="e#82308#82309#0" expanded="false" />
+            <element signature="e#82612#82613#0" expanded="false" />
+            <element signature="e#82661#82662#0" expanded="false" />
+            <element signature="e#94239#94240#0" expanded="false" />
+            <element signature="e#94277#94278#0" expanded="false" />
+            <element signature="e#104316#104317#0" expanded="false" />
+            <element signature="e#104371#104372#0" expanded="false" />
+            <element signature="e#110837#110838#0" expanded="false" />
+            <element signature="e#110892#110893#0" expanded="false" />
+            <element signature="e#112984#112985#0" expanded="false" />
+            <element signature="e#113011#113012#0" expanded="false" />
+            <element signature="e#117534#117535#0" expanded="false" />
+            <element signature="e#117596#117597#0" expanded="false" />
+            <element signature="e#118046#118047#0" expanded="false" />
+            <element signature="e#118085#118086#0" expanded="false" />
+            <element signature="e#119097#119098#0" expanded="false" />
+            <element signature="e#119151#119152#0" expanded="false" />
+            <element signature="e#119800#119801#0" expanded="false" />
+            <element signature="e#119854#119855#0" expanded="false" />
+            <element signature="e#120123#120124#0" expanded="false" />
+            <element signature="e#120162#120163#0" expanded="false" />
+            <element signature="e#120530#120531#0" expanded="false" />
+            <element signature="e#120573#120574#0" expanded="false" />
+            <element signature="e#121368#121369#0" expanded="false" />
+            <element signature="e#121410#121411#0" expanded="false" />
+            <element signature="e#121825#121826#0" expanded="false" />
+            <element signature="e#121864#121865#0" expanded="false" />
+            <element signature="e#122286#122287#0" expanded="false" />
+            <element signature="e#122326#122327#0" expanded="false" />
+            <element signature="e#122756#122757#0" expanded="false" />
+            <element signature="e#122797#122798#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/IncrementalVector.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.81950206">
-          <caret line="433" column="0" selection-start-line="433" selection-start-column="0" selection-end-line="433" selection-end-column="0" />
+        <state vertical-scroll-proportion="22.275862">
+          <caret line="495" column="34" selection-start-line="495" selection-start-column="34" selection-end-line="495" selection-end-column="34" />
           <folding />
         </state>
       </provider>
