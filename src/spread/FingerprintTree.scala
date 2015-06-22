@@ -25,7 +25,7 @@ package spread
  *       
  *       .. with B the average Block size(=31).
  * 
- * However, in practice, it might prove difficult the find implementation of these algorithms. 
+ * However, in practice, it might prove difficult to find implementation of these algorithms.
  * 
  * Copyright 2015: Robbert van Dalen.
  *
@@ -38,7 +38,7 @@ object FingerprintTree {
   final def main(args: Array[String]): Unit = {
     var result: Vector[Char] = Vector()
 
- result = result ++ " The following code marks the birth of a novel datastructure: The Fingerprint Tree. A Finger Tree is built by recursively applying a 'Chunking' algorithm, using a standard Rabin fingerprinting scheme. Note that 1- or 2-level Chunking can be found in many commercial de-duplication storage solutions. However, when chunking is recursively applied, it results in a Tree structure, with following two amazing properties: - It is a B-Tree - it has a canonical representation In addition, repetitions like the following: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA are RLE compressed and recursively rechunked, to prevent excessive chunk sizes due to low entropy. Details can be found in the below code. Note another interesting property: Small changes to the input X, will only create log(|X|) new Chunks. It is due to this property that de-duplication actually works in practice So in theory, it should be possible to create incremental immutable versions of the following algorithms: - concatenate two Fingerprint Trees A and B, in O(Blog(max(|A|,|B|)) - cut a Fingerprint Tree X at index I, in O(Blog(|X|) .. with B the average Block size(=31). However, in practice, it might prove difficult the find implementation of these algorithms. Copyright 2015: Robbert van Dalen. "
+ result = result ++ " The following code marks the birth of a novel datastructure: The Fingerprint Tree. A Finger Tree is built by recursively applying a 'Chunking' algorithm, using a standard Rabin fingerprinting scheme. Note that 1- or 2-level Chunking can be found in many commercial de-duplication storage solutions. However, when chunking is recursively applied, it results in a Tree structure, with following two amazing properties: - It is a B-Tree - it has a canonical representation In addition, repetitions like the following: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA are RLE compressed and recursively rechunked, to prevent excessive chunk sizes due to low entropy. Details can be found in the below code. Note another interesting property: Small changes to the input X, will only create log(|X|) new Chunks. It is due to this property that de-duplication actually works in practice So in theory, it should be possible to create incremental immutable versions of the following algorithms: - concatenate two Fingerprint Trees A and B, in O(Blog(max(|A|,|B|)) - cut a Fingerprint Tree X at index I, in O(Blog(|X|) .. with B the average Block size(=31). However, in practice, it might prove difficult to find implementation of these algorithms. Copyright 2015: Robbert van Dalen. "
 
     val aa = chunk(result)
     val bb = chunk(result.updated(50,"%"))
