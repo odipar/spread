@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/binary_relations_2012.pdf" afterPath="$PROJECT_DIR$/binary_relations_2012.pdf" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" afterPath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -108,151 +109,18 @@
       <file leaf-file-name="FingerprintTree.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.52894735">
-              <caret line="40" column="788" selection-start-line="40" selection-start-column="788" selection-end-line="40" selection-end-column="788" />
+            <state vertical-scroll-proportion="9.791122">
+              <caret line="351" column="27" selection-start-line="351" selection-start-column="27" selection-end-line="351" selection-end-column="27" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ScalaRunTime.class" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/runtime/ScalaRunTime.class">
+      <file leaf-file-name="package.class" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-12.8">
-              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="planktree.graphml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/planktree.graphml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="String.java" pinned="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/lang/String.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1953" column="0" selection-start-line="1953" selection-start-column="0" selection-end-line="1954" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#123952#0" expanded="false" />
-                <element signature="imports" expanded="false" />
-                <element signature="e#4677#4678#0" expanded="false" />
-                <element signature="e#4717#4718#0" expanded="false" />
-                <element signature="e#5690#5691#0" expanded="false" />
-                <element signature="e#5753#5754#0" expanded="false" />
-                <element signature="e#12762#12763#0" expanded="false" />
-                <element signature="e#12814#12815#0" expanded="false" />
-                <element signature="e#18445#18446#0" expanded="false" />
-                <element signature="e#18498#18499#0" expanded="false" />
-                <element signature="e#20391#20392#0" expanded="false" />
-                <element signature="e#20435#20436#0" expanded="false" />
-                <element signature="e#21625#21626#0" expanded="false" />
-                <element signature="e#21705#21706#0" expanded="false" />
-                <element signature="e#22450#22451#0" expanded="false" />
-                <element signature="e#22485#22486#0" expanded="false" />
-                <element signature="e#22736#22737#0" expanded="false" />
-                <element signature="e#22776#22777#0" expanded="false" />
-                <element signature="e#29126#29127#0" expanded="false" />
-                <element signature="e#29197#29198#0" expanded="false" />
-                <element signature="e#36057#36058#0" expanded="false" />
-                <element signature="e#36123#36124#0" expanded="false" />
-                <element signature="e#38033#38034#0" expanded="false" />
-                <element signature="e#38087#38088#0" expanded="false" />
-                <element signature="e#47179#47180#0" expanded="false" />
-                <element signature="e#47243#47244#0" expanded="false" />
-                <element signature="e#55441#55442#0" expanded="false" />
-                <element signature="e#55485#55486#0" expanded="false" />
-                <element signature="e#56078#56079#0" expanded="false" />
-                <element signature="e#56155#56156#0" expanded="false" />
-                <element signature="e#58122#58123#0" expanded="false" />
-                <element signature="e#58159#58160#0" expanded="false" />
-                <element signature="e#62501#62502#0" expanded="false" />
-                <element signature="e#62557#62558#0" expanded="false" />
-                <element signature="e#66098#66099#0" expanded="false" />
-                <element signature="e#66136#66137#0" expanded="false" />
-                <element signature="e#70390#70391#0" expanded="false" />
-                <element signature="e#70443#70444#0" expanded="false" />
-                <element signature="e#77881#77882#0" expanded="false" />
-                <element signature="e#77940#77941#0" expanded="false" />
-                <element signature="e#82257#82258#0" expanded="false" />
-                <element signature="e#82308#82309#0" expanded="false" />
-                <element signature="e#82612#82613#0" expanded="false" />
-                <element signature="e#82661#82662#0" expanded="false" />
-                <element signature="e#94239#94240#0" expanded="false" />
-                <element signature="e#94277#94278#0" expanded="false" />
-                <element signature="e#104316#104317#0" expanded="false" />
-                <element signature="e#104371#104372#0" expanded="false" />
-                <element signature="e#110837#110838#0" expanded="false" />
-                <element signature="e#110892#110893#0" expanded="false" />
-                <element signature="e#112984#112985#0" expanded="false" />
-                <element signature="e#113011#113012#0" expanded="false" />
-                <element signature="e#117534#117535#0" expanded="false" />
-                <element signature="e#117596#117597#0" expanded="false" />
-                <element signature="e#118046#118047#0" expanded="false" />
-                <element signature="e#118085#118086#0" expanded="false" />
-                <element signature="e#119097#119098#0" expanded="false" />
-                <element signature="e#119151#119152#0" expanded="false" />
-                <element signature="e#119800#119801#0" expanded="false" />
-                <element signature="e#119854#119855#0" expanded="false" />
-                <element signature="e#120123#120124#0" expanded="false" />
-                <element signature="e#120162#120163#0" expanded="false" />
-                <element signature="e#120530#120531#0" expanded="false" />
-                <element signature="e#120573#120574#0" expanded="false" />
-                <element signature="e#121368#121369#0" expanded="false" />
-                <element signature="e#121410#121411#0" expanded="false" />
-                <element signature="e#121825#121826#0" expanded="false" />
-                <element signature="e#121864#121865#0" expanded="false" />
-                <element signature="e#122286#122287#0" expanded="false" />
-                <element signature="e#122326#122327#0" expanded="false" />
-                <element signature="e#122756#122757#0" expanded="false" />
-                <element signature="e#122797#122798#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Hashing.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="17" column="93" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalArithmetic.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalMemoization.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="33" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IncrementalTreapMap.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
+            <state vertical-scroll-proportion="-6.111111">
+              <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -302,8 +170,10 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
+    <option name="x" value="-24" />
+    <option name="y" value="23" />
     <option name="width" value="1280" />
-    <option name="height" value="800" />
+    <option name="height" value="773" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -383,30 +253,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -432,6 +278,48 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -457,7 +345,7 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
     <property name="Repository.Attach.Sources" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
-    <property name="FullScreen" value="true" />
+    <property name="FullScreen" value="false" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="Downloaded.Files.Path" value="$PROJECT_DIR$/lib" />
     <property name="options.splitter.details.proportions" value="0.2" />
@@ -474,7 +362,7 @@
     <property name="options.searchVisible" value="true" />
     <property name="SearchEverywhereHistory" value="" />
     <property name="LayoutCode.rearrangeEntriesScala" value="false" />
-    <property name="SearchEverywhereHistoryKey" value="new look at multimaps&#9;FILE&#9;file:///Users/rapido/spread/A new look at multimaps.pdf" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;jar:///Users/rapido/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class&#10;new look at multimaps&#9;FILE&#9;file:///Users/rapido/spread/A new look at multimaps.pdf" />
     <property name="LayoutCode.rearrangeEntriesXML" value="false" />
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
@@ -700,12 +588,6 @@
       <created>1351125871725</created>
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
-    </task>
-    <task id="LOCAL-00112" summary="avail and other experiments">
-      <created>1401303014187</created>
-      <option name="number" value="00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1401303014187</updated>
     </task>
     <task id="LOCAL-00113" summary="small typos">
       <created>1401303348431</created>
@@ -995,36 +877,42 @@
       <option name="project" value="LOCAL" />
       <updated>1435013320528</updated>
     </task>
-    <option name="localTasksCounter" value="161" />
+    <task id="LOCAL-00161" summary="last commit before secure timestamping">
+      <created>1435013716542</created>
+      <option name="number" value="00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1435013716542</updated>
+    </task>
+    <option name="localTasksCounter" value="162" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <frame x="-24" y="23" width="1280" height="773" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35989377" sideWeight="0.4984375" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.359375" sideWeight="0.41953126" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38512617" sideWeight="0.571875" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4161932" sideWeight="0.64453125" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32270917" sideWeight="0.47734374" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38512617" sideWeight="0.428125" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32270917" sideWeight="0.47734374" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4161932" sideWeight="0.35546875" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21953125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21953125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3930943" sideWeight="0.490625" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39204547" sideWeight="0.4875" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934928" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934928" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296875" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1045,7 +933,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="the quest continues" />
     <MESSAGE value="cool example" />
     <MESSAGE value="replacement with typetags" />
     <MESSAGE value="reworked Treap" />
@@ -1070,7 +957,8 @@
     <MESSAGE value="*very* messy code - just to try out some new ideas" />
     <MESSAGE value="cleaned up code" />
     <MESSAGE value="typo" />
-    <option name="LAST_COMMIT_MESSAGE" value="typo" />
+    <MESSAGE value="last commit before secure timestamping" />
+    <option name="LAST_COMMIT_MESSAGE" value="last commit before secure timestamping" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1111,6 +999,13 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1131,7 +1026,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="270" column="48" selection-start-line="270" selection-start-column="43" selection-end-line="270" selection-end-column="43" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1404,7 +1298,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1412,14 +1305,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40243903">
-          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -1427,80 +1312,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1953" column="0" selection-start-line="1953" selection-start-column="0" selection-end-line="1954" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#123952#0" expanded="false" />
-            <element signature="imports" expanded="false" />
-            <element signature="e#4677#4678#0" expanded="false" />
-            <element signature="e#4717#4718#0" expanded="false" />
-            <element signature="e#5690#5691#0" expanded="false" />
-            <element signature="e#5753#5754#0" expanded="false" />
-            <element signature="e#12762#12763#0" expanded="false" />
-            <element signature="e#12814#12815#0" expanded="false" />
-            <element signature="e#18445#18446#0" expanded="false" />
-            <element signature="e#18498#18499#0" expanded="false" />
-            <element signature="e#20391#20392#0" expanded="false" />
-            <element signature="e#20435#20436#0" expanded="false" />
-            <element signature="e#21625#21626#0" expanded="false" />
-            <element signature="e#21705#21706#0" expanded="false" />
-            <element signature="e#22450#22451#0" expanded="false" />
-            <element signature="e#22485#22486#0" expanded="false" />
-            <element signature="e#22736#22737#0" expanded="false" />
-            <element signature="e#22776#22777#0" expanded="false" />
-            <element signature="e#29126#29127#0" expanded="false" />
-            <element signature="e#29197#29198#0" expanded="false" />
-            <element signature="e#36057#36058#0" expanded="false" />
-            <element signature="e#36123#36124#0" expanded="false" />
-            <element signature="e#38033#38034#0" expanded="false" />
-            <element signature="e#38087#38088#0" expanded="false" />
-            <element signature="e#47179#47180#0" expanded="false" />
-            <element signature="e#47243#47244#0" expanded="false" />
-            <element signature="e#55441#55442#0" expanded="false" />
-            <element signature="e#55485#55486#0" expanded="false" />
-            <element signature="e#56078#56079#0" expanded="false" />
-            <element signature="e#56155#56156#0" expanded="false" />
-            <element signature="e#58122#58123#0" expanded="false" />
-            <element signature="e#58159#58160#0" expanded="false" />
-            <element signature="e#62501#62502#0" expanded="false" />
-            <element signature="e#62557#62558#0" expanded="false" />
-            <element signature="e#66098#66099#0" expanded="false" />
-            <element signature="e#66136#66137#0" expanded="false" />
-            <element signature="e#70390#70391#0" expanded="false" />
-            <element signature="e#70443#70444#0" expanded="false" />
-            <element signature="e#77881#77882#0" expanded="false" />
-            <element signature="e#77940#77941#0" expanded="false" />
-            <element signature="e#82257#82258#0" expanded="false" />
-            <element signature="e#82308#82309#0" expanded="false" />
-            <element signature="e#82612#82613#0" expanded="false" />
-            <element signature="e#82661#82662#0" expanded="false" />
-            <element signature="e#94239#94240#0" expanded="false" />
-            <element signature="e#94277#94278#0" expanded="false" />
-            <element signature="e#104316#104317#0" expanded="false" />
-            <element signature="e#104371#104372#0" expanded="false" />
-            <element signature="e#110837#110838#0" expanded="false" />
-            <element signature="e#110892#110893#0" expanded="false" />
-            <element signature="e#112984#112985#0" expanded="false" />
-            <element signature="e#113011#113012#0" expanded="false" />
-            <element signature="e#117534#117535#0" expanded="false" />
-            <element signature="e#117596#117597#0" expanded="false" />
-            <element signature="e#118046#118047#0" expanded="false" />
-            <element signature="e#118085#118086#0" expanded="false" />
-            <element signature="e#119097#119098#0" expanded="false" />
-            <element signature="e#119151#119152#0" expanded="false" />
-            <element signature="e#119800#119801#0" expanded="false" />
-            <element signature="e#119854#119855#0" expanded="false" />
-            <element signature="e#120123#120124#0" expanded="false" />
-            <element signature="e#120162#120163#0" expanded="false" />
-            <element signature="e#120530#120531#0" expanded="false" />
-            <element signature="e#120573#120574#0" expanded="false" />
-            <element signature="e#121368#121369#0" expanded="false" />
-            <element signature="e#121410#121411#0" expanded="false" />
-            <element signature="e#121825#121826#0" expanded="false" />
-            <element signature="e#121864#121865#0" expanded="false" />
-            <element signature="e#122286#122287#0" expanded="false" />
-            <element signature="e#122326#122327#0" expanded="false" />
-            <element signature="e#122756#122757#0" expanded="false" />
-            <element signature="e#122797#122798#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1508,14 +1319,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
           <folding />
         </state>
       </provider>
@@ -1531,23 +1334,36 @@
     <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="93" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/runtime/ScalaRunTime.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-12.8">
+        <state vertical-scroll-proportion="0.0">
           <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-8.724138">
+          <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-6.111111">
+          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52894735">
-          <caret line="40" column="788" selection-start-line="40" selection-start-column="788" selection-end-line="40" selection-end-column="788" />
+        <state vertical-scroll-proportion="9.791122">
+          <caret line="351" column="27" selection-start-line="351" selection-start-column="27" selection-end-line="351" selection-end-column="27" />
           <folding />
         </state>
       </provider>
