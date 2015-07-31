@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/binary_relations_2012.pdf" afterPath="$PROJECT_DIR$/binary_relations_2012.pdf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" afterPath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spread.iws" />
@@ -589,12 +588,6 @@
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
     </task>
-    <task id="LOCAL-00113" summary="small typos">
-      <created>1401303348431</created>
-      <option name="number" value="00113" />
-      <option name="project" value="LOCAL" />
-      <updated>1401303348431</updated>
-    </task>
     <task id="LOCAL-00114" summary="small typos">
       <created>1401304343026</created>
       <option name="number" value="00114" />
@@ -883,7 +876,13 @@
       <option name="project" value="LOCAL" />
       <updated>1435013716542</updated>
     </task>
-    <option name="localTasksCounter" value="162" />
+    <task id="LOCAL-00162" summary="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation">
+      <created>1438377670788</created>
+      <option name="number" value="00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1438377670791</updated>
+    </task>
+    <option name="localTasksCounter" value="163" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -933,7 +932,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="cool example" />
     <MESSAGE value="replacement with typetags" />
     <MESSAGE value="reworked Treap" />
     <MESSAGE value="first cut" />
@@ -958,7 +956,8 @@
     <MESSAGE value="cleaned up code" />
     <MESSAGE value="typo" />
     <MESSAGE value="last commit before secure timestamping" />
-    <option name="LAST_COMMIT_MESSAGE" value="last commit before secure timestamping" />
+    <MESSAGE value="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation" />
+    <option name="LAST_COMMIT_MESSAGE" value="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
