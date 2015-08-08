@@ -37,30 +37,34 @@ object FingerprintTree {
 
   final def main(args: Array[String]): Unit = {
 
-    var i = 0
-    var s = 100000
-    var r = new Array[Hashable](s)
+
+    var i = 1
+    var s = 100
+    var ii = s - 1
+    var r: SeqHash = empty
+    var r2: SeqHash = empty
+    var r3: SeqHash = empty
 
     while (i < s) {
-      r(i) = IntHashable(i)
+      val kk = (i / 5)
+      r = merge(r,create(IntHashable(kk)))
+      r2 = merge(r2,create(IntHashable(kk)))
+
+      if ((i % 15) == 0) {
+        val r4 = merge(r3,r2)
+        r2 = empty
+        r3 = r4
+      }
       i = i + 1
+      ii = ii - 1
     }
 
-    var r2: Seq[Hashable] = r.toSeq
-    var tr = round(r2)
-    println(tr.height)
-    println("ccounts: " + ccounts)
+    r3 = merge(r3,r2)
 
-    var t = r2 ++ r2
+    println("r: " + r)
+    println("r3: " + r3)
 
-
-    //r(s/2) = IntHashable(s*2)
-
-    var t2: Seq[Hashable] = t.toSeq
-    var tt = round(t2)
-    println(tt.height)
-    println("ccounts: " + ccounts)
-
+    println("r == r3: " + (r == r3))
   }
 
   /* Constants for Rabin fingerprints */
@@ -300,14 +304,11 @@ type round struct {
   case class IntHashable(i: Int) extends Hashable with Hash {
     def height = 0
     def size = 1
-    def head = {
-      val h1 = Hashing.jenkinsHash(i)
-      h1 ^ Hashing.jenkinsHash(h1)
-    }
+    def head = { Hashing.jenkinsHash(i) }
     def bit(index: Int) = {
       var p = index
       var h = head
-      if (p > 31) {
+      while (p > 31) {
         val h1 = Hashing.jenkinsHash(i) ^ h
         h = Hashing.jenkinsHash(h) ^ h1
         p = p - 32
@@ -326,7 +327,7 @@ type round struct {
     def bit(index: Int): Byte = {
       var p = index
       var h = head
-      if (p > 31) {
+      while (p > 31) {
         h = Hashing.jenkinsHash(h)
         p = p - 32
       }
@@ -337,9 +338,23 @@ type round struct {
     override def toString = "[" + h1 + "," + h2 + "]"
   }
 
+  val counts: scala.collection.mutable.HashSet[Hashable] = scala.collection.mutable.HashSet()
+  var ccounts: Long = 0
+  var dd = false
+
+  def count(h: Hashable): Unit = {
+    if (!counts.contains(h)) {
+      if (dd) {
+        println("h: " + h)
+      }
+      counts.add(h) ; ccounts = ccounts + 1  }
+  }
+
   trait Hashable {
     def hash: Hash
-    def combineWith(other: Hashable): Hashable = HPair(this,other)
+    def combineWith(other: Hashable): Hashable = {
+      val h = HPair(this,other) ; count(h) ; h
+    }
     def height: Int
     def size: Int
   }
@@ -357,7 +372,10 @@ type round struct {
   }
 
   final val Unknown: Byte = 0
-  final val Merge: Byte = 1
+  final val LeftMerge: Byte = 1
+  final val RightMerge: Byte = 2
+  final val LeftFringe: Byte = 3
+  final val RightFringe: Byte = 4
 
   def multipleOf(e1: Hashable, e2: Hashable): Boolean = {
     (e1,e2) match {
@@ -405,11 +423,22 @@ type round struct {
     relems
   }
 
-  def doRound(elems: Seq[Hashable]): Seq[Hashable] = {
-    val N = elems.length
+  case class Round(leftFringe: Seq[Hashable], center: Seq[Hashable], rightFringe: Seq[Hashable]) {
+    override def toString ={
+      var s = "\n"
+      s = s + "lfringe: " + leftFringe + "\n"
+      s = s + "center : " + center + "\n"
+      s = s + "rfringe: " + rightFringe
+      s
+    }
+  }
 
-    var left = 0
-    var right = N - 1
+  def doRound2(elems: Seq[Hashable], volatileLeft: Boolean, volatileRight: Boolean): Round ={
+    doRound(compress(elems),volatileLeft,volatileRight)
+  }
+
+  def doRound(elems: Seq[Hashable], volatileLeft: Boolean, volatileRight: Boolean): Round = {
+    val N = elems.length
 
     val kind: Array[Byte] = elems.map(e => Unknown).toArray
     val hashes: Array[Hash] = elems.map(e => e.hash).toArray
@@ -417,14 +446,49 @@ type round struct {
 
     var idx = 0
 
+    val N1 = N - 1
+    var left = 0
+    var right = N1
+
+    if (volatileLeft) {
+      if (N > 0) {
+        elems(0) match {
+          case RLE(_,_) => println("yes1") ; kind(0) = LeftFringe;
+          case _ =>
+        }
+      }
+    }
+    if (volatileRight) {
+      if (N > 1) {
+        elems(N1) match {
+          case RLE(_,_) => println("yes2") ; kind(N1) = RightFringe;
+          case _ =>
+        }
+      }
+    }
+
     while (!done) {
       done = true
+
+      if (volatileLeft) {
+        if ((left < N) && (kind(left) == Unknown) && (hashes(left).bit(idx) == 0)) {
+          kind(left) = LeftFringe ; left = left + 1
+        }
+        if ((left < N) && (kind(left) == Unknown)) { done = false }
+      }
+
+      if (volatileRight) {
+        if ((right >= 0) && (kind(right) == Unknown) && (hashes(right).bit(idx) == 1)) {
+          kind(right) = RightFringe ; right = right - 1
+        }
+        if ((right >= 0) && (kind(right) == Unknown)) { done = false }
+      }
+
       var j = 0
-      val N1 = N - 1
 
       while (j < N1) {
         if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
-          if ((hashes(j).bit(idx) == 1) && (hashes(j + 1).bit(idx) == 0)) { kind(j) = Merge ; j = j + 1 }
+          if ((hashes(j).bit(idx) == 1) && (hashes(j + 1).bit(idx) == 0)) { kind(j) = LeftMerge ; kind(j+1) = RightMerge ; j = j + 1 }
           else { done = false }
         }
         j = j + 1
@@ -433,26 +497,90 @@ type round struct {
     }
 
     var i = 0
-    var center: List[Hashable] = List()
+    var center: Array[Hashable] = Array()
+    var leftFringe: Array[Hashable] = Array()
+    var rightFringe: Array[Hashable] = Array()
 
     while (i < N) {
-      if (kind(i) == Unknown) { center = elems(i) +: center }
-      else { center = (elems(i).combineWith(elems(i + 1))) +: center ; i = i + 1 }
+      kind(i) match {
+        case Unknown => {
+          center = center :+ elems(i)
+        }
+        case LeftMerge => {
+          center = center :+ (elems(i).combineWith(elems(i + 1))); i = i + 1
+        }
+        case LeftFringe => {
+          leftFringe = leftFringe :+ elems(i)
+        }
+        case RightFringe => {
+          rightFringe = rightFringe :+ elems(i)
+        }
+      }
       i = i + 1
     }
 
-    center.toArray.reverse
+    Round(leftFringe.toSeq,center.toSeq,rightFringe.toSeq)
   }
 
+  val empty: SeqHash = SeqHash(0,Array[Seq[Hashable]]().toSeq,Array[Hashable]().toSeq,Array[Seq[Hashable]]().toSeq)
+  def create(h: Hashable): SeqHash = SeqHash(0,Array[Seq[Hashable]]().toSeq,Array[Hashable](h).toSeq,Array[Seq[Hashable]]().toSeq)
 
 
-  def round(r: Seq[Hashable]): Hashable = {
-    var rr = r
-    while (rr.length > 1) {
-      rr = doRound(rr)
+  case class SeqHash(height: Int, leftFringes: Seq[Seq[Hashable]], top: Seq[Hashable], rightFringes: Seq[Seq[Hashable]]){
+    def isEmpty = (top.length == 0) && (height == 0)
+    override def toString ={
+      var s = "h: " + height + "\n"
+      s = s + "l: " + leftFringes + "\n"
+      s = s + "t: " + top.toSeq + "\n"
+      s = s + "r: " + rightFringes.reverse
+      s
     }
-    rr(0)
   }
+
+  def merge(left: SeqHash, right: SeqHash): SeqHash = {
+    if (left.isEmpty) right
+    else if (right.isEmpty) left
+    else {
+      var top: Seq[Hashable] = Array[Hashable]().toSeq
+      var leftFringes: Seq[Seq[Hashable]] = Array[Seq[Hashable]]().toSeq
+      var rightFringes: Seq[Seq[Hashable]] = Array[Seq[Hashable]]().toSeq
+      var elems: Seq[Hashable] = Array[Hashable]().toSeq
+
+      var height = 0
+      var done = false
+
+      while (!done) {
+
+        if (height < left.height) { elems = left.rightFringes(height) ++ elems }
+        else if (height == left.height) { elems = left.top ++ elems }
+
+        if (height < right.height) { elems = elems ++ right.leftFringes(height) }
+        else if (height == right.height) { elems = elems ++ right.top }
+
+        if ((height >= left.height) && (height >= right.height) && (elems.length == 0)) { done = true }
+        else {
+          val round = doRound2(elems,height >= left.height,height >= right.height)
+          elems = round.center
+
+          if (height < left.height) { leftFringes = leftFringes :+ left.leftFringes(height) }
+          else { leftFringes = leftFringes :+ round.leftFringe }
+
+          if (height < right.height) { rightFringes = rightFringes :+ right.rightFringes(height) }
+          else { rightFringes = rightFringes :+ round.rightFringe }
+
+          height = height + 1
+        }
+      }
+
+      height = height - 1
+      top = leftFringes(height) ++ rightFringes(height)
+      leftFringes = leftFringes.splitAt(height)._1
+      rightFringes = rightFringes.splitAt(height)._1
+
+      SeqHash(height,leftFringes,top,rightFringes)
+    }
+  }
+
 }
 
 
