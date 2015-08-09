@@ -108,8 +108,8 @@
       <file leaf-file-name="FingerprintTree.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.6657963">
-              <caret line="463" column="40" selection-start-line="463" selection-start-column="40" selection-end-line="463" selection-end-column="40" />
+            <state vertical-scroll-proportion="-16.331593">
+              <caret line="52" column="16" selection-start-line="52" selection-start-column="16" selection-end-line="52" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -587,12 +587,6 @@
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
     </task>
-    <task id="LOCAL-00115" summary="small typos">
-      <created>1401304551686</created>
-      <option name="number" value="00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1401304551686</updated>
-    </task>
     <task id="LOCAL-00116" summary="- removed rehash&#10;- split now returns three parts&#10;- additional set operations">
       <created>1401458992649</created>
       <option name="number" value="00116" />
@@ -881,7 +875,13 @@
       <option name="project" value="LOCAL" />
       <updated>1438377686861</updated>
     </task>
-    <option name="localTasksCounter" value="164" />
+    <task id="LOCAL-00164" summary="research on SeqHash:&#10;&#10;- got it working for non-repetitive patterns">
+      <created>1439061374404</created>
+      <option name="number" value="00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1439061374411</updated>
+    </task>
+    <option name="localTasksCounter" value="165" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -896,7 +896,7 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3224432" sideWeight="0.47734374" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4161932" sideWeight="0.35546875" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4161932" sideWeight="0.35546875" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14453125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
@@ -931,7 +931,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="replacement with typetags" />
     <MESSAGE value="reworked Treap" />
     <MESSAGE value="first cut" />
     <MESSAGE value="chunked treaps" />
@@ -956,7 +955,8 @@
     <MESSAGE value="typo" />
     <MESSAGE value="last commit before secure timestamping" />
     <MESSAGE value="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation" />
+    <MESSAGE value="research on SeqHash:&#10;&#10;- got it working for non-repetitive patterns" />
+    <option name="LAST_COMMIT_MESSAGE" value="research on SeqHash:&#10;&#10;- got it working for non-repetitive patterns" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1366,8 +1366,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.6657963">
-          <caret line="463" column="40" selection-start-line="463" selection-start-column="40" selection-end-line="463" selection-end-column="40" />
+        <state vertical-scroll-proportion="-16.331593">
+          <caret line="52" column="16" selection-start-line="52" selection-start-column="16" selection-end-line="52" selection-end-column="16" />
           <folding />
         </state>
       </provider>

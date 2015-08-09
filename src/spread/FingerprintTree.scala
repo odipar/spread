@@ -39,18 +39,18 @@ object FingerprintTree {
 
 
     var i = 1
-    var s = 100
+    var s = 1000
     var ii = s - 1
     var r: SeqHash = empty
     var r2: SeqHash = empty
     var r3: SeqHash = empty
 
     while (i < s) {
-      val kk = (i / 5)
+      val kk = (i / 10)
       r = merge(r,create(IntHashable(kk)))
       r2 = merge(r2,create(IntHashable(kk)))
 
-      if ((i % 15) == 0) {
+      if ((i % 5) == 0) {
         val r4 = merge(r3,r2)
         r2 = empty
         r3 = r4
@@ -452,18 +452,14 @@ type round struct {
 
     if (volatileLeft) {
       if (N > 0) {
-        elems(0) match {
-          case RLE(_,_) => println("yes1") ; kind(0) = LeftFringe;
-          case _ =>
-        }
+        kind(0) = LeftFringe
+        left = left + 1
       }
     }
     if (volatileRight) {
       if (N > 1) {
-        elems(N1) match {
-          case RLE(_,_) => println("yes2") ; kind(N1) = RightFringe;
-          case _ =>
-        }
+        kind(N1) = RightFringe
+        right = right - 1
       }
     }
 
