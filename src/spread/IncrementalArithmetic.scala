@@ -26,6 +26,7 @@ object IncrementalArithmetic {
     def containsQuote = false
     def containsBinding = false
 
+    def depth = 1
     def origin = this
     override def toString = "" + evalValue
     override def hashCode = Hashing.jenkinsHash(evalValue)
@@ -36,7 +37,7 @@ object IncrementalArithmetic {
   private case class IWrap(origin: I) extends IExpr {
     def containsQuote = error
     def containsBinding = error
-
+    def depth = origin.depth +1
     def error = sys.error("IWrap should not be used directly")
   }
 

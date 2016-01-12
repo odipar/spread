@@ -42,6 +42,8 @@ object IncrementalMemoization {
     def containsBinding: Boolean
 
     def unary_! : Expr[V] = hcons(Quote(this))
+
+    def depth: Int
   }
 
   trait LazyExpr[V] extends Expr[V]
@@ -53,7 +55,9 @@ object IncrementalMemoization {
     def from: Expr[V]
     def to: Expr[V]
 
-    override def toString = {
+    val depth = (from.depth max to.depth) + 1
+
+    /*override def toString = {
       val (df,f) = getFrom(0,from)
       val (dt,t) = getTo(0,to)
       var r = "[" + f
@@ -74,19 +78,19 @@ object IncrementalMemoization {
 
       r = r  + t.toString + "]"
       r
-    }
+    }  */
 
     override val hashCode = jh(jh(jh(from)) ^ jh(to))
   }
 
   case class Trace0[V](from: Expr[V], to: F0[V]) extends Trace[V] with F0[V] {
     def evalValue = to.evalValue
-   // override def toString = "[" + from + " ~> " + getTo(to) + "]"
+    override def toString = "[" + from + " ~> " + getTo(0,to)._2 + "]"
   }
 
   case class Trace1[V](from: Expr[V], to: Expr[V]) extends Trace[V] with LazyExpr[V] {
     //override def toString = ".. -> " + to
-    //override def toString = "[" + from + " => " + getTo(to) + "]"
+    override def toString = "[" + from + " => " + getTo(0,to)._2 + "]"
   }
 
   def getFrom[V](d: Int, e: Expr[V]): (Int,Expr[V]) = e match {
@@ -110,12 +114,14 @@ object IncrementalMemoization {
     def containsQuote = true
     val containsBinding = expr.containsBinding
 
+    def depth = expr.depth+1
     override def toString = "!" + expr
   }
 
   case class Var[X](a: Any, e: Expr[X]) extends Expr[X] {
     def containsQuote = e.containsQuote
     def containsBinding = true
+    def depth = e.depth+1
 
     override def toString = a + "~" + e
   }
@@ -157,6 +163,7 @@ object IncrementalMemoization {
   case class ExprImpl[X](evalValue: X) extends F0[X] {
     def containsQuote = false
     def containsBinding = false
+    def depth = 1
     override def toString = "`" + evalValue.toString
   }
 
@@ -197,6 +204,7 @@ object IncrementalMemoization {
     val containsQuote = a.containsQuote
     val containsBinding = a.containsBinding
 
+    def depth = a.depth + 1
     override def toString = f + "(" + a + ")"
   }
 
@@ -205,6 +213,8 @@ object IncrementalMemoization {
   case class FF2[A, B, R](f: (Expr[A], Expr[B]) => Expr[R], a: Expr[A], b: Expr[B]) extends F2[A, B, R] {
     val containsQuote = a.containsQuote || b.containsQuote
     val containsBinding = a.containsBinding || b.containsBinding
+
+    def depth = (a.depth max b.depth) + 1
 
     override def toString = {
       f match {
@@ -218,6 +228,7 @@ object IncrementalMemoization {
     val containsQuote = a.containsQuote || b.containsQuote || c.containsQuote
     val containsBinding = a.containsBinding || b.containsBinding || c.containsBinding
 
+    def depth = (a.depth max b.depth max c.depth) + 1
     override def toString = f + "(" + a + "," + b + "," + c + ")"
   }
 
@@ -332,7 +343,12 @@ object IncrementalMemoization {
       for (i <- h.keys) {
         s = s + i  + " => " + h.get(i).get.get + "\n"
       }
-      s + "final size: " + h.size + "\n"
+
+      s = s + "bzise: " + b.size  +"\n"
+
+      for (i <- b.keys) {
+        s = s + i + " => " + b.get(i).get + "\n"
+      }
 
       s
     }

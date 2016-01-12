@@ -41,6 +41,7 @@ object IncrementalTreapMap {
     def get(k: K)(implicit p: PO[K,V]): Option[V]
     def put(e: Entry[K,V])(implicit p: PO[K,V]): T[K,V]
 
+    def depth = 1
     def evalValue = this
     def containsBinding = false
     def containsQuote = false
@@ -48,7 +49,7 @@ object IncrementalTreapMap {
 
   type TreapSet[K] = TreapMap[K,K]
 
-  trait PrioFactory[@specialized(Int,Long,Double) K, @specialized(Int,Long,Double) V] extends Ordering[K] {
+  trait PrioFactory[@specialized(Int,Long,Double) K , @specialized(Int,Long,Double) V] extends Ordering[K] {
     def prio(k: K): Int
     def compare(k1: K, k2: K): Int
 

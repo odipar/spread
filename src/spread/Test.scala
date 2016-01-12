@@ -18,8 +18,8 @@ object Test {
 
   object fac extends FA1[Int,Int] {
     def apply(i: F0I): I = {
-      if (~i < 2) 1
-      else %(fac,~i - 1) * i
+      if (~i < 2) !('a~1)
+      else fac(~i - 1) * !i
     }
     override def toString = "fac"
   }
@@ -46,13 +46,38 @@ object Test {
 
   final def main(args: Array[String]): Unit = {
 
-    val e = %(fib,40)
-    //val e = ('a~1 ++ 2) ** 'c~(3 ++ 4)
+    //val e = (1 ++ (2 ++ (3 ++ (4 ++ (5 ++ (6 ++ (7 ++ (8 ++ (9 ++ (1 ++ (2 ++ (3 ++ (4 ++ (5 ++ (6 ++ (7 ++ (8 ++ 9)))))))))))))))))
+    //val e1 = (((1 ++ 2) ++ (3 ++ 4)) ++ ((6 ++ 7) ++ (8 ++ 9))) ++ (((1 ++ 2) ++ (3 ++ 4)) ++ ((6 ++ 7) ++ (8 ++ 9)))
+    val e1 = (1 ++ 2) ** (3 ++ 'a~4)
+    val e = %(fac,5)
     //    println("o5: " + TT.o5)
 
-    val (c,r) = fullRed(cm,e)
+    val (c,r) = fullRed(CM(Map()),e)
+    //val (c2,r2) = fullRed(cm,removeQuotes(r))
     println("r: " + r)
-    val s = toIds(r)
+    println("r.depth: " + r.depth)
+    println("c: " + c)
+
+
+    val (c1,r1) = fullRed(cm,e1)
+    val c2 = backref(cm,e1)
+    println("e1: " + e1.depth)
+    println("r1: " + r1)
+    println("r1.depth: " + r1.depth)
+    println("c2: " + c2)
+
+    /*
+
+     (1 ++ 2) ** (3 ++ 4)
+       1 ++ 2
+       => 3
+       3 ++ 4
+       => 7
+     3 * 7
+     => 21
+     */
+
+    val s = toIds(r1)
     val xml = toNodes(s)
 
     val xmls: String = xml.toString

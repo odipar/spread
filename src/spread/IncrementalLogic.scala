@@ -17,6 +17,7 @@ object IncrementalLogic {
   trait BB extends BExpr with F0B {
     def containsQuote = false
     def containsBinding = false
+    def depth = 1
 
     def origin = this
   }
@@ -36,7 +37,7 @@ object IncrementalLogic {
   private case class BWrap(origin: B) extends BExpr {
     def containsQuote = error
     def containsBinding = false
-
+    def depth = origin.depth + 1
     def error = sys.error("BWrap should not be used directly")
   }
 
