@@ -38,13 +38,13 @@ object FingerprintTree {
   final def main(args: Array[String]): Unit = {
 
     var i = 0
-    val s = 60
+    val s = 500
 
     var r1: SeqHash = empty
     var r3: Array[Hashable] = new Array(s)
 
     while (i < s) {
-      val k = i
+      val k = i + 20
       r1 = merge(r1,create(IntHashable(k)))
       r3(i) = IntHashable(k)
       i = i + 1
@@ -61,40 +61,41 @@ object FingerprintTree {
 
     val ss = seq(0)
 
-    val lvol0 = leftFringe(ss,0)
-    val rvol0 = rightFringe(ss,0)
-    println("lvol0: " + lvol0)
-    println("rvol0: " + rvol0)
+    println("transform: " + transform(ss))
+    println("r1: " + r1)
+  }
 
-    val ft0 = first(0,lvol0.size,ss)
-    val lt0 = last(0,rvol0.size,ss)
+  def transform(t: Hashable): SeqHash = {
+    var tt = t
+    var height = 0
+    var leftFringes: Seq[Seq[Hashable]] = Array().seq
+    var rightFringes: Seq[Seq[Hashable]] = Array().seq
+    var result: SeqHash = null
 
-    val lvol1 = leftFringe(ft0,1)
-    val rvol1 = rightFringe(lt0,1)
-    println("lvol1: " + lvol1)
-    println("rvol1: " + rvol1)
+    while(result == null) {
+      val lfringe = leftFringe(tt,height).toArray
+      val lfirst = first(height,lfringe.size,tt)
+      if (lfirst != null) {
+        val rfringe = rightFringe(lfirst,height).toArray
+        val rlast = last(height,rfringe.size,lfirst)
+        if (rlast != null) {
+          rightFringes = rightFringes :+ rfringe.toSeq
+          leftFringes = leftFringes :+ lfringe.toSeq
+          tt = rlast
+          height = height + 1
+        }
+        else {
+          println("CASE 1")
+          result = SeqHash(height,leftFringes,lfringe ++ rfringe,rightFringes)
+        }
+      }
+      else {
+        println("CASE 2")
+        result = SeqHash(height,leftFringes,lfringe,rightFringes)
+      }
+    }
 
-    val ft1 = first(1,lvol1.size,ft0)
-    val lt1 = last(1,rvol1.size,lt0)
-    val lvol2 = leftFringe(ft1,2)
-    val rvol2 = rightFringe(lt1,2)
-    println("lvol2: " + lvol2)
-    println("rvol2: " + rvol2)
-
-    val ft2 = first(2,lvol2.size,ft1)
-    val lt2 = last(2,rvol2.size,lt1)
-    val lvol3 = leftFringe(ft2,3)
-    val rvol3 = rightFringe(lt2,3)
-    println("lvol3: " + lvol3)
-    println("rvol3: " + rvol3)
-
-    println("r1.leftFringes: " + r1.leftFringes)
-    println("r1.rightFringes: " + r1.rightFringes)
-
-    //val ll = leftFringe(ss,0)
-    //println("ll: " + ll)
-    //println("rightFringes: " + r1.rightFringes)
-    //println("leftFringes: " + r1.leftFringes)
+    result
   }
 
   def leftFringe(tree: Hashable, height: Int): List[Hashable] = {
@@ -106,7 +107,7 @@ object FingerprintTree {
   }
 
   def fringeVolatile(elems: LazyIndexableIterator[Hashable], direction: Byte): List[Hashable] ={
-    val kind2: Array[Byte] = new Array(8)
+    val kind2: Array[Byte] = new Array(30)
     val kind = kind2.map(e => Unknown)
 
     var index = 1
@@ -134,7 +135,7 @@ object FingerprintTree {
       }
 
       var j = index
-      var right = j + 3
+      var right = j + 4
 
       while (j < right) {
         if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
@@ -172,7 +173,8 @@ object FingerprintTree {
   }
 
   def to_tree(s: Seq[Hashable]): Hashable = {
-    if (s.size == 1) s.head
+    if (s.size == 0) null
+    else if (s.size == 1) s.head
     else HPair(s.head,to_tree(s.tail))
   }
 
@@ -254,22 +256,6 @@ object FingerprintTree {
     }
   }
 
-  def firstSeq(hh: Int, s: Int, t: Hashable): Seq[Hashable] = {
-    if (t.height <= hh) Array(t)
-    else t match {
-      case HPair(left,right) => {
-        val l = firstSeq(hh,s,left)
-        if (l.size < s) {
-          val r = firstSeq(hh,s-l.size,right)
-          l ++ r
-        }
-        else l
-      }
-      case _ => Array(t)
-
-    }
-  }
-
   def first(hh: Int, size: Int, t: Hashable): Hashable = {
     val f = first2(hh,size,t,List())
     to_tree(f._2.reverse)
@@ -283,6 +269,7 @@ object FingerprintTree {
 
         if (ls < s) {
           val (rs,nst2) = first2(hh,s - ls,right, nst)
+
           (ls + rs,nst2)
         }
         else (ls,right +: nst)
