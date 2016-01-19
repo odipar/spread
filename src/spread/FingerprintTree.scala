@@ -38,31 +38,68 @@ object FingerprintTree {
   final def main(args: Array[String]): Unit = {
 
     var i = 0
-    val s = 500
+    val s = 1000
 
-    var r1: SeqHash = empty
-    var r3: Array[Hashable] = new Array(s)
+    var n1: Hashable = null
+    var n2: Hashable = null
 
     while (i < s) {
-      val k = i + 20
-      r1 = merge(r1,create(IntHashable(k)))
-      r3(i) = IntHashable(k)
+      val k = i + 100
+      n1 = concat(n1,IntHashable(k))
+      n2 = concat(IntHashable(s-k-1+200),n2)
       i = i + 1
     }
 
-    var done = false
-    var seq: Seq[Hashable] = r3.toSeq
+    println("equals: " + (n1 == n2))
+    println("n1: " + n1)
+    println("n2: " + n2)
 
-    while (!done) {
-      val rnd = doRound2(seq,false,false)
-      seq = rnd.center
-      if (seq.size == 1) { done = true }
+  }
+
+  def transformLeft(t: Hashable): SeqHash = {
+    var tt = t
+    var height = 0
+    var leftFringes: Seq[Seq[Hashable]] = Array().seq
+    var rightFringes: Seq[Seq[Hashable]] = Array().seq
+    var result: SeqHash = null
+
+    while(result == null) {
+      val lfringe = leftFringe(tt,height).toArray
+      val lfirst = first(height,lfringe.size,tt)
+      if (lfirst != null) {
+        leftFringes = leftFringes :+ lfringe.toSeq
+        tt = lfirst
+        height = height + 1
+      }
+      else {
+        result = SeqHash(height,leftFringes,lfringe,rightFringes)
+      }
     }
 
-    val ss = seq(0)
+    result
+  }
 
-    println("transform: " + transform(ss))
-    println("r1: " + r1)
+  def transformRight(t: Hashable): SeqHash = {
+    var tt = t
+    var height = 0
+    var leftFringes: Seq[Seq[Hashable]] = Array().seq
+    var rightFringes: Seq[Seq[Hashable]] = Array().seq
+    var result: SeqHash = null
+
+    while(result == null) {
+      val rfringe = rightFringe(tt,height).toArray
+      val rlast = last(height,rfringe.size,tt)
+      if (rlast != null) {
+        rightFringes = rightFringes :+ rfringe.toSeq
+        tt = rlast
+        height = height + 1
+      }
+      else {
+        result = SeqHash(height,leftFringes,rfringe,rightFringes)
+      }
+    }
+
+    result
   }
 
   def transform(t: Hashable): SeqHash = {
@@ -107,7 +144,7 @@ object FingerprintTree {
   }
 
   def fringeVolatile(elems: LazyIndexableIterator[Hashable], direction: Byte): List[Hashable] ={
-    val kind2: Array[Byte] = new Array(30)
+    val kind2: Array[Byte] = new Array(32)
     val kind = kind2.map(e => Unknown)
 
     var index = 1
@@ -117,6 +154,7 @@ object FingerprintTree {
     var other_direction = 1-direction
 
     var done = false
+    var right = Integer.MAX_VALUE
 
     while (!done) {
       done = true
@@ -134,29 +172,31 @@ object FingerprintTree {
         case _ =>
       }
 
-      var j = index
-      var right = j + 4
+      if (!done) {
+        var j = index
 
-      while (j < right) {
-        if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
-          elems(j) match {
-            case Some(x) => elems(j + 1) match {
-              case Some(y) => {
-                if ((x.hash.bit(bit_index) == other_direction) && (y.hash.bit(bit_index) == direction)) {
-                  kind(j) = Merge
-                  kind(j + 1) = Merge
-                  j = j + 1
+        while (j < right) {
+          if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
+            elems(j) match {
+              case Some(x) => elems(j + 1) match {
+                case Some(y) => {
+                  if ((x.hash.bit(bit_index) == other_direction) && (y.hash.bit(bit_index) == direction)) {
+                    kind(j) = Merge
+                    kind(j + 1) = Merge
+                    j = j + 1
+                    right = j
+                  }
+                  else {
+                    done = false
+                  }
                 }
-                else {
-                  done = false
-                }
+                case _ => { right = j + 1 }
               }
-              case _ =>
+              case _ => { right = j + 1 }
             }
-            case _ =>
           }
+          j = j + 1
         }
-        j = j + 1
       }
       bit_index = bit_index + 1
     }
@@ -558,7 +598,8 @@ object FingerprintTree {
       if (dd) {
         println("h: " + h)
       }
-      counts.add(h) ; ccounts = ccounts + 1  }
+      counts.add(h) ; ccounts = ccounts + 1
+    }
   }
 
   trait Hashable {
@@ -640,9 +681,98 @@ object FingerprintTree {
 
   var mx = 0
 
-  def doRound(elems: Seq[Hashable], volatileLeft: Boolean, volatileRight: Boolean): Round = {
+  def doRound4(elems: Seq[Hashable]): Seq[Hashable] = {
+    doRound3(compress(elems))
+  }
+
+  def doRound3(elems: Seq[Hashable]): Seq[Hashable] = {
     val N = elems.length
 
+    val kind: Array[Byte] = elems.map(e => Unknown).toArray
+    val hashes: Array[Hash] = elems.map(e => e.hash).toArray
+    var done = false
+
+    var idx = 0
+    val N1 = N - 1
+
+    while (!done) {
+      done = true
+
+      var j = 0
+
+      while (j < N1) {
+        if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
+          if ((hashes(j).bit(idx) == 1) && (hashes(j + 1).bit(idx) == 0)) {
+            kind(j) = Merge
+            kind(j+1) = Merge
+            j = j + 1
+          }
+          else { done = false }
+        }
+        j = j + 1
+      }
+      idx = idx + 1
+    }
+
+    var i = 0
+    var center: List[Hashable] = List()
+
+    while (i < N) {
+      kind(i) match {
+        case Unknown => { center = elems(i) +: center}
+        case Merge => { center = (elems(i).combineWith(elems(i + 1))) +: center; i = i + 1 }
+      }
+      i = i + 1
+    }
+
+    center.toArray.reverse.toSeq
+  }
+
+  def doRound5(elems: Seq[Hashable]): Seq[Hashable] = {
+    val N = elems.length
+
+    val kind: Array[Byte] = elems.map(e => Unknown).toArray
+    val hashes: Array[Hash] = elems.map(e => e.hash).toArray
+    var done = false
+
+    var idx = 0
+    val N1 = N - 1
+
+    while (!done) {
+      done = true
+
+      var j = N1
+
+      while (j > 0) {
+        if ((kind(j) == Unknown) && (kind(j - 1) == Unknown)) {
+          if ((hashes(j).bit(idx) == 0) && (hashes(j - 1).bit(idx) == 1)) {
+            kind(j) = Merge
+            kind(j-1) = Merge
+            j = j - 1
+          }
+          else { done = false }
+        }
+        j = j - 1
+      }
+      idx = idx + 1
+    }
+
+    var i = 0
+    var center: List[Hashable] = List()
+
+    while (i < N) {
+      kind(i) match {
+        case Unknown => { center = elems(i) +: center}
+        case Merge => { center = (elems(i).combineWith(elems(i + 1))) +: center; i = i + 1 }
+      }
+      i = i + 1
+    }
+
+    center.toArray.reverse.toSeq
+  }
+
+  def doRound(elems: Seq[Hashable], volatileLeft: Boolean, volatileRight: Boolean): Round = {
+    val N = elems.length
 
     val kind: Array[Byte] = elems.map(e => Unknown).toArray
     val hashes: Array[Hash] = elems.map(e => e.hash).toArray
@@ -805,5 +935,31 @@ object FingerprintTree {
 
       SeqHash(height,leftFringes,top,rightFringes)
     }
+  }
+
+  def concat(left: Hashable, right: Hashable): Hashable = {
+    if (left == null) right
+    else if (right == null) left
+    else concat2(transformRight(left),transformLeft(right))
+  }
+
+  def concat2(left: SeqHash, right: SeqHash): Hashable ={
+      var elems: Seq[Hashable] = Array[Hashable]().toSeq
+
+      var height = 0
+      var done = false
+
+      while (!done) {
+        if (height < left.height) { elems = left.rightFringes(height) ++ elems }
+        else if (height == left.height) { elems = left.top ++ elems }
+
+        if (height < right.height) { elems = elems ++ right.leftFringes(height) }
+        else if (height == right.height) { elems = elems ++ right.top }
+
+        if ((height >= left.height) && (height >= right.height) && (elems.length == 1)) { done = true }
+        else { elems = doRound4(elems) ; height = height + 1 }
+      }
+
+      elems(0)
   }
 }
