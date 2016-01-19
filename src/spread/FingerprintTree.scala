@@ -38,21 +38,36 @@ object FingerprintTree {
   final def main(args: Array[String]): Unit = {
 
     var i = 0
-    val s = 1000
+    var ii = 0
+    var s = 1000
 
     var n1: Hashable = null
     var n2: Hashable = null
 
     while (i < s) {
-      val k = i + 100
-      n1 = concat(n1,IntHashable(k))
-      n2 = concat(IntHashable(s-k-1+200),n2)
+      val k = i
+
+      var ss = (i+10) min s
+      var n3: Hashable = null
+      while (i < ss) {
+        var k = i
+        n3 = concat(n3,IntHashable(k))
+        i = i + 1
+      }
+      n1 = concat(n1,n3)
+    }
+
+    i = 0
+    s = s / 2
+    while (i < s) {
+      var k = i
+      n2 = concat(n2,IntHashable(k))
       i = i + 1
     }
 
     println("equals: " + (n1 == n2))
-    println("n1: " + n1)
-    println("n2: " + n2)
+    println("n1: " + leftSplit(n1,100))
+    println("n2: " + leftSplit(n2,100))
 
   }
 
@@ -96,39 +111,6 @@ object FingerprintTree {
       }
       else {
         result = SeqHash(height,leftFringes,rfringe,rightFringes)
-      }
-    }
-
-    result
-  }
-
-  def transform(t: Hashable): SeqHash = {
-    var tt = t
-    var height = 0
-    var leftFringes: Seq[Seq[Hashable]] = Array().seq
-    var rightFringes: Seq[Seq[Hashable]] = Array().seq
-    var result: SeqHash = null
-
-    while(result == null) {
-      val lfringe = leftFringe(tt,height).toArray
-      val lfirst = first(height,lfringe.size,tt)
-      if (lfirst != null) {
-        val rfringe = rightFringe(lfirst,height).toArray
-        val rlast = last(height,rfringe.size,lfirst)
-        if (rlast != null) {
-          rightFringes = rightFringes :+ rfringe.toSeq
-          leftFringes = leftFringes :+ lfringe.toSeq
-          tt = rlast
-          height = height + 1
-        }
-        else {
-          println("CASE 1")
-          result = SeqHash(height,leftFringes,lfringe ++ rfringe,rightFringes)
-        }
-      }
-      else {
-        println("CASE 2")
-        result = SeqHash(height,leftFringes,lfringe,rightFringes)
       }
     }
 
@@ -635,6 +617,18 @@ object FingerprintTree {
       case (h1,RLE(h2,_)) => h1 == h2
       case (RLE(h1,_),h2) => h1 == h2
       case _ => e1 == e2
+    }
+  }
+
+  def leftSplit(h: Hashable, pos: Int): Hashable ={
+    h match {
+      case HPair(left,right) => {
+        if (pos > left.size) {
+          concat(left,leftSplit(right,pos - left.size))
+        }
+        else leftSplit(left,pos)
+      }
+      case _ => h
     }
   }
 
