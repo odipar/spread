@@ -39,35 +39,43 @@ object FingerprintTree {
 
     var i = 0
     var ii = 0
-    var s = 1000
+    var s = 100
 
     var n1: Hashable = null
     var n2: Hashable = null
+    var e: Array[Hashable] = new Array(100)
 
     while (i < s) {
-      val k = i
 
       var ss = (i+10) min s
       var n3: Hashable = null
       while (i < ss) {
-        var k = i
+        var k = (i % 3) + 1
         n3 = concat(n3,IntHashable(k))
         i = i + 1
       }
       n1 = concat(n1,n3)
     }
 
+    println("n1: " + n1)
+
     i = 0
-    s = s / 2
     while (i < s) {
-      var k = i
+      var k = (i % 3) + 1
       n2 = concat(n2,IntHashable(k))
+      e(i) = IntHashable(k)
       i = i + 1
     }
 
-    println("equals: " + (n1 == n2))
-    println("n1: " + leftSplit(n1,100))
-    println("n2: " + leftSplit(n2,100))
+    var ee = e.toSeq
+
+    while (ee.size > 1) {
+      ee = doRound4(ee)
+    }
+
+    println("ee: " + ee(0))
+    println("n2: " + n2)
+
 
   }
 
@@ -118,15 +126,15 @@ object FingerprintTree {
   }
 
   def leftFringe(tree: Hashable, height: Int): List[Hashable] = {
-    fringeVolatile(new LazyIndexableIterator(new LeftIterator(tree,height)),0).reverse
+    fringeVolatile2(new LazyIndexableIterator(new LeftIterator(tree,height)),0).reverse
   }
 
   def rightFringe(tree: Hashable, height: Int): List[Hashable] = {
-    fringeVolatile(new LazyIndexableIterator(new RightIterator(tree,height)),1)
+    fringeVolatile2(new LazyIndexableIterator(new RightIterator(tree,height)),1)
   }
 
   def fringeVolatile(elems: LazyIndexableIterator[Hashable], direction: Byte): List[Hashable] ={
-    val kind2: Array[Byte] = new Array(32)
+    val kind2: Array[Byte] = new Array(300)
     val kind = kind2.map(e => Unknown)
 
     var index = 1
@@ -156,6 +164,7 @@ object FingerprintTree {
 
       if (!done) {
         var j = index
+
 
         while (j < right) {
           if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
@@ -194,18 +203,133 @@ object FingerprintTree {
     fringe
   }
 
+  def fringeVolatile2(elems: LazyIndexableIterator[Hashable], direction: Byte): List[Hashable] = {
+    val width = 20
+    var s = width
+    var done = false
+    var ns: List[Hashable] = null
+
+    var ii = 0
+    while (!done) {
+      ns = fringeVolatile3(elems,direction,s)
+     // println("s: " + s)
+     // println("ns.size: " + ns.size)
+      if ((ns.size + width) == s) { done = true }
+      else { s = ns.size + width }
+      ii = ii + 1
+    }
+    ns
+  }
+
+  def fringeVolatile3(elems: LazyIndexableIterator[Hashable], direction: Byte, right: Int): List[Hashable] ={
+    val kind2: Array[Byte] = new Array(30)
+    val kind = kind2.map(e => Unknown)
+
+    var index = 1
+    var bit_index = 0
+    kind(0) = Fringe
+
+    var other_direction = 1-direction
+
+    var done = false
+
+    while (!done) {
+      done = true
+
+      if (index < right) {
+        elems(index) match {
+          case Some(x) => {
+            if ((kind(index) == Unknown) && (x.hash.bit(bit_index) == direction)) {
+              kind(index) = Fringe
+              index = index + 1
+            }
+            if (kind(index) == Unknown) {
+              done = false
+            }
+          }
+          case _ =>
+        }
+      }
+
+      if (!done) {
+        var j = index
+
+        while (j < right) {
+          if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
+            elems(j) match {
+              case Some(x) => elems(j + 1) match {
+                case Some(y) => {
+                  if ((x.hash.bit(bit_index) == other_direction) && (y.hash.bit(bit_index) == direction)) {
+                    kind(j) = Merge
+                    kind(j + 1) = Merge
+                    j = j + 1
+                  }
+                  else {
+                    done = false
+                  }
+                }
+                case _ =>
+              }
+              case _ =>
+            }
+          }
+          j = j + 1
+        }
+      }
+      bit_index = bit_index + 1
+    }
+
+    var i = 0
+    var fringe: List[Hashable] = List()
+
+   // println("kind: " + kind.toSeq)
+   // println("index: " + index)
+
+    while (i < index) {
+      fringe = elems(i).get +: fringe
+      i = i + 1
+    }
+
+    fringe
+  }
+
   def to_tree(s: Seq[Hashable]): Hashable = {
     if (s.size == 0) null
     else if (s.size == 1) s.head
-    else HPair(s.head,to_tree(s.tail))
+    else {
+      val h = s.head
+      val t = to_tree(s.tail)
+      if (multipleOf(h,t)) {
+        val s: Seq[Hashable] = List(h) ++ List(t)
+        val k = compress(s)
+        k(0)
+      }
+      else HPair(h,t)
+    }
   }
 
   def lleft(h: Hashable): Hashable = h match {
     case HPair(left,_) => left
+    case RLE(r,s) => {
+      if (s == 1) sys.error("no1")
+      else if (s < 4) r
+      else {
+        val s2 = s / 2
+        RLE(r,s2)
+      }
+    }
     case _ => null
   }
   def rright(h: Hashable): Hashable = h match {
     case HPair(_,right) => right
+    case RLE(r,s) => {
+      if (s == 1) sys.error("no2")
+      else if (s < 3) r
+      else {
+        val s2 = s - (s / 2)
+        RLE(r,s2)
+      }
+    }
     case _ => null
   }
 
@@ -276,10 +400,14 @@ object FingerprintTree {
       }
       if (i >= v.size) None ; else Some(v(i))
     }
+
+    override def toString = {
+      "LazyIndexableIterator("+v+"," + it + ")"
+    }
   }
 
   def first(hh: Int, size: Int, t: Hashable): Hashable = {
-    val f = first2(hh,size,t,List())
+    val f = first3(hh,size,t,List())
     to_tree(f._2.reverse)
   }
 
@@ -300,9 +428,42 @@ object FingerprintTree {
     }
   }
 
+  def first3(hh: Int, s: Int, t: Hashable, st: List[Hashable]): (Int,List[Hashable]) = {
+    if (t.height <= hh) (1,st)
+    else {
+      val left = lleft(t)
+      val right = rright(t)
+
+      val (ls,nst) = first3(hh, s,left, st)
+
+      if (ls < s) {
+        val (rs,nst2) = first3(hh,s - ls,right, nst)
+
+        (ls + rs,nst2)
+      }
+      else (ls,right +: nst)
+    }
+  }
+
   def last(hh: Int, size: Int, t: Hashable): Hashable = {
-    val l = last2(hh,size,t,List())
+    val l = last3(hh,size,t,List())
     to_tree(l._2)
+  }
+
+  def last3(hh: Int, s: Int, t: Hashable, st: List[Hashable]): (Int,List[Hashable]) = {
+    if (t.height <= hh) (1,st)
+    else {
+      val left = lleft(t)
+      val right = rright(t)
+
+      val (rs,nst) = last3(hh, s,right, st)
+
+      if (rs < s) {
+        val (ls,nst2) = last3(hh,s - rs,left, nst)
+        (ls + rs,nst2)
+      }
+      else (rs,left +: nst)
+    }
   }
 
   def last2(hh: Int, s: Int, t: Hashable, st: List[Hashable]): (Int,List[Hashable]) = {
@@ -557,6 +718,7 @@ object FingerprintTree {
     val height = (h1.height max h2.height) + 1
     val size = h1.size + h2.size
     val head = Hashing.jenkinsHash(h1.hash.head ^ Hashing.jenkinsHash(h2.hash.head))
+
     def bit(index: Int): Byte = {
       var p = index
       var h = head
@@ -676,7 +838,8 @@ object FingerprintTree {
   var mx = 0
 
   def doRound4(elems: Seq[Hashable]): Seq[Hashable] = {
-    doRound3(compress(elems))
+    val c = compress(elems)
+    doRound3(c)
   }
 
   def doRound3(elems: Seq[Hashable]): Seq[Hashable] = {
