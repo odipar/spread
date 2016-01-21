@@ -10,7 +10,7 @@ object SplitHash {
     var seq2: SHNode[Int] = null
 
     var i = 0
-    var s = 10000
+    var s = 1000
 
     var seq3: Array[SHNode[Int]] = new Array(s)
 
