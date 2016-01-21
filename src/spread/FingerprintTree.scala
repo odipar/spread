@@ -36,48 +36,23 @@ object FingerprintTree {
   import scala.reflect.ClassTag
 
   final def main(args: Array[String]): Unit = {
+    var seq1: Hashable = null
+    var seq2: Hashable = null
 
     var i = 0
-    var ii = 0
     var s = 1000
 
-    var n1: Hashable = null
-    var n2: Hashable = null
-    var e: Array[Hashable] = new Array(s)
-
     while (i < s) {
-
-      var ss = (i+10) min s
-      var n3: Hashable = null
-      while (i < ss) {
-        var k = (i % 3) + 1
-        n3 = concat(n3,IntHashable(k))
-        i = i + 1
-      }
-      n1 = concat(n1,n3)
-    }
-
-    println("n1: " + n1)
-
-    i = 0
-    while (i < 25) {
-      var k = (i % 3) + 1
-      n2 = concat(n2,IntHashable(k))
-      e(i) = IntHashable(k)
+      seq1 = concat(seq1,IntHashable(i))
+      seq2 = concat(IntHashable(s-i-1),seq2)
       i = i + 1
     }
 
-    var ee = e.toSeq
+    println("seq1: " + seq1)
+    println("seq2: " + seq2)
 
-/*    while (ee.size > 1) {
-      ee = doRound4(ee)
-    }
-
-    println("ee: " + ee(0)) */
-    println("n1: " + leftSplit(n1,25))
-    println("n2: " + n2)
-
-
+    println("splithash")
+    SplitHash.main(Array())
   }
 
   def transformLeft(t: Hashable): SeqHash = {
@@ -591,7 +566,7 @@ object FingerprintTree {
   case class IntHashable(i: Int) extends Hashable with Hash {
     def height = 0
     def size = 1
-    def head = { Hashing.jenkinsHash(i) }
+    def head = { Hashing.jenkinsHash(Hashing.jenkinsHash(i)) }
     def bit(index: Int) = {
       var p = index
       var h = head
@@ -626,8 +601,6 @@ object FingerprintTree {
     override def toString = "[" + h1 + "|" + h2 + "]"
   }
 
-  val counts: scala.collection.mutable.HashSet[Hashable] = scala.collection.mutable.HashSet()
-  var ccounts: Long = 0
   var dd = false
 
   trait Hashable {
