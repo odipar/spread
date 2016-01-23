@@ -400,7 +400,6 @@ object SplitHash {
         }
       }
       bit_index = (bit_index + 1) & 31
-
     }
 
     var i = 0
