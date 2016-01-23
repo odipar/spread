@@ -52,7 +52,6 @@ object FingerprintTree {
     println("seq2: " + seq2)
 
     println("splithash")
-    SplitHash.main(Array())
   }
 
   def transformLeft(t: Hashable): SeqHash = {
