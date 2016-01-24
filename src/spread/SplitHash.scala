@@ -6,6 +6,7 @@ package spread
 
 object SplitHash {
   import Hashing.siphash24
+  import java.lang.ref.WeakReference
 
   //
   // SplitHash is an immutable, uniquely represented Sequence ADT (Authenticated Data Structure),
@@ -34,19 +35,22 @@ object SplitHash {
     var s3 = emptySH[Int]
 
     var i = 0
-    var n = 100000
+    var n = 500000
 
     // concatenate n times in post- and pre-order
     while (i < n) {
       var k1 = intNode(i)
       var k2 = intNode(n-i-1)
-      var k3 = intNode(i % 13)  // repetitions
+      var k3 = intNode(i % 63)  // repetitions
       s1 = concat(s1,k1)
       s2 = concat(k2,s2)
-      s3 = concat(s3,k3)
+//      s3 = concat(s3,k3)
       i = i + 1
       if ((i % 1000) == 0) {
         println("concat i: " + i)
+        //s1 = s1.chunk
+        //s2 = s2.chunk
+ //       s3 = s3.chunk
       }
     }
 
@@ -97,6 +101,9 @@ object SplitHash {
     def size: Int
     def first: X
     def last: X
+    def chunk: SHNode[X]
+    def isChunked: Boolean
+
 
     // Utility methods to detect and deal with consecutive, equal nodes
     private def get[X](e1: SHNode[X]): SHNode[X] = e1 match { case RLENode(h,_) => h ; case _ => e1 }
@@ -121,12 +128,14 @@ object SplitHash {
     def value: X
     def first = value
     def last = value
+    def chunk = this
+    def isChunked = true
   }
 
   case class IntNode(value: Int) extends LeafNode[Int] with Hash {
     def hash = this
 
-    override val head = Hashing.siphash24(value,value)
+    override def head = Hashing.siphash24(value,value)
     def intAt(index: Int) = {
       var i = index
       var h = head
@@ -141,26 +150,7 @@ object SplitHash {
     override def toString = value.toString
   }
 
-  // A full binary node holds a hash (Int), size (Int), height (Int) and its left and right sub-trees
-  // TODO: create a compressed SHNode for sizes < 32 to reduce memory footprint
-  case class BinNode[X](left: SHNode[X], right: SHNode[X]) extends SHNode[X] with Hash {
-    def first = left.first
-    def last = right.last
-    val size = left.size + right.size
-    val height = 1 + (left.height max right.height)
-    def hash = this
-
-    override val head = siphash24(left.hash.head,right.hash.head)
-
-    final def bitAt(i: Int): Byte = ((intAt(i >> 5) >>> (31-(i & 31))) & 1).toByte
-    override def intAt(index: Int) = {
-      if (index > 0) {
-        if (bitAt(index) == 1) siphash24(left.hash.intAt(index-1),head)
-        else siphash24(head,right.hash.intAt(index-1))
-      }
-      else head
-    }
-
+  trait BNode[X] extends SHNode[X] with Hash {
     override def equals(o: Any): Boolean = {
       // fast reference equality check (=true when references are equal)
       if (this.eq(o.asInstanceOf[AnyRef])) { true }
@@ -168,8 +158,51 @@ object SplitHash {
       else if (o.hashCode != hashCode) { false }
       else {
         o match {
-          case BinNode(l,r) => (l == left) && (r == right)
+          case k: SHNode[X] => (left == k.left) && (right == k.right)
           case _ => false
+        }
+      }
+    }
+    def hash = this
+  }
+
+  // A full binary node holds a hash (Int), size (Int), height (Int) and its left and right sub-trees
+  case class BinNode[X](left: SHNode[X], right: SHNode[X]) extends BNode[X] {
+    def first = left.first
+    def last = right.last
+    val csize = {         // encode isChunked property into a negative size
+      val ns = left.size + right.size
+      if (left.isChunked && right.isChunked) -ns
+      else ns
+    }
+    def size = {
+      val s = csize
+      if (s < 0) -s
+      else s
+    }
+    def isChunked = csize < 0
+    val height = 1 + (left.height max right.height)
+
+    override val head = siphash24(left.hash.head,right.hash.head)
+
+    override def intAt(index: Int) = {
+      val h = head
+      if (index > 0) {
+        val nindex = index / 2
+        siphash24(left.hash.intAt(nindex) + h,right.hash.intAt(index - nindex) - h)
+      }
+      else h
+    }
+    def chunk = {
+      if (height < 6) chunkTree(this)
+      else {
+        if (left.isChunked) {
+          if (right.isChunked)  this
+          else BinNode(left,right.chunk)
+        }
+        else {
+          if (right.isChunked) BinNode(left.chunk,right)
+          else BinNode(left.chunk,right.chunk)
         }
       }
     }
@@ -197,6 +230,12 @@ object SplitHash {
       }
       else head
     }
+    def chunk = {
+      if (!node.isChunked) RLENode(node.chunk,multiplicity)
+      else this
+    }
+    def isChunked = node.isChunked
+
     def first = node.first
     def last = node.last
     override def toString = multiplicity + ":" + node
@@ -210,6 +249,8 @@ object SplitHash {
     def size = error
     def first = error
     def last = error
+    def chunk = error
+    def isChunked = error
   }
 
   // Iterates sub-nodes in post-order, given a certain target height
@@ -342,6 +383,69 @@ object SplitHash {
     fringe
   }
 
+  def chunkTree[X](s: SHNode[X]): ChunkedNode[X] = {
+    var i = new LeftNodeIterator(s,0)
+    var ii = 0
+    var a: Array[SHNode[X]] = new Array(s.size)
+    while (i.hasNext) {
+      a(ii) = i.next
+      ii = ii + 1
+    }
+    ChunkedNode(a,s.hash.head,s.size,s.height)
+  }
+
+  def unchunk[X](cn: ChunkedNode[X]): SHNode[X] = {
+    var s: Array[SHNode[X]] = cn.a
+    while (s.length > 1) {
+      s = doRound(s)
+    }
+    s(0)
+  }
+
+  case class ChunkedNode[X](a: Array[SHNode[X]], h: Int, size: Int, height: Int) extends BNode[X] {
+    var unchunked: WeakReference[_] = null
+
+    def isChunked = true
+    def get: SHNode[X] = {
+      if (unchunked != null) {
+        val u = unchunked.get
+        if (u != null) u.asInstanceOf[SHNode[X]]
+        else {
+          get2
+        }
+      }
+      else get2
+    }
+    def get2: SHNode[X] = {
+      val u = unchunk(this)
+      unchunked = new WeakReference(u)
+      u
+    }
+
+    def left = get.left
+    def right = get.right
+    def first = get.first
+    def last = get.last
+    override def head = h
+    override def hashCode = h
+    def intAt(i: Int) = {
+      if (i == 0) head
+      else get.hash.intAt(i)
+    }
+
+    def chunk = this
+    override def toString = {
+      var r = ""
+      val s = a.size
+      var i = 0
+      while (i < s) {
+        if (i > 0) r = r + " " + a(i)
+        else r = r + a(i)
+        i = i + 1
+      }
+      r
+    }
+  }
   // Build the left or right Fringe up to the frontier by lazily consuming the LazyIndexableIterator
   def fringeVolatile3[X](elems: LazyIndexableIterator[X], direction: Byte, frontier: Int): List[SHNode[X]] ={
     val kind: Array[Byte] = new Array(frontier+1)
