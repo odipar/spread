@@ -84,7 +84,7 @@ object SplitHash {
     def isChunked = true
   }
 
-  case class IntNode(value: Int) extends LeafNode[Int] with Hash {
+  case class IntNode(value: Int) extends LeafNode[Int] {
     override def hashCode = siphash24(value,value)
     def hashAt(index: Int) = {
       if (index > 0) { siphash24(value,hashAt(index-1)) }
@@ -93,7 +93,7 @@ object SplitHash {
     override def toString = value.toString
   }
 
-  trait BNode[X] extends SHNode[X] with Hash {
+  trait BNode[X] extends SHNode[X] {
     override def equals(o: Any): Boolean = {
       // BY DESIGN: fast hashcode equality check
       if (hashCode != o.hashCode) { false }
@@ -152,7 +152,7 @@ object SplitHash {
   }
 
   // A RLE(Run Length Encoded) node denotes the repetition of another node
-  case class RLENode[X](node: SHNode[X], multiplicity: Int) extends SHNode[X] with Hash {
+  case class RLENode[X](node: SHNode[X], multiplicity: Int) extends SHNode[X] {
     def left = {
       if (multiplicity < 4) { node }
       else { RLENode(node, multiplicity/2) }
