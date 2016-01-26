@@ -84,11 +84,16 @@ object SplitHash {
     def isChunked = true
   }
 
+  final val m1 = 1664525
+  final val m2 = 22695477
+  final val m3 = 1103515245
+
   case class IntNode(value: Int) extends LeafNode[Int] {
-    override def hashCode = siphash24(value,value)
+    override def hashCode = siphash24(value + m1,value - m2)
     def hashAt(index: Int) = {
-      if (index > 0) { siphash24(value,hashAt(index-1)) }
-      else { hashCode }
+      if (index == 0) { hashCode }
+      else if (index == 1) { siphash24(value + m2, hashCode - m3) }
+      else { siphash24(hashCode + m3, hashAt(index-1) - m1) }
     }
     override def toString = value.toString
   }
@@ -125,15 +130,29 @@ object SplitHash {
     def isChunked = csize < 0
     val height = 1 + (left.height max right.height)
 
-    override val hashCode = siphash24(left.hashCode,right.hashCode)
+    override val hashCode = siphash24(left.hashCode - m1,right.hashCode + m2)
+
+    // We just keep munging bits recursively traversing down the tree.
+    //
+    // The idea is that - when two unequal tree nodes collide in their hashCode -
+    // then their left and right tree nodes should not equal the same hashCode
+    // with exponential higher probability, given a certain hash length/depth.
+    //
+    // This is shaky cryptographically, but 'works' in 'practice'.
+    //
+    // TODO: We should have a cryptographic expert have a crack at it.
 
     override def hashAt(index: Int) = {
       val h = hashCode
-      if (index > 0) {
-        val nindex = index / 2
-        siphash24(left.hash.hashAt(nindex) + h,right.hash.hashAt(index - nindex) - h)
+      if (index == 0) { h }
+      else if (index == 1) {
+        if (h < 0) { siphash24(left.hashCode - m2,h + m3) }
+        else { siphash24(h - m1,right.hashCode + m2) }
       }
-      else { h }
+      else {
+        val nindex = index / 2
+        siphash24(left.hash.hashAt(nindex) - m3,right.hash.hashAt(index - nindex) + m1)
+      }
     }
     def chunk = {
       if (height < 6) chunkTree(this)
@@ -752,6 +771,8 @@ object SplitHash {
       s1 = concat(s1,k1)
       s2 = concat(k2,s2)
       s3 = concat(s3,k3)
+
+      i = i + 1
       if ((i % 1000) == 0) {
         println("concat i: " + i)
 
@@ -759,12 +780,11 @@ object SplitHash {
         s2 = s2.chunk
         s3 = s3.chunk
       }
-      i = i + 1
     }
 
     if (s1 != s2) sys.error("Internal inconsistency")
 
-    i = 1
+       i = 1
     while (i < n) {
       // split into left and right
       val (ss1,ss2) = s1.split(i)
@@ -782,6 +802,34 @@ object SplitHash {
 
       if ((i % 1000) == 0) { println("split i: " + i) }
     }
+
+    i = 0
+    var b = 10000
+    n = n / b
+    var ss = emptySH[Int]
+
+    while (i < n) {
+      var ii = 0
+      var sss: NBlock[Int] = new Array(b)
+      var o = i * b
+      println("fast block: " + o + " height: " + height(ss))
+
+      while (ii < b) {
+        sss(ii) = intNode(o + ii)
+        ii = ii + 1
+      }
+      while (sss.size > 1) {
+        sss = doRound(sss)
+      }
+      ss = concat(ss,sss(0))
+      i = i + 1
+    }
+    if (s1 != ss) sys.error("Internal inconsistency")
+  }
+
+  def height[X](o: SHNode[X]) = {
+    if (o == null) 0
+    else o.height
   }
 }
 
@@ -822,6 +870,6 @@ final object SipHash {
     sipround
 
     val r = v0 ^ v1 ^ v2 ^ v3
-    ((r >> 32) ^ (r & 0xffffffff)).toInt
+    ((r >> 32) + (r & 0xffffffff)).toInt
   }
 }
