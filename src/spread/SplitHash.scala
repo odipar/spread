@@ -293,7 +293,7 @@ object SplitHash {
       var tree = a(0)
       var i = 1
       while (i < s) {
-        tree = tree.combine(a(i))
+        tree = tree.combine2(a(i))
         i = i + 1
       }
       tree
