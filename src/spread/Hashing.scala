@@ -79,42 +79,4 @@ object Hashing {
       else NullID
     }
   }
-
-  final def rotl(x: Long, b: Int) = (x << b) | ( x >> (64 - b))
-
-  final def siphash24(x1: Int, x2: Int): Int = {
-    var v0 = 0x736f6d6570736575L
-    var v1 = 0x646f72616e646f6dL
-    var v2 = 0x6c7967656e657261L
-    var v3 = 0x7465646279746573L
-
-    def sipround() {
-      v0 += v1
-      v1 = rotl(v1, 13) ^ v0
-      v0 = rotl(v0, 32)
-      v2 += v3
-      v3 = rotl(v3, 16) ^ v2
-      v0 += v3
-      v3 = rotl(v3, 21) ^ v0
-      v2 += v1
-      v1 = rotl(v1, 17) ^ v2
-      v2 = rotl(v2, 32)
-    }
-
-    val m = rotl(x1.toLong,32) + x2
-    v3 ^= m
-    sipround
-    sipround
-    v0 ^= m
-
-    v2 ^= 0xff
-    sipround
-    sipround
-    sipround
-    sipround
-
-    val r = v0 ^ v1 ^ v2 ^ v3
-
-    ((r >> 32) ^ (r & 0xffffffff)).toInt
-  }
 }

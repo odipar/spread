@@ -5,7 +5,7 @@ package spread
 //
 
 object SplitHash {
-  import Hashing.siphash24
+  import SipHash.siphash24
   import java.lang.ref.WeakReference
 
   //
@@ -18,7 +18,9 @@ object SplitHash {
   //
   // SplitHash is the first known History-Independent(HI) Sequence ADT with these properties.
   //
-  trait SplitHash[X, SH <: SplitHash[X,SH]] {
+
+  trait SplitHash[X, SH <: SplitHash[X,SH]] extends Hashable {
+    def hash: Hash                // O(1)
     def size: Int                 // O(1)
     def concat(other: SH): SH     // O(log(size))
     def split(at: Int): (SH, SH)  // O(log(size))
@@ -26,96 +28,48 @@ object SplitHash {
     def last: X                   // O(log(size))
   }
 
-  def emptySH[X]: SHNode[X] = null
-  def intNode(i: Int): SHNode[Int] = IntNode(i)
-
-  final def main(args: Array[String]): Unit = {
-    var s1 = emptySH[Int]
-    var s2 = emptySH[Int]
-    var s3 = emptySH[Int]
-
-    var i = 0
-    var n = 500000
-    while (i < n) {
-      var k1 = intNode(i)
-      var k2 = intNode(n-i-1)
-      var k3 = intNode(i % 63)  // repetitions
-
-      s1 = concat(s1,k1)
-      s2 = concat(k2,s2)
-      s3 = concat(s3,k3)
-      i = i + 1
-      if ((i % 1000) == 0) {
-        println("concat i: " + i)
-        s1 = s1.chunk
-        s2 = s2.chunk
-        s3 = s3.chunk
-      }
-    }
-
-    if (s1 != s2) sys.error("Internal inconsistency")
-
-    i = 1
-    while (i < n) {
-      // split into left and right
-      val (ss1,ss2) = s1.split(i)
-      // concatenate left and right -> should return original (unsplit) version
-      val cc = ss1.concat(ss2)
-      // quick check - hashCodes should be exactly the same
-      if (cc.hashCode != s1.hashCode) { sys.error("Internal inconsistency") }
-
-      // split repetition into left and right
-      val (rp1,rp2) = s3.split(i)
-      val ccc = rp1.concat(rp2)
-      if (ccc.hashCode != s3.hashCode) { sys.error("Internal inconsistency") }
-
-      i = i + 1
-
-      if ((i % 1000) == 0) { println("split i: " + i)}
-    }
-  }
-
-  // An 'infinitely' expandable Hash (up to Int.MAX_INT)
-  // Indexable 32 bit hashes returned by a Hash should ideally be drawn from a cryptographic hash (i.e. SHA256)
-  trait Hash {
-    def intAt(i: Int): Int
-
-    def head = intAt(0)
-    override def hashCode = head
-  }
-
   // A Hashable object
   trait Hashable {
     def hash: Hash
   }
 
-  // A canonical SH(Split Hash) tree node
-  trait SHNode[X] extends Hashable with SplitHash[X,SHNode[X]] {
+  // An 'infinitely' expandable Hash
+  trait Hash {
+    def hashAt(i: Int): Int
+  }
+
+  // A canonical tree SH(Split Hash)Node
+  trait SHNode[X] extends SplitHash[X,SHNode[X]] with Hash with Hashable {
+    def size: Int
+    def hash = this
     def concat(other: SHNode[X]) = SplitHash.concat(this,other)
     def split(at: Int) = (leftSplit(this,at),rightSplit(this,at))
+    def first: X
+    def last: X
+
+    // tree traversal
     def left: SHNode[X]
     def right: SHNode[X]
     def height: Int
-    def size: Int
-    def first: X
-    def last: X
+
+    // chunking to reduce memory consumption
     def chunk: SHNode[X]
     def isChunked: Boolean
 
-
-    // Utility methods to detect and deal with consecutive, equal nodes
-    private def get[X](e1: SHNode[X]): SHNode[X] = e1 match { case RLENode(h,_) => h ; case _ => e1 }
-    private def size[X](n: SHNode[X]): Int = n match { case RLENode(_,s) => s ; case _ => 1 }
-    def isMultipleOf(n: SHNode[X]): Boolean = get(this) == get(n)
+    def isMultipleOf(n: SHNode[X]): Boolean = mget(this) == mget(n)
     def combine(n: SHNode[X]): SHNode[X] = {
-      if (isMultipleOf(n)) RLENode(get(this),size(this) + size(n))
+      if (isMultipleOf(n)) RLENode(mget(this),msize(this) + msize(n))
       else BinNode(this,n)
     }
     def combine2(n: SHNode[X]): SHNode[X] = {
-      if (isMultipleOf(n)) RLENode(get(this),size(this) + size(n))
+      if (isMultipleOf(n)) RLENode(mget(this),msize(this) + msize(n))
       else TempBinNode(this,n)
     }
   }
+
+  // Utility methods to detect and deal with consecutive, equal nodes
+  private def mget[X](e1: SHNode[X]): SHNode[X] = e1 match { case RLENode(h,_) => h ; case _ => e1 }
+  private def msize[X](n: SHNode[X]): Int = n match { case RLENode(_,s) => s ; case _ => 1 }
 
   // A Leaf node that holds a single element
   trait LeafNode[X] extends SHNode[X] {
@@ -131,28 +85,20 @@ object SplitHash {
   }
 
   case class IntNode(value: Int) extends LeafNode[Int] with Hash {
-    def hash = this
-
-    override def head = Hashing.siphash24(value,value)
-    def intAt(index: Int) = {
-      var i = index
-      var h = head
-      while (i > 0) {
-        h = siphash24(value,h)
-        i = i - 1
-      }
-      h
+    override def hashCode = siphash24(value,value)
+    def hashAt(index: Int) = {
+      if (index > 0) { siphash24(value,hashAt(index-1)) }
+      else { hashCode }
     }
-
     override def toString = value.toString
   }
 
   trait BNode[X] extends SHNode[X] with Hash {
     override def equals(o: Any): Boolean = {
+      // BY DESIGN: fast hashcode equality check
+      if (hashCode != o.hashCode) { false }
       // fast reference equality check (=true when references are equal)
-      if (this.eq(o.asInstanceOf[AnyRef])) { true }
-      // fast hashcode equality check (=false if hashcodes not equal)
-      else if (o.hashCode != hashCode) { false }
+      else if (this.eq(o.asInstanceOf[AnyRef])) { true }
       else {
         o match {
           case k: SHNode[X] => (left == k.left) && (right == k.right)
@@ -160,10 +106,7 @@ object SplitHash {
         }
       }
     }
-    def hash = this
   }
-
-  var check_equal = false
 
   // A full binary node holds a hash (Int), size (Int), height (Int) and its left and right sub-trees
   case class BinNode[X](left: SHNode[X], right: SHNode[X]) extends BNode[X] {
@@ -171,26 +114,26 @@ object SplitHash {
     def last = right.last
     val csize = {         // encode isChunked property into a negative size
       val ns = left.size + right.size
-      if (left.isChunked && right.isChunked) -ns
-      else ns
+      if (left.isChunked && right.isChunked) { -ns }
+      else { ns }
     }
     def size = {
       val s = csize
-      if (s < 0) -s
-      else s
+      if (s < 0) { -s }
+      else { s }
     }
     def isChunked = csize < 0
     val height = 1 + (left.height max right.height)
 
-    override val head = siphash24(left.hash.head,right.hash.head)
+    override val hashCode = siphash24(left.hashCode,right.hashCode)
 
-    override def intAt(index: Int) = {
-      val h = head
+    override def hashAt(index: Int) = {
+      val h = hashCode
       if (index > 0) {
         val nindex = index / 2
-        siphash24(left.hash.intAt(nindex) + h,right.hash.intAt(index - nindex) - h)
+        siphash24(left.hash.hashAt(nindex) + h,right.hash.hashAt(index - nindex) - h)
       }
-      else h
+      else { h }
     }
     def chunk = {
       if (height < 6) chunkTree(this)
@@ -211,27 +154,24 @@ object SplitHash {
   // A RLE(Run Length Encoded) node denotes the repetition of another node
   case class RLENode[X](node: SHNode[X], multiplicity: Int) extends SHNode[X] with Hash {
     def left = {
-      if (multiplicity < 4) node
-      else RLENode(node, multiplicity/2)
+      if (multiplicity < 4) { node }
+      else { RLENode(node, multiplicity/2) }
     }
     def right = {
-      if (multiplicity < 3) node
-      else RLENode(node,multiplicity - (multiplicity/2))
+      if (multiplicity < 3) { node }
+      else { RLENode(node,multiplicity - (multiplicity/2)) }
     }
     def size = node.size * multiplicity
     def height = node.height
-    def hash = this
 
-    override val head = siphash24(node.hash.head,multiplicity)
-    override def intAt(index: Int) = {
-      if (index > 0) {
-        siphash24(node.hash.intAt(index),multiplicity)
-      }
-      else head
+    override val hashCode = siphash24(node.hashCode,multiplicity)
+    override def hashAt(index: Int) = {
+      if (index > 0) { siphash24(node.hash.hashAt(index),multiplicity) }
+      else { hashCode }
     }
     def chunk = {
-      if (!node.isChunked) RLENode(node.chunk,multiplicity)
-      else this
+      if (!node.isChunked) { RLENode(node.chunk,multiplicity) }
+      else { this }
     }
     def isChunked = node.isChunked
 
@@ -240,16 +180,16 @@ object SplitHash {
     override def toString = multiplicity + ":" + node
   }
 
-  // A temporary binary node that shouldn't  be part of a canonical tree
+  // A temporary binary node that shouldn't be part of a canonical tree
   case class TempBinNode[X](left: SHNode[X], right: SHNode[X]) extends SHNode[X]  {
     def error = sys.error("Internal inconsistency. Should not be called")
     val height = 1 + (left.height max right.height)
-    def hash = error
     def size = error
     def first = error
     def last = error
     def chunk = error
     def isChunked = error
+    def hashAt(i: Int) = error
   }
 
   // Iterates sub-nodes in post-order, given a certain target height
@@ -268,7 +208,7 @@ object SplitHash {
         nstack = nstack.tail
         leftMost(head.right)
       }
-      else null
+      else { null }
     }
     def leftMost(node: SHNode[X]): SHNode[X] = {
       var leftNode = node
@@ -296,7 +236,7 @@ object SplitHash {
         nstack = nstack.tail
         rightMost(head.left)
       }
-      else null
+      else { null }
     }
     def rightMost(node: SHNode[X]): SHNode[X] ={
       var rightNode = node
@@ -308,15 +248,18 @@ object SplitHash {
     }
   }
 
+  type NBlock[X] = Array[SHNode[X]]
+
   // Lazily consume the Iterator, whilst caching its elements at a certain index.
   class LazyIndexableIterator[X](it: Iterator[SHNode[X]]) {
-    var v: Array[SHNode[X]] = new Array(16)
+    var v: NBlock[X] = new Array(8)
     var size = 0
 
     def apply(i: Int): SHNode[X] = {
       if (i >= size) {
         if (i >= v.size) {
-          var vv: Array[SHNode[X]] = new Array(v.size * 2)
+          // exhausted, so extend the array
+          var vv: NBlock[X] = new Array(v.size * 2)
           v.copyToArray(vv)
           v = vv
         }
@@ -330,117 +273,107 @@ object SplitHash {
       if (i >= size) null
       else v(i)
     }
+
+    def firstReversed(s: Int) = {
+      val firstR: NBlock[X] = new Array(s)
+      var i = 0
+      while (i < s) {
+        firstR(i) = v(s-i-1)
+        i = i + 1
+      }
+      firstR
+    }
   }
 
   // Build a temporary tree for left or right Fringe consumption only
-  def to_tmp_tree[X](s: List[SHNode[X]]): SHNode[X] = {
-    if (s.size == 0) null
-    else if (s.size == 1) s.head
-    else s.head.combine2(to_tmp_tree(s.tail))
+  def to_tmp_tree[X](a: NBlock[X]): SHNode[X] = {
+    if (a.size == 0) null
+    else {
+      val s = a.size
+      var tree = a(0)
+      var i = 1
+      while (i < s) {
+        tree = tree.combine(a(i))
+        i = i + 1
+      }
+      tree
+    }
   }
 
+  // Chunk a canonical tree into ChunkedNode (effectively an Array of all the tree's LeafNodes)
   def chunkTree[X](s: SHNode[X]): ChunkedNode[X] = {
     var i = new LeftNodeIterator(s,0)
     var ii = 0
-    var a: Array[SHNode[X]] = new Array(s.size)
+    var chunk: NBlock[X] = new Array(s.size)
     while (i.hasNext) {
-      a(ii) = i.next
+      chunk(ii) = i.next
       ii = ii + 1
     }
-    ChunkedNode(a,s.hash.head,s.size,s.height)
+    ChunkedNode(chunk,s.hashCode,s.size,s.height)
   }
 
   def unchunk[X](cn: ChunkedNode[X]): SHNode[X] = {
-    var s: Array[SHNode[X]] = cn.a
-    while (s.length > 1) {
-      s = doRound(s)
-    }
+    var s: NBlock[X] = cn.ch
+    while (s.length > 1) { s = doRound(s) }
     s(0)
   }
 
-  case class ChunkedNode[X](a: Array[SHNode[X]], h: Int, size: Int, height: Int) extends BNode[X] {
+  // A ChunkedNode that holds all the LeafNodes of the canonical tree it represents.
+  // It also holds a WeakReference to its unchunked canonical tree when requested.
+  // So the unchunked version can be GC'ed anytime, as it can always be rebuilt from the chunk.
+  case class ChunkedNode[X](ch: NBlock[X], h: Int, size: Int, height: Int) extends BNode[X] {
     var unchunked: WeakReference[_] = null
 
     def isChunked = true
-    def get: SHNode[X] = {
+    def getUnchunked: SHNode[X] = {
       if (unchunked != null) {
         val u = unchunked.get
         if (u != null) u.asInstanceOf[SHNode[X]]
-        else {
-          get2
-        }
+        else { getUnchunked2 }
       }
-      else get2
+      else { getUnchunked2 }
     }
-    def get2: SHNode[X] = {
-      val u = unchunk(this)
-      unchunked = new WeakReference(u)
-      u
+    def getUnchunked2: SHNode[X] = {
+      val uchunk = unchunk(this)
+      unchunked = new WeakReference(uchunk)
+      uchunk
     }
 
-    def left = get.left
-    def right = get.right
-    def first = get.first
-    def last = get.last
-    override def head = h
+    def left = getUnchunked.left
+    def right = getUnchunked.right
+    def first = getUnchunked.first
+    def last = getUnchunked.last
     override def hashCode = h
-    def intAt(i: Int) = {
-      if (i == 0) head
-      else get.hash.intAt(i)
+    def hashAt(i: Int) = {
+      if (i == 0) hashCode
+      else getUnchunked.hash.hashAt(i)
     }
-
     def chunk = this
-    override def toString = {
-      var r = ""
-      val s = a.size
-      var i = 0
-      while (i < s) {
-        if (i > 0) r = r + " " + a(i)
-        else r = r + a(i)
-        i = i + 1
-      }
-      r
-    }
   }
 
   final val Unknown: Byte = 0
   final val Merge: Byte = 1
   final val Fringe: Byte = 2
-  final val LFringe: Byte = 3
-  final val RFringe: Byte = 4
 
   // Determine the left and right Fringe of a canonical tree
   //
   // Notice that, unlike SeqHash, we don't need to hold on to the left and right Fringes, as we can always determine
   // the Fringes in O(log(n)) for each canonical tree at anytime.
-  //
 
-  var sumf: Long = 0
-  var countf: Long = 0
-
-  class ArrayNodeIterator[X](a: Array[SHNode[X]]) extends Iterator[SHNode[X]] {
-    var i = 0
-    def hasNext = i < a.length
-    def next: SHNode[X] = {
-      if (i >= a.length) null
-      else { val v = a(i) ; i = i + 1 ; v}
-    }
-  }
-
-  def leftFringe[X](tree: SHNode[X], height: Int): List[SHNode[X]] = {
+  def leftFringe[X](tree: SHNode[X], height: Int): NBlock[X] = {
     fringeVolatile2(new LazyIndexableIterator(new LeftNodeIterator(tree,height)),0).reverse
   }
 
-  def rightFringe[X](tree: SHNode[X], height: Int): List[SHNode[X]] = {
+  def rightFringe[X](tree: SHNode[X], height: Int): NBlock[X] = {
     fringeVolatile2(new LazyIndexableIterator(new RightNodeIterator(tree,height)),1)
   }
 
   // Iteratively scan and deepen the fringe 'frontier' (width(average)=5) until the exact Fringe is found
   // We do this in order to minimally consume the LazyIndexableIterator
-  def fringeVolatile2[X](elems: LazyIndexableIterator[X], direction: Byte): List[SHNode[X]] = {
+  def fringeVolatile2[X](elems: LazyIndexableIterator[X], direction: Byte): NBlock[X] = {
     val width = 5
     var frontier = width
-    var fringe: List[SHNode[X]] = null
+    var fringe: NBlock[X] = null
 
     while (fringe == null) {
       val frontier1 = frontier+1
@@ -452,14 +385,14 @@ object SplitHash {
       resetKinds(kinds)
       val fringe2 = fringeVolatile3(elems,direction,frontier1,kinds,hashes) // frontier+1 to check the edge difference
 
-      if (fringe1.size != fringe2.size) { frontier = frontier + width }
-      else { fringe = fringe1 }
+      if (fringe1 != fringe2) { frontier = frontier + width }
+      else { fringe = elems.firstReversed(fringe1) }
     }
     fringe
   }
 
-  // Build the left or right Fringe up to the frontier by lazily consuming the LazyIndexableIterator
-  def fringeVolatile3[X](elems: LazyIndexableIterator[X], direction: Byte, frontier: Int, kind: Array[Byte], hashes: Array[Int]): (List[SHNode[X]]) ={
+  // Build the Fringe up to the frontier by lazily consuming the LazyIndexableIterator
+  def fringeVolatile3[X](elems: LazyIndexableIterator[X], direction: Byte, frontier: Int, kind: Array[Byte], hashes: Array[Int]): Int ={
     var min_frontier = frontier
     var other_direction = 1-direction
     var done = false
@@ -476,7 +409,7 @@ object SplitHash {
         var ei = index
         var ii = bit_index >> 5
         while (ei < min_frontier && (elems(ei) != null)) {
-          if (kind(ei) == Unknown) hashes(ei) = elems(ei).hash.intAt(int_index)
+          if (kind(ei) == Unknown) hashes(ei) = elems(ei).hash.hashAt(int_index)
           ei = ei + 1
         }
         int_index = int_index + 1
@@ -517,16 +450,7 @@ object SplitHash {
       bit_index = (bit_index + 1) & 31
     }
 
-
-    var i = 0
-    var fringe: List[SHNode[X]] = List()
-
-    while (i < index) {
-      fringe = elems(i) +: fringe
-      i = i + 1
-    }
-
-    fringe
+    index
   }
 
   def resetKinds(kind: Array[Byte]): Unit = {
@@ -540,14 +464,14 @@ object SplitHash {
 
   final def bitAt(value: Int, index: Int): Byte = ((value >>> (31-index)) & 1).toByte
 
-  case class LeftFringe[X](height: Int, top: List[SHNode[X]], fringes: List[List[SHNode[X]]])
-  case class RightFringe[X](height: Int, top: List[SHNode[X]], fringes: List[List[SHNode[X]]])
+  case class LeftFringe[X](height: Int, top: NBlock[X], fringes: List[NBlock[X]])
+  case class RightFringe[X](height: Int, top: NBlock[X], fringes: List[NBlock[X]])
 
   // Transform a canonical tree into right-catenable LeftFringe tree
   def transformLeft[X](t: SHNode[X]): LeftFringe[X] = {
     var tt = t
     var height = 0
-    var leftFringes: List[List[SHNode[X]]] = List()
+    var leftFringes: List[NBlock[X]] = List()
     var result: LeftFringe[X] = null
 
     while(result == null) {
@@ -563,11 +487,10 @@ object SplitHash {
     result
   }
 
-  // TODO: reduce the List->Seq->List conversions
   def first[X](hh: Int, size: Int, t: SHNode[X]): SHNode[X] = {
     val f = first2(hh,size,t,List())
     val cm = compress(f._2.toArray.reverse)
-    to_tmp_tree(cm.toList)
+    to_tmp_tree(cm)
   }
 
   def first2[X](hh: Int, s: Int, t: SHNode[X], st: List[SHNode[X]]): (Int,List[SHNode[X]]) = {
@@ -582,11 +505,10 @@ object SplitHash {
     }
   }
 
-  // TODO: reduce the List->Seq->List conversions
   def last[X](hh: Int, size: Int, t: SHNode[X]): SHNode[X] = {
     val l = last2(hh,size,t,List())
-    val cm = compress(l._2.toArray.toSeq)
-    to_tmp_tree(cm.toList)
+    val cm = compress(l._2.toArray[SHNode[X]])
+    to_tmp_tree(cm)
   }
 
   def last2[X](hh: Int, s: Int, t: SHNode[X], st: List[SHNode[X]]): (Int,List[SHNode[X]]) = {
@@ -605,7 +527,7 @@ object SplitHash {
   def transformRight[X](t: SHNode[X]): RightFringe[X] = {
     var tt = t
     var height = 0
-    var rightFringes: List[List[SHNode[X]]] = List()
+    var rightFringes: List[NBlock[X]] = List()
     var result: RightFringe[X] = null
 
     while(result == null) {
@@ -623,32 +545,29 @@ object SplitHash {
 
   // Concatenate two canonical trees
   def concat[X](left: SHNode[X], right: SHNode[X]): SHNode[X] = {
-    if (left == null) right
-    else if (right == null) left
-    else {
-      val tl = transformRight(left)
-      val tr = transformLeft(right)
-      concat2(tl,tr)
-    }
+    if (left == null) { right }
+    else if (right == null) { left }
+    else { concat2(transformRight(left),transformLeft(right)) }
   }
 
   // Compresses consecutive and equal (RLE) nodes into RLE nodes
-  def compress[X](elems: Seq[SHNode[X]]): Seq[SHNode[X]] = {
+  def compress[X](elems: NBlock[X]): NBlock[X] = {
+    // first check whether we need to compress
     var i = 1
     var s = elems.size
-    var hasMultiples = false
-    while ((i < s) && !hasMultiples) {
-      if (elems(i-1).isMultipleOf(elems(i))) hasMultiples = true
+    var compress = false
+    while ((i < s) && !compress) {
+      if (elems(i-1).isMultipleOf(elems(i))) { compress = true }
       i = i + 1
     }
-    if (hasMultiples) compress2(elems)
+    if (compress) { compress2(elems) } // yep, we do need to compress
     else elems
   }
 
-  def compress2[X](elems: Seq[SHNode[X]]): Seq[SHNode[X]] = {
+  def compress2[X](elems: NBlock[X]): NBlock[X] = {
     if (elems.size == 0) elems
     else {
-      var size = elems.size
+      val size = elems.size
       var stack: List[SHNode[X]] = List(elems(0))
       var i = 1
 
@@ -661,16 +580,13 @@ object SplitHash {
         else { stack = elem +: stack }
         i = i + 1
       }
-      stack.reverse.toArray.toSeq
+      stack.toArray.reverse
     }
   }
 
-  def doRound[X](elems: Array[SHNode[X]]): Array[SHNode[X]] = {
-    val c = compress(elems.toSeq)
-    doRound2(c.toArray)
-  }
+  def doRound[X](elems: NBlock[X]): NBlock[X] = { doRound2(compress(elems)) }
 
-  def doRound2[X](elems: Array[SHNode[X]]): Array[SHNode[X]] = {
+  def doRound2[X](elems: NBlock[X]): NBlock[X] = {
     val N = elems.length
     val kind: Array[Byte] = new Array(N)
     val hashes: Array[Int] = new Array(N)
@@ -688,7 +604,7 @@ object SplitHash {
         // cache hashes of nodes that are unknown
         var ei = 0
         while (ei < N) {
-          if (kind(ei) == Unknown) hashes(ei) = elems(ei).hash.intAt(int_index)
+          if (kind(ei) == Unknown) hashes(ei) = elems(ei).hash.hashAt(int_index)
           ei = ei + 1
         }
         int_index = int_index + 1
@@ -712,30 +628,31 @@ object SplitHash {
 
     var i = 0
     var ii = 0
-    var center: Array[SHNode[X]] = new Array(N-merges)
+    var result: NBlock[X] = new Array(N-merges)
 
     while (i < N) {
-      if (kind(i) == Unknown) center(ii) = elems(i)
+      if (kind(i) == Unknown) result(ii) = elems(i)
       else {
-        center(ii) = elems(i).combine(elems(i + 1))
+        result(ii) = elems(i).combine(elems(i + 1))
         i = i + 1
       }
       i = i + 1
       ii = ii + 1
     }
 
-    center
+    result
   }
 
-  def emptyRight[X]: RightFringe[X] = RightFringe(-1,List(),List())
-  def emptyLeft[X]: LeftFringe[X] = LeftFringe(-1,List(),List())
+  val eRight = RightFringe[Nothing](-1,Array(),List())
+  val eLeft = LeftFringe[Nothing](-1,Array(),List())
 
+  def emptyRight[X]: RightFringe[X] = eRight.asInstanceOf[RightFringe[X]]
+  def emptyLeft[X]: LeftFringe[X] = eLeft.asInstanceOf[LeftFringe[X]]
 
   // Concatenate the left and right Fringes into a canonical tree
-  // TODO: optimize the concatenation (++) of intermediate Seq[X]
+  // TODO: optimize the concatenation of intermediate NBLock[X]
   def concat2[X](left: RightFringe[X], right: LeftFringe[X]): SHNode[X] ={
-    var elems: Array[SHNode[X]] = Array()
-
+    var elems: NBlock[X] = Array()
     var height = 0
     var done = false
 
@@ -746,10 +663,16 @@ object SplitHash {
     var rh = right.height
 
     while (!done) {
-      if (height < lh) { elems = lf.head.toArray ++ elems ; lf = lf.tail }
-      else if (height == lh) { elems = left.top.toArray ++ elems }
+      if (height < lh) {
+        elems = lf.head ++ elems
+        lf = lf.tail
+      }
+      else if (height == lh) { elems = left.top ++ elems }
 
-      if (height < rh) { elems = elems ++ rf.head; rf = rf.tail }
+      if (height < rh) {
+        elems = elems ++ rf.head
+        rf = rf.tail
+      }
       else if (height == rh) { elems = elems ++ right.top }
 
       if ((height >= lh) && (height >= rh) && (elems.length == 1)) { done = true }
@@ -771,9 +694,13 @@ object SplitHash {
   // This is the key to log(N) splitting.
   //
   def leftSplit[X](h: SHNode[X], size: Int): SHNode[X] = {
-    val ls = leftSplit2(h,size)
-    val cm = compress(ls)
-    concat2(transformRight(to_tmp_tree(cm.toList)),emptyLeft)
+    if (size <= 0) { null }
+    else if (size >= h.size) { h }
+    else {
+      val ls = leftSplit2(h,size)
+      val cm = compress(ls.toArray[SHNode[X]])
+      concat2(transformRight(to_tmp_tree(cm)),emptyLeft)
+    }
   }
 
   def leftSplit2[X](h: SHNode[X], pos: Int): List[SHNode[X]] = {
@@ -787,9 +714,13 @@ object SplitHash {
 
   // Split the right side of a canonical tree
   def rightSplit[X](h: SHNode[X], size: Int): SHNode[X] = {
-    val rs = rightSplit2(h,h.size-size).reverse
-    val cm = compress(rs)
-    concat2(emptyRight,transformLeft(to_tmp_tree(cm.toList)))
+    if (size <= 0) { h }
+    else if (size > h.size) { null }
+    else {
+      val rs = rightSplit2(h,h.size - size).toArray.reverse
+      val cm = compress(rs)
+      concat2(emptyRight,transformLeft(to_tmp_tree(cm)))
+    }
   }
 
   def rightSplit2[X](h: SHNode[X], pos: Int): List[SHNode[X]] = {
@@ -801,77 +732,96 @@ object SplitHash {
     }
   }
 
+  // EXPOSITION
+  final def main(args: Array[String]): Unit = {
 
-  def doRound[X](elems: Seq[SHNode[X]], volatileLeft: Boolean, volatileRight: Boolean): (List[SHNode[X]],List[SHNode[X]],List[SHNode[X]]) = {
-    val N = elems.length
+    def emptySH[X]: SHNode[X] = null
+    def intNode(i: Int): SHNode[Int] = IntNode(i)
 
-    val kind: Array[Byte] = elems.map(e => Unknown).toArray
-    val hashes: Array[Hash] = elems.map(e => e.hash).toArray
-    var done = false
-
-    var idx = 0
-
-    val N1 = N - 1
-    var left = 0
-    var right = N1
-
-    if (volatileLeft && (N > 0)) { kind(0) = LFringe ; left = left + 1 }
-    if (volatileRight && (N > 1)) { kind(N1) = RFringe ; right = right - 1 }
-
-    while (!done) {
-      done = true
-
-      if (volatileLeft) {
-        if ((left < N) && (kind(left) == Unknown) && (bitAt(hashes(left),idx) == 0)) {
-          kind(left) = LFringe ; left = left + 1
-        }
-        if ((left < N) && (kind(left) == Unknown)) { done = false }
-      }
-
-      if (volatileRight) {
-        if ((right >= 0) && (kind(right) == Unknown) && (bitAt(hashes(right),idx) == 1)) {
-          kind(right) = RFringe ; right = right - 1
-        }
-        if ((right >= 0) && (kind(right) == Unknown)) { done = false }
-      }
-
-      var j = left
-
-      while (j < right) {
-        if ((kind(j) == Unknown) && (kind(j + 1) == Unknown)) {
-          if ((bitAt(hashes(j),idx) == 1) && (bitAt(hashes(j + 1),idx) == 0)) {
-            kind(j) = Merge
-            kind(j+1) = Merge
-            j = j + 1
-          }
-          else { done = false }
-        }
-        j = j + 1
-      }
-      idx = idx + 1
-    }
+    var s1 = emptySH[Int]
+    var s2 = emptySH[Int]
+    var s3 = emptySH[Int]
 
     var i = 0
-    var center: List[SHNode[X]] = List()
-    var leftFringe: List[SHNode[X]] = List()
-    var rightFringe: List[SHNode[X]] = List()
+    var n = 500000
+    while (i < n) {
+      var k1 = intNode(i)
+      var k2 = intNode(n-i-1)
+      var k3 = intNode(i % 63)  // repetitions
 
-    while (i < N) {
-      kind(i) match {
-        case Unknown => { center = elems(i) +: center}
-        case Merge => { center = (elems(i).combine(elems(i + 1))) +: center; i = i + 1 }
-        case LFringe => { leftFringe = elems(i) +: leftFringe }
-        case RFringe => { rightFringe = elems(i) +: rightFringe }
+      s1 = concat(s1,k1)
+      s2 = concat(k2,s2)
+      s3 = concat(s3,k3)
+      if ((i % 1000) == 0) {
+        println("concat i: " + i)
+
+        s1 = s1.chunk
+        s2 = s2.chunk
+        s3 = s3.chunk
       }
       i = i + 1
     }
 
-    (leftFringe,center.reverse,rightFringe)
-  }
+    if (s1 != s2) sys.error("Internal inconsistency")
 
-  def bitAt(h: Hash, bit: Int): Byte = {
-    val ii = bit >> 5
-    val bb = bit & 31
-    (h.intAt(ii) >>> ((31-bb)) & 1).toByte
+    i = 1
+    while (i < n) {
+      // split into left and right
+      val (ss1,ss2) = s1.split(i)
+      // concatenate left and right -> should return original (unsplit) version
+      val cc = ss1.concat(ss2)
+      // quick check - hashCodes should be exactly the same
+      if (cc.hashCode != s1.hashCode) { sys.error("Internal inconsistency") }
+
+      // split repetition into left and right
+      val (rp1,rp2) = s3.split(i)
+      val ccc = rp1.concat(rp2)
+      if (ccc.hashCode != s3.hashCode) { sys.error("Internal inconsistency") }
+
+      i = i + 1
+
+      if ((i % 1000) == 0) { println("split i: " + i) }
+    }
+  }
+}
+
+// SipHash. Modified version of https://gist.github.com/chrisvest/6989030#file-siphash-snip-scala
+
+final object SipHash {
+  final def rotl(x: Long, b: Int) = (x << b) | ( x >> (64 - b))
+
+  final def siphash24(x1: Int, x2: Int): Int = {
+    var v0 = 0x736f6d6570736575L
+    var v1 = 0x646f72616e646f6dL
+    var v2 = 0x6c7967656e657261L
+    var v3 = 0x7465646279746573L
+
+    def sipround() {
+      v0 += v1
+      v1 = rotl(v1, 13) ^ v0
+      v0 = rotl(v0, 32)
+      v2 += v3
+      v3 = rotl(v3, 16) ^ v2
+      v0 += v3
+      v3 = rotl(v3, 21) ^ v0
+      v2 += v1
+      v1 = rotl(v1, 17) ^ v2
+      v2 = rotl(v2, 32)
+    }
+
+    val m = rotl(x1.toLong,32) + x2
+    v3 ^= m
+    sipround
+    sipround
+    v0 ^= m
+
+    v2 ^= 0xff
+    sipround
+    sipround
+    sipround
+    sipround
+
+    val r = v0 ^ v1 ^ v2 ^ v3
+    ((r >> 32) ^ (r & 0xffffffff)).toInt
   }
 }
