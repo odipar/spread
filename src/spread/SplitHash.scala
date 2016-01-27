@@ -33,7 +33,10 @@ object SplitHash {
     def hash: Hash
   }
 
-  // An 'infinitely' expandable Hash
+  // An 'infinitely' indexable and expandable Hash with the following contract:
+  // The chance that two different objects have the same hash at a certain index
+  // *must* be exponentially more unlikely for higher indices
+
   trait Hash {
     def hashAt(i: Int): Int
   }
@@ -113,6 +116,8 @@ object SplitHash {
     }
   }
 
+  var unlikely: Int = 0
+
   // A full binary node holds a hash (Int), size (Int), height (Int) and its left and right sub-trees
   case class BinNode[X](left: SHNode[X], right: SHNode[X]) extends BNode[X] {
     def first = left.first
@@ -130,28 +135,29 @@ object SplitHash {
     def isChunked = csize < 0
     val height = 1 + (left.height max right.height)
 
-    override val hashCode = siphash24(left.hashCode - m1,right.hashCode + m2)
+    override val hashCode = siphash24(left.hashCode - m2,right.hashCode + m3)
 
-    // We just keep munging bits recursively traversing down the tree.
+    // We just keep munging bits recursively while traversing down the tree.
     //
-    // The idea is that - when two unequal tree nodes collide in their hashCode -
-    // then their left and right tree nodes should not equal the same hashCode
-    // with exponential higher probability, given a certain hash length/depth.
+    // The idea is that, when two unequal tree nodes collide in their hashCode
+    // then their left and right tree nodes should not collide with exponential
+    // higher probability, given a certain hash length/depth.
     //
     // This is shaky cryptographically, but 'works' in 'practice'.
     //
     // TODO: We should have a cryptographic expert have a crack at it.
 
     override def hashAt(index: Int) = {
-      val h = hashCode
-      if (index == 0) { h }
+      if (index == 0) { hashCode }
       else if (index == 1) {
-        if (h < 0) { siphash24(left.hashCode - m2,h + m3) }
-        else { siphash24(h - m1,right.hashCode + m2) }
+        if (hashCode > 0) left.hashCode
+        else right.hashCode
       }
       else {
+        // otherwise do something more complicated
+        unlikely = unlikely + 1
         val nindex = index / 2
-        siphash24(left.hash.hashAt(nindex) - m3,right.hash.hashAt(index - nindex) + m1)
+        siphash24(right.hash.hashAt(nindex) - m3,left.hash.hashAt(index - nindex) + m1)
       }
     }
     def chunk = {
@@ -183,9 +189,9 @@ object SplitHash {
     def size = node.size * multiplicity
     def height = node.height
 
-    override val hashCode = siphash24(node.hashCode,multiplicity)
+    override val hashCode = siphash24(node.hashCode + m1 ,multiplicity - m3)
     override def hashAt(index: Int) = {
-      if (index > 0) { siphash24(node.hash.hashAt(index),multiplicity) }
+      if (index > 0) { siphash24(hashAt(index-1) + m2 ,multiplicity - (m3 * index)) }
       else { hashCode }
     }
     def chunk = {
@@ -481,7 +487,7 @@ object SplitHash {
     }
   }
 
-  final def bitAt(value: Int, index: Int): Byte = ((value >>> (31-index)) & 1).toByte
+  final def bitAt(value: Int, index: Int): Int = ((value >>> (31-index)) & 1)
 
   case class LeftFringe[X](height: Int, top: NBlock[X], fringes: List[NBlock[X]])
   case class RightFringe[X](height: Int, top: NBlock[X], fringes: List[NBlock[X]])
@@ -784,7 +790,7 @@ object SplitHash {
 
     if (s1 != s2) sys.error("Internal inconsistency")
 
-       i = 1
+    i = 1
     while (i < n) {
       // split into left and right
       val (ss1,ss2) = s1.split(i)
@@ -825,18 +831,22 @@ object SplitHash {
       i = i + 1
     }
     if (s1 != ss) sys.error("Internal inconsistency")
+    println("# unlikely > 64 bit hash collisions: " + unlikely)
   }
 
   def height[X](o: SHNode[X]) = {
     if (o == null) 0
     else o.height
   }
+
 }
 
 // SipHash. Modified version of https://gist.github.com/chrisvest/6989030#file-siphash-snip-scala
 
+
 final object SipHash {
-  final def rotl(x: Long, b: Int) = (x << b) | ( x >> (64 - b))
+
+  final def rotl(x: Long, b: Int): Long = (x << b) | (x >>> -b)
 
   final def siphash24(x1: Int, x2: Int): Int = {
     var v0 = 0x736f6d6570736575L
@@ -857,7 +867,8 @@ final object SipHash {
       v2 = rotl(v2, 32)
     }
 
-    val m = rotl(x1.toLong,32) + x2
+    val m = rotl(x1,32) + x2
+
     v3 ^= m
     sipround
     sipround
