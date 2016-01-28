@@ -78,6 +78,8 @@ object SplitHash {
       if (isMultipleOf(n)) RLENode(mget(this),msize(this) + msize(n))
       else TempBinNode(this,n)
     }
+
+    def ++(other: SHNode[X]): SHNode[X] = this.concat(other)
   }
 
   // Utility methods to detect and deal with consecutive, equal nodes
@@ -105,6 +107,7 @@ object SplitHash {
     def chunkHeight = 0
   }
 
+  // Magic relative primes
   final val m1 = 1664525
   final val m2 = 22695477
   final val m3 = 1103515245
@@ -115,8 +118,8 @@ object SplitHash {
     override def hashCode = siphash24(value + m1,value - m2)
     def hashAt(index: Int) = {
       if (index == 0) hashCode
-      else if (index == 1) siphash24(value + m2, hashCode - m3)
-      else siphash24(hashCode + m3, hashAt(index-1) - m1)
+      else if (index == 1) siphash24(value + m2, hashCode * m1)
+      else siphash24(hashCode * m3, hashAt(index-1) - m2)
     }
     override def toString = value.toString
   }
@@ -149,14 +152,9 @@ object SplitHash {
 
     private var lHash = 0  // A lazy hash = 0 (trick borrowed from the Avail Programming Language)
     override def hashCode = {
-      if (lHash == 0) {
-        lHash = siphash24(left.hashCode - m2,right.hashCode + m3)
-        // could be 0 again, but than we just recompute
-        // we also don't need to lock, because the hash is deterministic
-      }
-      lHash
+      if (lHash == 0) lHash = siphash24(left.hashCode - m2,right.hashCode + m3)
+      lHash           // could be 0 again, but then we just recompute 0.
     }
-  //  override val hashCode = siphash24(left.hashCode - m2,right.hashCode + m3)
 
     // We just keep munging bits recursively while traversing down the tree.
     //
@@ -171,16 +169,15 @@ object SplitHash {
 
     override def hashAt(index: Int) = {
       if (index == 0) hashCode
-      else if (index == 1) {
-        if (hashCode > 0) left.hashCode
-        else right.hashCode
-      }
+      else if (index == 1) (left.hashCode - right.hashCode) ^ hashCode   // quick and dirty rehash
       else {
         // 64 bits or more are requested. This should normally not happen, unless
         // a client just wishes to calculate a bigger hash.
         unlikely = unlikely + 1
         val nindex = index / 2
-        siphash24(right.hash.hashAt(nindex) - m3,left.hash.hashAt(index - nindex) + m1)
+
+        if (hashCode > 0) siphash24(left.hash.hashAt(nindex) - m3,right.hash.hashAt(index - nindex) + (m1 * hashCode))
+        else siphash24(right.hash.hashAt(nindex) - (m3 * hashCode),left.hash.hashAt(index - nindex) + m1)
       }
     }
     def chunk = {
@@ -294,7 +291,7 @@ object SplitHash {
     }
   }
 
-  // A recurring type definition
+  // most used type
   type NArray[X] = Array[SHNode[X]]
 
   // Lazily consume the Iterator, whilst caching its elements at a certain index.
@@ -395,7 +392,7 @@ object SplitHash {
   case class ChunkedNode[X](nodes: Seq[SHNode[X]], tree: Seq[Boolean], h: Int, size: Int, height: Int) extends BNode[X] {
     // Note that we could also decide to weakly store the unchunked version into some kind of
     // FIFOCache to avoid GC trashing. For now we just rely on the GC to clean the WeakReference
-    // before memory pressure becomes to high.
+    // before memory pressure becomes too high.
     var unchunked: WeakReference[_] = null
 
     def isChunked = true
@@ -735,7 +732,7 @@ object SplitHash {
   final def emptyLeft[X]: LeftFringe[X] = eLeft.asInstanceOf[LeftFringe[X]]
 
   // Concatenate the left and right Fringes into a canonical tree
-  // TODO: optimize the concatenation of intermediate NBLock[X]
+  // TODO: optimize the concatenation of intermediate NArray[X]
   def concat2[X](left: RightFringe[X], right: LeftFringe[X]): SHNode[X] ={
     var elems: NArray[X] = Array()
     var height = 0
@@ -908,11 +905,6 @@ object SplitHash {
     // When unlikely does happen, you've either won the lottery or you are a cryptographer.
 
     println("unlikely > 64 bit consumption: " + unlikely)
-  }
-
-  def chunkHeight[X](o: SHNode[X]) = {
-    if (o == null) 0
-    else o.chunkHeight
   }
 
 }
