@@ -1,20 +1,20 @@
 package spread
 
-import scala.collection.immutable.Map
-import SplitHash._
-import Hashing._
-
-
 //  SPREAD: Incremental Authenticated Computational Reuse
 //
 //  Features:
 
 //  1) purely functional
-//  2) fully authenticated
-//  3) spreadsheet-like incremental computation
+//  2) authenticated traces
+//  3) spreadsheet-like incremental computation via memoized traces
 //
 //  Copyright 2016: Robbert van Dalen
 //
+
+import scala.collection.immutable.Map
+import SplitHash._
+import Hashing._
+import scala.language.existentials
 
 object Spread {
 
@@ -116,7 +116,7 @@ object Spread {
       if (i == 0) hashCode
       else siphash24(stack.hashAt(i), magic_p2 * stack.hashCode)
     }
-    override def toString = (new LeftNodeIterator(stack,0)).foldLeft("")((x,s) => x.toString + " | " + s)
+    override def toString = stack.toString
   }
 
   def node[X](e: Expr[X]) = ExprSHNode(e)

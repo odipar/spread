@@ -42,6 +42,11 @@ object Test {
 
   // Authenticated fibonacci with- and without memoization
   final def main(args: Array[String]): Unit = {
+
+    val e = ((1:I) + 2) * ((3:I) + 4)
+    val (r,_) = fullEval(e,EmptyContext)
+    println(r)
+
     val fib27 = %(fib,27)
 
     val (s,c) = fullEval(fib27,EmptyContext)

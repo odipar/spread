@@ -1,7 +1,5 @@
 package spread
 
-import Hashing._
-
 object SplitHash {
   //
   // SplitHash is an immutable, uniquely represented Sequence ADT (Authenticated Data Structure).
@@ -17,6 +15,8 @@ object SplitHash {
   //
   // Copyright 2016: Robbert van Dalen.
   //
+
+  import Hashing._
 
   trait SplitHash[X, SH <: SplitHash[X,SH]] extends Hashable {
     def hash: Hash                  // O(1)
@@ -186,7 +186,7 @@ object SplitHash {
         else nt
       }
     }
-    override def toString = left + " " + right
+    override def toString = left + " | " + right
   }
 
   // A RLE(Run Length Encoded) node denotes the repetition of another node

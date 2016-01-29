@@ -1,13 +1,14 @@
 package spread
 
-import spread.Spread._
-import Hashing._
-
 //
 // Integer expressions + evaluation
 //
 // Copyright 2016: Robbert van Dalen
 //
+
+import spread.Spread._
+import Hashing._
+import scala.language.implicitConversions
 
 object SpreadArithmetic {
 
@@ -40,11 +41,13 @@ object SpreadArithmetic {
     override def toString = "+"
     def codeHash = 0
   }
+
   trait mul2 extends BinOp {
     def apply(o1: FI0, o2: FI0) = IExpr(o1.value * o2.value)
     override def toString = "*"
     def codeHash = 1
   }
+
   trait div2 extends BinOp {
     def apply(o1: FI0, o2: FI0) = IExpr(o1.value / o2.value)
     override def toString = "/"
@@ -67,7 +70,7 @@ object SpreadArithmetic {
     case _ => IWrap(i)
   }
 
+  // Automatic conversion to drive the DSL
   implicit def toIntExpr(i: Int): IntExpr = IExpr(i)
   implicit def toIntExpr2(i: I): IntExpr = wrap(i)
-
 }
