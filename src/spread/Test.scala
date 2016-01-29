@@ -2,6 +2,7 @@ package spread
 
 import spread.SpreadArithmetic._
 import spread.Spread._
+import scala.collection.mutable
 
 //
 // Copyright 2016: Robbert van Dalen
@@ -52,9 +53,9 @@ object Test {
     val (s,c) = fullEval(fib27,EmptyContext)
     println("slow: " + s.trace.size)
 
-    val (s2,c2) = fullEval(fib27,MapMemoizationContext(Map()))
+    val (s2,c2) = fullEval(fib27,WeakMemoizationContext(new mutable.WeakHashMap()))
     println("fast: " + s2.trace.size)
 
-    if (s != s2) { sys.error("Internal inconsistency") }  // the traces should be structurally
+    if (s != s2) { sys.error("Internal inconsistency") }  // the traces should be structurally equal
   }
 }

@@ -6,7 +6,7 @@ package spread
 
 //  1) purely functional
 //  2) authenticated traces
-//  3) spreadsheet-like incremental computation via memoized traces
+//  3) spreadsheet-like incremental computation via (weakly) memoized traces
 //
 //  Copyright 2016: Robbert van Dalen
 //
@@ -14,12 +14,14 @@ package spread
 import scala.collection.immutable.Map
 import SplitHash._
 import Hashing._
+import scala.collection.mutable
 import scala.language.existentials
 
 object Spread {
 
-  // An Expr[X] carries the authenticed trace that lead up to itself
-  // In turn, this trace can be memoized for re-use
+  // An Expr[X] carries the authenticated trace that lead up to itself.
+  // In turn, this trace can be (weakly) memoized for re-use.
+  //
   trait Expr[V] extends Hashable with Hash {
     def trace: SHNode[Expr[_]] = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
@@ -33,7 +35,7 @@ object Spread {
     def hash = this
   }
 
-  trait MemoizationContext{
+  trait MemoizationContext {
     def mput(o1: Expr[_], ev: Expr[_]): MemoizationContext
     def mget[X](o1: Expr[X]): Expr[X]
   }
@@ -43,8 +45,16 @@ object Spread {
     def mget[X](o1: Expr[X]): Expr[X] = null
   }
 
-  case class MapMemoizationContext(m: Map[Expr[_],Expr[_]]) extends MemoizationContext {
-    def mput(o1: Expr[_], ev: Expr[_]) = MapMemoizationContext(m + (o1->ev))
+  case class StrongMemoizationContext(m: Map[Expr[_],Expr[_]]) extends MemoizationContext {
+    def mput(o1: Expr[_], ev: Expr[_]) = StrongMemoizationContext(m + (o1->ev))
+    def mget[X](o1: Expr[X]): Expr[X] = m.get(o1) match {
+      case None => null
+      case Some(x) => x.asInstanceOf[Expr[X]]
+    }
+  }
+
+  case class WeakMemoizationContext(m: mutable.WeakHashMap[Expr[_],Expr[_]]) extends MemoizationContext {
+    def mput(o1: Expr[_], ev: Expr[_]) = WeakMemoizationContext(m += (o1->ev))
     def mget[X](o1: Expr[X]): Expr[X] = m.get(o1) match {
       case None => null
       case Some(x) => x.asInstanceOf[Expr[X]]
@@ -173,7 +183,7 @@ object Spread {
   def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = F1(f, a)
   def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f, a, b)
 
-  // Ideally with should recursively hash all the java byte code (full dependency graph)
+  // Ideally with should recursively Hash all the java byte code (full dependency graph)
   // For now we just use global constants until we implement that
   trait CodeHash extends Hashable with Hash {
     def hash = this
