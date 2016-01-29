@@ -1,5 +1,7 @@
 package spread
 
+import Hashing._
+
 object SplitHash {
   //
   // SplitHash is an immutable, uniquely represented Sequence ADT (Authenticated Data Structure).
@@ -107,19 +109,12 @@ object SplitHash {
     def chunkHeight = 0
   }
 
-  // Magic relative primes
-  final val m1 = 1664525
-  final val m2 = 22695477
-  final val m3 = 1103515245
-
-  import SipHash.siphash24
-
   case class IntNode(value: Int) extends LeafNode[Int] {
-    override def hashCode = siphash24(value + m1,value - m2)
+    override def hashCode = siphash24(value + magic_p1,value - magic_p2)
     def hashAt(index: Int) = {
       if (index == 0) hashCode
-      else if (index == 1) siphash24(value + m2, hashCode * m1)
-      else siphash24(hashCode * m3, hashAt(index-1) - m2)
+      else if (index == 1) siphash24(value + magic_p2, hashCode * magic_p1)
+      else siphash24(hashCode * magic_p3, hashAt(index-1) - magic_p2)
     }
     override def toString = value.toString
   }
@@ -152,7 +147,7 @@ object SplitHash {
 
     private var lHash = 0  // A lazy hash = 0 (trick borrowed from the Avail Programming Language)
     override def hashCode = {
-      if (lHash == 0) lHash = siphash24(left.hashCode - m2,right.hashCode + m3)
+      if (lHash == 0) lHash = siphash24(left.hashCode - magic_p2,right.hashCode + magic_p3)
       lHash           // could be 0 again, but then we just recompute 0.
     }
 
@@ -176,8 +171,8 @@ object SplitHash {
         unlikely = unlikely + 1
         val nindex = index / 2
 
-        if (hashCode > 0) siphash24(left.hash.hashAt(nindex) - m3,right.hash.hashAt(index - nindex) + (m1 * hashCode))
-        else siphash24(right.hash.hashAt(nindex) - (m3 * hashCode),left.hash.hashAt(index - nindex) + m1)
+        if (hashCode > 0) siphash24(left.hash.hashAt(nindex) - magic_p3,right.hash.hashAt(index - nindex) + (magic_p1 * hashCode))
+        else siphash24(right.hash.hashAt(nindex) - (magic_p3 * hashCode),left.hash.hashAt(index - nindex) + magic_p1)
       }
     }
     def chunk = {
@@ -191,7 +186,7 @@ object SplitHash {
         else nt
       }
     }
-    override def toString = "[" + left + "|" + right + "]"
+    override def toString = left + " " + right
   }
 
   // A RLE(Run Length Encoded) node denotes the repetition of another node
@@ -207,9 +202,9 @@ object SplitHash {
     def size = node.size * multiplicity
     def height = node.height
     def chunkHeight = node.chunkHeight
-    override val hashCode = siphash24(node.hashCode + m1 ,multiplicity - m3)
+    override val hashCode = siphash24(node.hashCode + magic_p1 ,multiplicity - magic_p3)
     override def hashAt(index: Int) = {
-      if (index > 0) siphash24(hashAt(index-1) + m2 ,multiplicity - (m3 * index))
+      if (index > 0) siphash24(hashAt(index-1) + magic_p2 ,multiplicity - (magic_p3 * index))
       else hashCode
     }
     def chunk = {
@@ -907,48 +902,4 @@ object SplitHash {
     println("unlikely > 64 bit consumption: " + unlikely)
   }
 
-}
-
-// SipHash. Modified version of the buggy https://gist.github.com/chrisvest/6989030#file-siphash-snip-scala
-
-final object SipHash {
-
-  final def rotl(x: Long, b: Int): Long = (x << b) | (x >>> -b)
-
-  final def siphash24(x1: Int, x2: Int): Int = {
-    var v0 = 0x736f6d6570736575L
-    var v1 = 0x646f72616e646f6dL
-    var v2 = 0x6c7967656e657261L
-    var v3 = 0x7465646279746573L
-
-    def sipround() {
-      v0 += v1
-      v1 = rotl(v1, 13) ^ v0
-      v0 = rotl(v0, 32)
-      v2 += v3
-      v3 = rotl(v3, 16) ^ v2
-      v0 += v3
-      v3 = rotl(v3, 21) ^ v0
-      v2 += v1
-      v1 = rotl(v1, 17) ^ v2
-      v2 = rotl(v2, 32)
-    }
-
-    val m = rotl(x1,32) + x2   // combine the input ints into one long
-
-    v3 ^= m
-    sipround
-    sipround
-    v0 ^= m
-
-    v2 ^= 0xff
-    sipround
-    sipround
-    sipround
-    sipround
-
-    val r = v0 ^ v1 ^ v2 ^ v3
-
-    (rotl(r,32) ^ r).toInt  // munch the long into an int
-  }
 }

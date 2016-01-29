@@ -1,6 +1,0 @@
-The SPREAD language targets a purely functional higher-ordered spread(sheet).
-It is based on the spread data structure.
-
-The spread data structure is a short name for:
-
-A uniquely named and represented confluenty persistent finite higher-ordered binary relation
