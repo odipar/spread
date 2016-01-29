@@ -18,9 +18,11 @@ import scala.language.existentials
 
 object Spread {
 
+  // An Expr[X] carries the authenticed trace that lead up to itself
+  // In turn, this trace can be memoized for re-use
   trait Expr[V] extends Hashable with Hash {
-    def stack: SHNode[Expr[_]] = ExprSHNode(this)
-    def head: Expr[V] = stack.last.asInstanceOf[Expr[V]]
+    def trace: SHNode[Expr[_]] = ExprSHNode(this)
+    def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
 
     var lHash = 0
     def lazyHash: Int
@@ -110,13 +112,13 @@ object Spread {
     override def toString = o.toString
   }
 
-  case class TracedExpr[V](override val stack: SHNode[Expr[_]]) extends Expr[V] {
-    def lazyHash = siphash24(stack.hashCode - magic_p3, magic_p3 * stack.hashCode)
+  case class TracedExpr[V](override val trace: SHNode[Expr[_]]) extends Expr[V] {
+    def lazyHash = siphash24(trace.hashCode - magic_p3, magic_p3 * trace.hashCode)
     def hashAt(i: Int) = {
       if (i == 0) hashCode
-      else siphash24(stack.hashAt(i), magic_p2 * stack.hashCode)
+      else siphash24(trace.hashAt(i), magic_p2 * trace.hashCode)
     }
-    override def toString = stack.toString
+    override def toString = trace.toString
   }
 
   def node[X](e: Expr[X]) = ExprSHNode(e)
@@ -136,12 +138,12 @@ object Spread {
       case x1: F0[_] => (TracedExpr(node(Eval(f1,1)).concat(node(f1.f(x1)))),c)
       case x1 => {
         val (e1,c2) = fullEval(x1,c)
-        var stack: SHNode[Expr[_]] = null
+        var trace: SHNode[Expr[_]] = null
 
-        if (e1 != x1) stack = concat(stack,e1.stack)
-        stack = concat(stack,node(F1(f1.f,e1.head)))
+        if (e1 != x1) trace = concat(trace,e1.trace)
+        trace = concat(trace,node(F1(f1.f,e1.head)))
 
-        (TracedExpr(node(Eval(f1,stack.size)).concat(stack)),c2)
+        (TracedExpr(node(Eval(f1,trace.size)).concat(trace)),c2)
       }
     }
     case f2: F2[_,_,X] => (f2.v1.head,f2.v2.head) match {
@@ -149,20 +151,20 @@ object Spread {
       case (x1,x2) => {
         val (e1,c2) = fullEval(x1,c)
         val (e2,c3) = fullEval(x2,c2)
-        var stack: SHNode[Expr[_]] = null
+        var trace: SHNode[Expr[_]] = null
 
-        if (e1 != x1) stack = concat(stack,e1.stack)
-        if (e2 != x2) stack = concat(stack,e2.stack)
-        stack = concat(stack,node(F2(f2.f,e1.head,e2.head)))
+        if (e1 != x1) trace = concat(trace,e1.trace)
+        if (e2 != x2) trace = concat(trace,e2.trace)
+        trace = concat(trace,node(F2(f2.f,e1.head,e2.head)))
 
-        (TracedExpr(node(Eval(f2,stack.size)).concat(stack)),c3)
+        (TracedExpr(node(Eval(f2,trace.size)).concat(trace)),c3)
       }
     }
     case t: TracedExpr[X] => {
       val r1 = t.head
       val (r2,cc) = eval(r1,c)
       if (r1 == r2) (t,cc)
-      else (TracedExpr(concat(t.stack,r2.stack)),cc)
+      else (TracedExpr(concat(t.trace,r2.trace)),cc)
     }
     case _ => (e,c)
   }
