@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" afterPath="$PROJECT_DIR$/src/spread/FingerprintTree.scala" />
+    <list default="true" id="e8122ab2-daa2-4d67-a0c5-12f232fa029b" name="Default" comment="small fix">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/scala_sdk.xml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/encodings.xml" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/spread/Test.scala" afterPath="$PROJECT_DIR$/src/spread/Test.scala" />
     </list>
     <ignored path="spread.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -23,7 +25,7 @@
     <splitter proportion="0.5" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/spread$Test.coverage" NAME="Test Coverage Results" MODIFIED="1415311981426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/spread$Test.coverage" NAME="Test Coverage Results" MODIFIED="1453396366292" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
   <component name="CoverageViewManager">
     <option name="myFlattenPackages" value="true" />
@@ -94,33 +96,108 @@
     <favorites_list name="spread" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="Test.scala" pinned="false" current-in-tab="false">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Test.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
           <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.6989051">
+              <caret line="55" column="31" selection-start-line="55" selection-start-column="31" selection-end-line="55" selection-end-column="31" />
+              <folding>
+                <element signature="e#16#48#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SplitHash.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/SplitHash.scala">
+          <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="15" column="26" selection-start-line="15" selection-start-column="26" selection-end-line="15" selection-end-column="26" />
+              <caret line="873" column="0" selection-start-line="873" selection-start-column="0" selection-end-line="873" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FingerprintTree.scala" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
+            <state split_layout="FIRST">
+              <first_editor vertical-scroll-proportion="0.083217755">
+                <caret line="4" column="3" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
+                <folding />
+              </first_editor>
+              <second_editor />
+            </state>
+          </provider>
+          <provider editor-type-id="MultiMarkdownFxPreviewEditor">
+            <state />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Hashing.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-16.331593">
-              <caret line="52" column="16" selection-start-line="52" selection-start-column="16" selection-end-line="52" selection-end-column="16" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="46" column="3" selection-start-line="46" selection-start-column="3" selection-end-line="46" selection-end-column="3" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package.class" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class">
+      <file leaf-file-name="Spread.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/Spread.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+              <caret line="25" column="43" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+              <folding>
+                <element signature="e#258#295#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MapLike.class" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/MapLike.class">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-15.962963">
+              <caret line="61" column="0" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractMap.class" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/AbstractMap.class">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-1.6666666">
+              <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Object.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/lang/Object.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="234" column="18" selection-start-line="234" selection-start-column="18" selection-end-line="234" selection-end-column="18" />
+              <folding>
+                <element signature="e#10065#10066#0" expanded="true" />
+                <element signature="e#10148#10149#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SpreadArithmetic.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="26" column="68" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+              <folding>
+                <element signature="e#99#121#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -133,6 +210,11 @@
     </FindUsagesManager>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="s" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitLogSettings">
@@ -144,14 +226,21 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/spread.xml" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalRelation.scala" />
         <option value="$PROJECT_DIR$/avail/ordering.avail" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalTreapRelation.scala" />
-        <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
-        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
         <option value="$PROJECT_DIR$/src/spread/IncrementalVector.scala" />
+        <option value="$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala" />
         <option value="$PROJECT_DIR$/src/spread/FingerprintTree.scala" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/src/spread/IncrementalLogic.scala" />
+        <option value="$PROJECT_DIR$/src/spread/IncrementalMemoization.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Hashing.scala" />
+        <option value="$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala" />
+        <option value="$PROJECT_DIR$/src/spread/SpreadArithmetic.scala" />
+        <option value="$PROJECT_DIR$/src/spread/SplitHash.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Spread.scala" />
+        <option value="$PROJECT_DIR$/src/spread/Test.scala" />
       </list>
     </option>
   </component>
@@ -165,13 +254,10 @@
   <component name="MavenProjectNavigator">
     <treeState />
   </component>
-  <component name="NamedScopeManager">
-    <order />
-  </component>
   <component name="ProjectFrameBounds">
     <option name="y" value="23" />
-    <option name="width" value="1280" />
-    <option name="height" value="773" />
+    <option name="width" value="1440" />
+    <option name="height" value="873" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -249,14 +335,20 @@
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
+      <pane id="PackagesPane">
+        <subPane>
           <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="spread" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -304,16 +396,12 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane">
-        <subPane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
           <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="spread" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -321,29 +409,28 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Artifacts" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="99" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="133" />
+    <property name="project.structure.last.edited" value="Problems" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="132" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="157" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="222" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="307" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Avail/Avail" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="112" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="582" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="906" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="225" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="221" />
+    <property name="last_opened_file_path" value="$USER_HOME$/IdeaProjects/spread-eav" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="161" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="476" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="947" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="307" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="307" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
     <property name="Repository.Attach.Sources" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
-    <property name="FullScreen" value="false" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="Downloaded.Files.Path" value="$PROJECT_DIR$/lib" />
     <property name="options.splitter.details.proportions" value="0.2" />
@@ -355,14 +442,13 @@
     <property name="options.lastSelected" value="configurable.group.language" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="restartRequiresConfirmation" value="true" />
     <property name="dynamic.classpath" value="false" />
     <property name="options.searchVisible" value="true" />
     <property name="SearchEverywhereHistory" value="" />
     <property name="LayoutCode.rearrangeEntriesScala" value="false" />
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;jar:///Users/rapido/scala-2.11.4/lib/scala-library.jar!/scala/sys/package.class&#10;new look at multimaps&#9;FILE&#9;file:///Users/rapido/spread/A new look at multimaps.pdf" />
     <property name="LayoutCode.rearrangeEntriesXML" value="false" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.scala.settings.ScalaProjectSettingsConfigurable" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
@@ -435,8 +521,58 @@
       <patterns />
       <method />
     </configuration>
+    <configuration default="true" type="JUnitTestDiscovery" factoryName="JUnit Test Discovery" changeList="All">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <method />
+    </configuration>
     <configuration default="true" type="JarApplication" factoryName="JAR Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Java Scratch" factoryName="Java Scratch">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="SCRATCH_FILE_ID" value="0" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="spread" />
       <envs />
       <method />
     </configuration>
@@ -457,13 +593,12 @@
     </configuration>
     <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <extension name="scalaCoverage" />
       <module name="" />
       <setting name="path" value="" />
       <setting name="package" value="" />
       <setting name="vmparams" value="" />
       <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="workingDirectory" value="" />
       <setting name="searchForTest" value="Across module dependencies" />
       <setting name="testName" value="" />
       <setting name="testKind" value="Class" />
@@ -473,13 +608,12 @@
     </configuration>
     <configuration default="true" type="Specs2RunConfiguration" factoryName="Specs2">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <extension name="scalaCoverage" />
       <module name="" />
       <setting name="path" value="" />
       <setting name="package" value="" />
       <setting name="vmparams" value="" />
       <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="workingDirectory" value="" />
       <setting name="searchForTest" value="Across module dependencies" />
       <setting name="testName" value="" />
       <setting name="testKind" value="Class" />
@@ -503,15 +637,27 @@
       <JdkChoice value="FROM_MODULE" />
       <method />
     </configuration>
+    <configuration default="true" type="executeSpecs" factoryName="Gauge Execution">
+      <setting name="environment" value="" />
+      <setting name="specsToExecute" value="" />
+      <setting name="tags" value="" />
+      <setting name="parallelNodes" value="" />
+      <setting name="execInParallel" value="false" />
+      <setting name="programParameters" value="" />
+      <setting name="workingDirectory" value="" />
+      <setting name="moduleName" value="" />
+      <envMap />
+      <setting name="rowsRange" value="" />
+      <method />
+    </configuration>
     <configuration default="true" type="uTestRunConfiguration" factoryName="utest">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <extension name="scalaCoverage" />
       <module name="" />
       <setting name="path" value="" />
       <setting name="package" value="" />
       <setting name="vmparams" value="" />
       <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="workingDirectory" value="" />
       <setting name="searchForTest" value="Across module dependencies" />
       <setting name="testName" value="" />
       <setting name="testKind" value="Class" />
@@ -521,12 +667,12 @@
     </configuration>
     <configuration default="false" name="Test" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="MAIN_CLASS_NAME" value="spread.Test" />
-      <option name="VM_PARAMETERS" value="-Xmx2048M" />
+      <option name="MAIN_CLASS_NAME" value="spread.SplitHash" />
+      <option name="VM_PARAMETERS" value="-Xmx4096M" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
@@ -546,18 +692,18 @@
     </configuration>
     <configuration default="false" name="Vector" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="MAIN_CLASS_NAME" value="spread.FingerprintTree" />
+      <option name="MAIN_CLASS_NAME" value="spread.Test" />
       <option name="VM_PARAMETERS" value="-server -Xmx4048M" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="spread" />
       <envs>
-        <env name="LD_LIBRARY_PATH" value="$USER_HOME$" />
+        <env name="LD_LIBRARY_PATH" value="/Users/rapido" />
       </envs>
       <method />
     </configuration>
@@ -586,186 +732,6 @@
       <created>1351125871725</created>
       <option name="number" value="Default" />
       <updated>1351125871725</updated>
-    </task>
-    <task id="LOCAL-00116" summary="- removed rehash&#10;- split now returns three parts&#10;- additional set operations">
-      <created>1401458992649</created>
-      <option name="number" value="00116" />
-      <option name="project" value="LOCAL" />
-      <updated>1401458992649</updated>
-    </task>
-    <task id="LOCAL-00117" summary="spread v0.1 - first cut">
-      <created>1401915670341</created>
-      <option name="number" value="00117" />
-      <option name="project" value="LOCAL" />
-      <updated>1401915670341</updated>
-    </task>
-    <task id="LOCAL-00118" summary="fixed typo + additional example">
-      <created>1401916226982</created>
-      <option name="number" value="00118" />
-      <option name="project" value="LOCAL" />
-      <updated>1401916226982</updated>
-    </task>
-    <task id="LOCAL-00119" summary="removed ()">
-      <created>1401916779056</created>
-      <option name="number" value="00119" />
-      <option name="project" value="LOCAL" />
-      <updated>1401916779056</updated>
-    </task>
-    <task id="LOCAL-00120" summary="reworked reduction">
-      <created>1403464760091</created>
-      <option name="number" value="00120" />
-      <option name="project" value="LOCAL" />
-      <updated>1403464760091</updated>
-    </task>
-    <task id="LOCAL-00121" summary="some more examples">
-      <created>1403470915094</created>
-      <option name="number" value="00121" />
-      <option name="project" value="LOCAL" />
-      <updated>1403470915094</updated>
-    </task>
-    <task id="LOCAL-00122" summary="weak parent pointers + replacement">
-      <created>1403767570448</created>
-      <option name="number" value="00122" />
-      <option name="project" value="LOCAL" />
-      <updated>1403767570448</updated>
-    </task>
-    <task id="LOCAL-00123" summary="some new ideas:&#10;- memoization via a state monad&#10;- staging">
-      <created>1403994748679</created>
-      <option name="number" value="00123" />
-      <option name="project" value="LOCAL" />
-      <updated>1403994748679</updated>
-    </task>
-    <task id="LOCAL-00124" summary="- staging">
-      <created>1404049757244</created>
-      <option name="number" value="00124" />
-      <option name="project" value="LOCAL" />
-      <updated>1404049757244</updated>
-    </task>
-    <task id="LOCAL-00125" summary="- promoted prototype to current model">
-      <created>1404072202766</created>
-      <option name="number" value="00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1404072202766</updated>
-    </task>
-    <task id="LOCAL-00126" summary="- refactoring and renaming">
-      <created>1404076762200</created>
-      <option name="number" value="00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1404076762200</updated>
-    </task>
-    <task id="LOCAL-00127" summary="- replacement + scala 2.11">
-      <created>1404631340288</created>
-      <option name="number" value="00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1404631340288</updated>
-    </task>
-    <task id="LOCAL-00128" summary="- type-safe replace">
-      <created>1404643064856</created>
-      <option name="number" value="00128" />
-      <option name="project" value="LOCAL" />
-      <updated>1404643064857</updated>
-    </task>
-    <task id="LOCAL-00129" summary="- nested replace">
-      <created>1404677070037</created>
-      <option name="number" value="00129" />
-      <option name="project" value="LOCAL" />
-      <updated>1404677070037</updated>
-    </task>
-    <task id="LOCAL-00130" summary="abandoned lastest prototype - roll back to version be24b6071698a598d777dab93a14bd98cd46e97d">
-      <created>1405206071568</created>
-      <option name="number" value="00130" />
-      <option name="project" value="LOCAL" />
-      <updated>1405206071568</updated>
-    </task>
-    <task id="LOCAL-00131" summary="lazy eval = reduce">
-      <created>1405978167038</created>
-      <option name="number" value="00131" />
-      <option name="project" value="LOCAL" />
-      <updated>1405978167038</updated>
-    </task>
-    <task id="LOCAL-00132" summary="lazy eval = reduce">
-      <created>1405978393046</created>
-      <option name="number" value="00132" />
-      <option name="project" value="LOCAL" />
-      <updated>1405978393046</updated>
-    </task>
-    <task id="LOCAL-00133" summary="lazy eval = reduce">
-      <created>1405978556778</created>
-      <option name="number" value="00133" />
-      <option name="project" value="LOCAL" />
-      <updated>1405978556778</updated>
-    </task>
-    <task id="LOCAL-00134" summary="the quest continues">
-      <created>1406575585634</created>
-      <option name="number" value="00134" />
-      <option name="project" value="LOCAL" />
-      <updated>1406575585635</updated>
-    </task>
-    <task id="LOCAL-00135" summary="cool example">
-      <created>1406579850943</created>
-      <option name="number" value="00135" />
-      <option name="project" value="LOCAL" />
-      <updated>1406579850943</updated>
-    </task>
-    <task id="LOCAL-00136" summary="replacement with typetags">
-      <created>1407524909452</created>
-      <option name="number" value="00136" />
-      <option name="project" value="LOCAL" />
-      <updated>1407524909452</updated>
-    </task>
-    <task id="LOCAL-00137" summary="reworked Treap">
-      <created>1407831823175</created>
-      <option name="number" value="00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1407831823175</updated>
-    </task>
-    <task id="LOCAL-00138" summary="first cut">
-      <created>1409058427336</created>
-      <option name="number" value="00138" />
-      <option name="project" value="LOCAL" />
-      <updated>1409058427336</updated>
-    </task>
-    <task id="LOCAL-00139" summary="chunked treaps">
-      <created>1409082437362</created>
-      <option name="number" value="00139" />
-      <option name="project" value="LOCAL" />
-      <updated>1409082437362</updated>
-    </task>
-    <task id="LOCAL-00140" summary="some more experiments on chunked treaps">
-      <created>1410458815353</created>
-      <option name="number" value="00140" />
-      <option name="project" value="LOCAL" />
-      <updated>1410458815353</updated>
-    </task>
-    <task id="LOCAL-00141" summary="removed chunked treaps (premature optimization ....)&#10;removed non-essential methods">
-      <created>1411480032718</created>
-      <option name="number" value="00141" />
-      <option name="project" value="LOCAL" />
-      <updated>1411480032718</updated>
-    </task>
-    <task id="LOCAL-00142" summary="- optimized treap&#10;- eval memoization context + backreferences">
-      <created>1412109135538</created>
-      <option name="number" value="00142" />
-      <option name="project" value="LOCAL" />
-      <updated>1412109135538</updated>
-    </task>
-    <task id="LOCAL-00143" summary="- intellij 14&#10;- visualization">
-      <created>1415311144930</created>
-      <option name="number" value="00143" />
-      <option name="project" value="LOCAL" />
-      <updated>1415311144930</updated>
-    </task>
-    <task id="LOCAL-00144" summary="- intellij 14 - next step">
-      <created>1415312507025</created>
-      <option name="number" value="00144" />
-      <option name="project" value="LOCAL" />
-      <updated>1415312507025</updated>
-    </task>
-    <task id="LOCAL-00145" summary="- intellij 14 - next step 2">
-      <created>1415312803166</created>
-      <option name="number" value="00145" />
-      <option name="project" value="LOCAL" />
-      <updated>1415312803166</updated>
     </task>
     <task id="LOCAL-00146" summary="- EXPERIMENTAL: incremental relation (to replace treapmap)">
       <created>1419630758991</created>
@@ -881,40 +847,220 @@
       <option name="project" value="LOCAL" />
       <updated>1439061374411</updated>
     </task>
-    <option name="localTasksCounter" value="165" />
+    <task id="LOCAL-00165" summary="research on SeqHash:&#10;&#10;- WORKS FOR REPETITIVE PATTERNS!">
+      <created>1439103479465</created>
+      <option name="number" value="00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1439103479465</updated>
+    </task>
+    <task id="LOCAL-00166" summary="BIG MILESTONE: We got proof that general (seqhashed) trees can be transformed into seqhash trees with left and right fringes. This will the basis for splitting seqhash trees!&#10;&#10;So the following API is now a reality!&#10;&#10;concat(s1: SeqHash, s2: SeqHash): SeqHash&#10;split(pos: Int): (SeqHash,SeqHash)&#10;&#10;with the magic property that SeqHashes are uniquely represented.">
+      <created>1452635731151</created>
+      <option name="number" value="00166" />
+      <option name="project" value="LOCAL" />
+      <updated>1452635731154</updated>
+    </task>
+    <task id="LOCAL-00167" summary="efficient lazy tree iterators">
+      <created>1453041580026</created>
+      <option name="number" value="00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1453041580026</updated>
+    </task>
+    <task id="LOCAL-00168" summary="General hash trees into hashseq transformation!">
+      <created>1453122874912</created>
+      <option name="number" value="00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1453122874912</updated>
+    </task>
+    <task id="LOCAL-00169" summary="correct fringe scanning">
+      <created>1453190970737</created>
+      <option name="number" value="00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1453190970738</updated>
+    </task>
+    <task id="LOCAL-00170" summary="SeqHash can now be split!&#10;We recast SeqHash to SplitHash in honor of Jelle's SeqHash">
+      <created>1453194844949</created>
+      <option name="number" value="00170" />
+      <option name="project" value="LOCAL" />
+      <updated>1453194844949</updated>
+    </task>
+    <task id="LOCAL-00171" summary="repetitions DONE!">
+      <created>1453246202349</created>
+      <option name="number" value="00171" />
+      <option name="project" value="LOCAL" />
+      <updated>1453246202349</updated>
+    </task>
+    <task id="LOCAL-00172" summary="split of repetitions done.&#10;start of clean implementation">
+      <created>1453276279047</created>
+      <option name="number" value="00172" />
+      <option name="project" value="LOCAL" />
+      <updated>1453276279047</updated>
+    </task>
+    <task id="LOCAL-00173" summary="O(log(n)) split!">
+      <created>1453386749611</created>
+      <option name="number" value="00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1453386749613</updated>
+    </task>
+    <task id="LOCAL-00174" summary="test log(N) split">
+      <created>1453387516084</created>
+      <option name="number" value="00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1453387516084</updated>
+    </task>
+    <task id="LOCAL-00175" summary="some documentation and refactoring">
+      <created>1453417457495</created>
+      <option name="number" value="00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1453417457496</updated>
+    </task>
+    <task id="LOCAL-00176" summary="performance improvements and siphashes">
+      <created>1453589074137</created>
+      <option name="number" value="00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1453589074137</updated>
+    </task>
+    <task id="LOCAL-00177" summary="some more tests">
+      <created>1453589851507</created>
+      <option name="number" value="00177" />
+      <option name="project" value="LOCAL" />
+      <updated>1453589851507</updated>
+    </task>
+    <task id="LOCAL-00178" summary="cleaned FingerprintTree from SplitHash">
+      <created>1453590039411</created>
+      <option name="number" value="00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1453590039411</updated>
+    </task>
+    <task id="LOCAL-00179" summary="restored formatting">
+      <created>1453590434577</created>
+      <option name="number" value="00179" />
+      <option name="project" value="LOCAL" />
+      <updated>1453590434577</updated>
+    </task>
+    <task id="LOCAL-00180" summary="small fix">
+      <created>1453591391199</created>
+      <option name="number" value="00180" />
+      <option name="project" value="LOCAL" />
+      <updated>1453591391199</updated>
+    </task>
+    <task id="LOCAL-00181" summary="BUG: iterative deepening is not correct.">
+      <created>1453630364292</created>
+      <option name="number" value="00181" />
+      <option name="project" value="LOCAL" />
+      <updated>1453630364292</updated>
+    </task>
+    <task id="LOCAL-00182" summary="fixed advancing fringe issue">
+      <created>1453760746155</created>
+      <option name="number" value="00182" />
+      <option name="project" value="LOCAL" />
+      <updated>1453760746160</updated>
+    </task>
+    <task id="LOCAL-00183" summary="refactoring + optimizations + documentation">
+      <created>1453799148897</created>
+      <option name="number" value="00183" />
+      <option name="project" value="LOCAL" />
+      <updated>1453799148897</updated>
+    </task>
+    <task id="LOCAL-00184" summary="small fix on tempory node creation">
+      <created>1453799561721</created>
+      <option name="number" value="00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1453799561721</updated>
+    </task>
+    <task id="LOCAL-00185" summary="removed redundant 'with Hash'">
+      <created>1453800119618</created>
+      <option name="number" value="00185" />
+      <option name="project" value="LOCAL" />
+      <updated>1453800119618</updated>
+    </task>
+    <task id="LOCAL-00186" summary="better hashing + rationale">
+      <created>1453840774590</created>
+      <option name="number" value="00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1453840774591</updated>
+    </task>
+    <task id="LOCAL-00187" summary="BIG siphash bugfix. Copy/pasted code from internet was wrong">
+      <created>1453877879053</created>
+      <option name="number" value="00187" />
+      <option name="project" value="LOCAL" />
+      <updated>1453877879053</updated>
+    </task>
+    <task id="LOCAL-00188" summary="- re-installed my personal code format&#10;- some asserts">
+      <created>1453891741742</created>
+      <option name="number" value="00188" />
+      <option name="project" value="LOCAL" />
+      <updated>1453891741742</updated>
+    </task>
+    <task id="LOCAL-00189" summary="correct chunking!">
+      <created>1453912063961</created>
+      <option name="number" value="00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1453912063962</updated>
+    </task>
+    <task id="LOCAL-00190" summary="- more documentation&#10;- some more tricks">
+      <created>1453926418201</created>
+      <option name="number" value="00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1453926418202</updated>
+    </task>
+    <task id="LOCAL-00191" summary="improved hashing higher indexed trees&#10;small typo fixes">
+      <created>1454015943071</created>
+      <option name="number" value="00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1454015943071</updated>
+    </task>
+    <task id="LOCAL-00192" summary="major rework of SPREAD based on the new SplitHash data structure">
+      <created>1454082011723</created>
+      <option name="number" value="00192" />
+      <option name="project" value="LOCAL" />
+      <updated>1454082011729</updated>
+    </task>
+    <task id="LOCAL-00193" summary="canonical example (1+2)*(3+4)">
+      <created>1454082778786</created>
+      <option name="number" value="00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1454082778786</updated>
+    </task>
+    <task id="LOCAL-00194" summary="documentation fix&#10;removed SpreadLogic">
+      <created>1454083640334</created>
+      <option name="number" value="00194" />
+      <option name="project" value="LOCAL" />
+      <updated>1454083640334</updated>
+    </task>
+    <option name="localTasksCounter" value="195" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="773" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="873" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3565341" sideWeight="0.41953126" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4161932" sideWeight="0.64453125" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3224432" sideWeight="0.47734374" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4161932" sideWeight="0.35546875" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.49676898" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14453125" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.265625" sideWeight="0.6672474" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39204547" sideWeight="0.4875" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934928" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282572" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296875" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32536522" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35572138" sideWeight="0.22569445" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.420398" sideWeight="0.57916665" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32976973" sideWeight="0.67770034" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3221393" sideWeight="0.45555556" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2835821" sideWeight="0.42083332" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.49676898" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20069444" sideWeight="0.7300509" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.265625" sideWeight="0.6672474" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39179105" sideWeight="0.47083333" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39967105" sideWeight="0.74390244" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32934928" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3282572" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39898133" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32536522" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -931,58 +1077,63 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="reworked Treap" />
-    <MESSAGE value="first cut" />
-    <MESSAGE value="chunked treaps" />
-    <MESSAGE value="some more experiments on chunked treaps" />
-    <MESSAGE value="removed chunked treaps (premature optimization ....)&#10;removed non-essential methods" />
-    <MESSAGE value="- optimized treap&#10;- eval memoization context + backreferences" />
-    <MESSAGE value="- intellij 14&#10;- visualization" />
-    <MESSAGE value="- intellij 14 - next step" />
-    <MESSAGE value="- intellij 14 - next step 2" />
-    <MESSAGE value="- EXPERIMENTAL: incremental relation (to replace treapmap)" />
-    <MESSAGE value="- tuple ordering - v0.1" />
-    <MESSAGE value="- tabs" />
-    <MESSAGE value="- strengthen sort return type" />
-    <MESSAGE value="- empty tuple handling" />
-    <MESSAGE value="- some seriously new performant stuff" />
-    <MESSAGE value="Gullik -&gt; Gulik" />
-    <MESSAGE value="temp check to get to github" />
-    <MESSAGE value="small test commit" />
-    <MESSAGE value="removed files" />
-    <MESSAGE value="*very* messy code - just to try out some new ideas" />
-    <MESSAGE value="cleaned up code" />
-    <MESSAGE value="typo" />
-    <MESSAGE value="last commit before secure timestamping" />
-    <MESSAGE value="research on SeqHash:&#10;&#10;- the paper doesn't properly deal with repetitions&#10;- stripped the implementation" />
-    <MESSAGE value="research on SeqHash:&#10;&#10;- got it working for non-repetitive patterns" />
-    <option name="LAST_COMMIT_MESSAGE" value="research on SeqHash:&#10;&#10;- got it working for non-repetitive patterns" />
+    <MESSAGE value="repetitions DONE!" />
+    <MESSAGE value="split of repetitions done.&#10;start of clean implementation" />
+    <MESSAGE value="O(log(n)) split!" />
+    <MESSAGE value="test log(N) split" />
+    <MESSAGE value="some documentation and refactoring" />
+    <MESSAGE value="performance improvements and siphashes" />
+    <MESSAGE value="some more tests" />
+    <MESSAGE value="cleaned FingerprintTree from SplitHash" />
+    <MESSAGE value="restored formatting" />
+    <MESSAGE value="small fix" />
+    <MESSAGE value="BUG: iterative deepening is not correct." />
+    <MESSAGE value="fixed advancing fringe issue" />
+    <MESSAGE value="refactoring + optimizations + documentation" />
+    <MESSAGE value="small fix on tempory node creation" />
+    <MESSAGE value="removed redundant 'with Hash'" />
+    <MESSAGE value="better hashing + rationale" />
+    <MESSAGE value="BIG siphash bugfix. Copy/pasted code from internet was wrong" />
+    <MESSAGE value="- re-installed my personal code format&#10;- some asserts&#10;" />
+    <MESSAGE value="- re-installed my personal code format&#10;- some asserts" />
+    <MESSAGE value="correct chunking!" />
+    <MESSAGE value="- more documentation&#10;- some more tricks" />
+    <MESSAGE value="improved hashing higher indexed trees&#10;small typo fixes" />
+    <MESSAGE value="major rework of SPREAD based on the new SplitHash data structure" />
+    <MESSAGE value="canonical example (1+2)*(3+4)" />
+    <MESSAGE value="documentation fix&#10;removed SpreadLogic" />
+    <option name="LAST_COMMIT_MESSAGE" value="documentation fix&#10;removed SpreadLogic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala</url>
+          <url>file://$PROJECT_DIR$/src/spread/Spread.scala</url>
           <properties />
           <option name="timeStamp" value="9" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/spread/FingerprintTree.scala</url>
-          <line>54</line>
-          <properties />
-          <option name="timeStamp" value="28" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/spread/Test.scala</url>
-          <line>69</line>
-          <properties class="spread.Test$" method="createTView" />
+          <properties class="spread.Test$" />
           <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/src/spread/SplitHash.scala</url>
+          <line>458</line>
+          <properties />
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/src/spread/SplitHash.scala</url>
+          <line>873</line>
+          <properties />
+          <option name="timeStamp" value="35" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="29" />
+      <option name="time" value="36" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1003,51 +1154,7 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="186" column="91" selection-start-line="186" selection-start-column="18" selection-end-line="186" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="301" column="46" selection-start-line="301" selection-start-column="42" selection-end-line="301" selection-end-column="42" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="270" column="48" selection-start-line="270" selection-start-column="43" selection-end-line="270" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="55" column="46" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="78" selection-start-line="19" selection-start-column="39" selection-end-line="19" selection-end-column="39" />
@@ -1065,19 +1172,23 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#48#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Spread.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#258#295#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="27" column="8" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1095,19 +1206,23 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#48#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Spread.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#258#295#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="27" column="8" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1125,7 +1240,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="30" column="34" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#16#48#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1136,15 +1253,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/Spread.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="52" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#258#295#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="27" column="8" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1172,13 +1291,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/spread.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="15" selection-start-line="0" selection-start-column="15" selection-end-line="0" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.idea/ant.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1187,13 +1299,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.idea/libraries/scala_sdk_2_11_4.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/libraries/scala_sdk.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1291,20 +1396,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalLogic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalArithmetic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="63" column="25" selection-start-line="63" selection-start-column="25" selection-end-line="63" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/planktree.graphml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1319,29 +1410,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalMemoization.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="26" selection-start-line="15" selection-start-column="26" selection-end-line="15" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/runtime/ScalaRunTime.class">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1349,10 +1417,39 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/IncrementalTreapMap.scala">
+    <entry file="file://$PROJECT_DIR$/spread.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-8.724138">
-          <caret line="45" column="29" selection-start-line="45" selection-start-column="29" selection-end-line="45" selection-end-column="29" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="15" selection-start-line="0" selection-start-column="15" selection-end-line="0" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/immutable/Nil.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/mutable/WrappedArray.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="83" column="0" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/Array.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.5555556">
+          <caret line="1" column="20" selection-start-line="1" selection-start-column="20" selection-end-line="1" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/Predef.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="150" column="0" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1364,11 +1461,96 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/spread/FingerprintTree.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-16.331593">
-          <caret line="52" column="16" selection-start-line="52" selection-start-column="16" selection-end-line="52" selection-end-column="16" />
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
+        <state split_layout="FIRST">
+          <first_editor vertical-scroll-proportion="0.083217755">
+            <caret line="4" column="3" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+      <provider editor-type-id="MultiMarkdownFxPreviewEditor">
+        <state />
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.13686131">
+          <caret line="5" column="85" selection-start-line="5" selection-start-column="85" selection-end-line="5" selection-end-column="85" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/lang/Object.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="234" column="18" selection-start-line="234" selection-start-column="18" selection-end-line="234" selection-end-column="18" />
+          <folding>
+            <element signature="e#10065#10066#0" expanded="true" />
+            <element signature="e#10148#10149#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/MapLike.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-15.962963">
+          <caret line="61" column="0" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/scala-2.11.4/lib/scala-library.jar!/scala/collection/AbstractMap.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.6666666">
+          <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Spread.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="43" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding>
+            <element signature="e#258#295#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/SplitHash.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="873" column="0" selection-start-line="873" selection-start-column="0" selection-end-line="873" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Hashing.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="46" column="3" selection-start-line="46" selection-start-column="3" selection-end-line="46" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/SpreadArithmetic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="26" column="68" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+          <folding>
+            <element signature="e#99#121#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/spread/Test.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6989051">
+          <caret line="55" column="31" selection-start-line="55" selection-start-column="31" selection-end-line="55" selection-end-column="31" />
+          <folding>
+            <element signature="e#16#48#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1430,7 +1612,6 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>

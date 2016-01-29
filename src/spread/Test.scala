@@ -50,10 +50,10 @@ object Test {
     val fib27 = %(fib,27)
 
     val (s,c) = fullEval(fib27,EmptyContext)
-    println("slow: " + s.stack.size)
+    println("slow: " + s.trace.size)
 
     val (s2,c2) = fullEval(fib27,MapMemoizationContext(Map()))
-    println("fast: " + s2.stack.size)
+    println("fast: " + s2.trace.size)
 
     if (s != s2) { sys.error("Internal inconsistency") }  // the traces should be structurally
   }
