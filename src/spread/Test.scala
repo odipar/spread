@@ -30,17 +30,6 @@ object Test {
     override def toString = "fib"
   }
 
-  object fib2 extends FA1[Int,Int] {
-    def codeHash = 102
-    def apply(i: FI0) = {
-      val v = i.value
-
-      if (v < 2) 1
-      else F1(fib,v-1) + F1(fib,v-2)
-    }
-    override def toString = "fib2"
-  }
-
   // Authenticated fibonacci with- and without memoization
   final def main(args: Array[String]): Unit = {
 
