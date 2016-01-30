@@ -83,7 +83,7 @@ object SplitHash {
       else TempBinNode(this,n)
     }
 
-    def ++(other: SHNode[X]): SHNode[X] = this.concat(other)
+    def ::(other: SHNode[X]): SHNode[X] = this.concat(other)
   }
 
   // Utility methods to detect and deal with consecutive, equal nodes
@@ -191,7 +191,7 @@ object SplitHash {
       }
     }
     def parts = Array(left,right)
-    override def toString = left + " | " + right
+    override def toString = left + " :: " + right
   }
 
   // A RLE(Run Length Encoded) node denotes the repetition of another node
@@ -820,6 +820,10 @@ object SplitHash {
   def emptySH[X]: SHNode[X] = null
   def intNode(i: Int): SHNode[Int] = IntNode(i)
 
+  import scala.language.implicitConversions
+
+  implicit def toIntNode(i: Int): SHNode[Int] = intNode(i)
+
   // *************************************
   // EXPOSITION OF ALL THE NICE PROPERTIES
   // *************************************
@@ -880,22 +884,22 @@ object SplitHash {
     // Ultra fast block based concatenation
     while (i < n) {
       var ii = 0
-      var sss: NArray[Int] = new Array(b)
+      var block: NArray[Int] = new Array(b)
       var o = i * b
 
       println("fast block: " + o)
 
       while (ii < b) {
-        sss(ii) = intNode(o + ii)
+        block(ii) = intNode(o + ii)
         ii = ii + 1
       }
 
       // Build the block
-      while (sss.size > 1) {
-        sss = doRound(sss)
+      while (block.size > 1) {
+        block = doRound(block)
       }
 
-      val cs = sss(0).chunk
+      val cs = block(0).chunk
       ss = concat(ss,cs)
       ss = ss.chunk
 

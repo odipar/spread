@@ -58,8 +58,8 @@ object Test {
   // Authenticated re-usable computations = authenticated spreadsheets!
   final def main(args: Array[String]): Unit = {
 
-    val k1 = intNode(1) ++ intNode(2) ++ intNode(3) ++ intNode(4) ++ intNode(5) ++ intNode(6)
-    val k2 = intNode(1) ++ intNode(2) ++ intNode(3) ++ intNode(10) ++ intNode(5) ++ intNode(6)
+    val k1 = 1 :: 2 :: 3 :: 4 :: 5 :: 6
+    val k2 = 1 :: 2 :: 3 :: 8 :: 5 :: 6
 
     val e1 = %(sum,expr(k1))
     val e2 = %(sum,expr(k2))
@@ -80,7 +80,7 @@ object Test {
     var (s2,c2) = fullEval(fib1,wcontext)
     println("fast: " + s2)
 
-    val fib2 = %(fib,30)
+    val fib2 = %(fib,8)
     var (s3,c3) = fullEval(fib2,wcontext)
     println("fib(30): " + s3.head)
     println("trace size: " + s3.trace.size)

@@ -149,16 +149,6 @@ object Spread {
       else siphash24(trace.hashAt(i), magic_p2 * trace.hashCode)
     }
     override def toString = "[" + trace.toString + "]"
-
-    def atDepth(s: String, d: Int) = {
-      var r = ""
-      var i  = 0
-      while (i < d) {
-        r = r + "   "
-        i = i + 1
-      }
-      r + s + "\n"
-    }
   }
 
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
@@ -213,7 +203,7 @@ object Spread {
   def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] =  F1(f, a)
   def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f,a,b)
 
-  // Ideally with should recursively Hash all the java byte code (full dependency graph)
+  // Ideally we should recursively Hash all the java byte code (full dependency graph)
   // For now we just use global constants until we implement that
   trait CodeHash extends Hashable with Hash {
     def hash = this
