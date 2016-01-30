@@ -26,13 +26,19 @@ object Spread {
   // For efficient concatenation and authentication, traces are stored as SplitHashes.
   //
 
-  trait SPREAD[V,SH <: SplitHash[_,SH]] extends Hashable with Hash {
+  trait SPREAD[V] extends Hashable with Hash {
+    type E <: SPREAD[_]
+    type SH <: SplitHash[E,SH]
+
     def trace: SH
   }
 
   // Concrete default implementation
-  trait Expr[V] extends SPREAD[V,SHNode[Expr[_]]] {
-    def trace: SHNode[Expr[_]] = ExprSHNode(this)
+  trait Expr[V] extends SPREAD[V] {
+    type E = Expr[_]
+    type SH = SHNode[E]
+
+    def trace: SH = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
     def parts: Array[Expr[_]]
     def size = 1
