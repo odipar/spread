@@ -32,7 +32,7 @@ object Spread {
 
   // Concrete default implementation
   trait Expr[V] extends SPREAD[V,SHNode[Expr[_]]] {
-    def trace = ExprSHNode(this)
+    def trace: SHNode[Expr[_]] = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
     def parts: Array[Expr[_]]
     def size = 1
