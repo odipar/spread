@@ -94,7 +94,7 @@ object Spread {
     override def toString = o.toString + "@" + distance
   }
 
-  // Nullary function that MUST evaluate to it's canonical value in O(1)
+  // Nullary function that MUST evaluate to its canonical value in O(1)
   trait F0[X] extends Expr[X] with Hashable with Hash {
     def unary_! = value
     def value: X

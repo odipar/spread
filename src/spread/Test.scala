@@ -44,15 +44,26 @@ object Test {
 
     if (f1 != f2) { sys.error("Internal inconsistency") }  // the traces must be structurally equal
 
+    println()
+
+    val fac1 = %(fac,5)
+    var (fc1,_) = fullEval(fac1,wcontext)
+    println("fac(5): " + fc1.head)
+
+    val fac2 = %(fac,7)
+    var (fc2,_) = fullEval(fac2,wcontext)
+    println("fac(7): " + fc2.head)
+    println()
+
     val fib2 = %(fib,15)
     var (f3,_) = fullEval(fib2,wcontext)
     println("fib(8): " + f3.head)
     println("trace size: " + f3.trace.size)
 
-    // Some other radical stuff
+    // Some other radical stuff - NOT YET DONE
     var st = HashNode(Array(),0)
     val m = store(f3.trace,st)
-    println("st: " + m)
+    println("st: " + m.size)
   }
 
   object fac extends FA1[Int,Int] {

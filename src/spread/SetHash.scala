@@ -47,7 +47,7 @@ object SetHash {
             na(ai) = HashNode(Array(),0).put(o,nibble + 1).put(a(ai),nibble + 1)
             HashNode(na,bits)
           }
-          else this
+          else this // the same object has been re-stored (hash-consing)
         }
       }
     }
