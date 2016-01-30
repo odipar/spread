@@ -23,9 +23,11 @@ object SplitHash {
     def size: Int                   // O(1)
     def concat(other: SH): SH       // O(log(size))
     def split(at: Int): (SH, SH)    // O(log(size))
+
     def first: X                    // O(log(size))
     def last: X                     // O(log(size))
     def chunk: SH                   // O(unchunked)
+    def parts: Array[SH]            // O(1)
   }
 
   // A Hashable object
@@ -107,6 +109,8 @@ object SplitHash {
     def chunk = this
     def isChunked = false
     def chunkHeight = 0
+
+    def parts = Array(this)
   }
 
   case class IntNode(value: Int) extends LeafNode[Int] {
@@ -186,6 +190,7 @@ object SplitHash {
         else nt
       }
     }
+    def parts = Array(left,right)
     override def toString = left + " | " + right
   }
 
@@ -214,6 +219,7 @@ object SplitHash {
     def isChunked = node.isChunked
     def first = node.first
     def last = node.last
+    def parts = Array(left,right)
     override def toString = multiplicity + ":" + node
   }
 
@@ -228,6 +234,7 @@ object SplitHash {
     def isChunked = error
     def chunkHeight = error
     def hashAt(i: Int) = error
+    def parts = error
   }
 
   // Iterates sub-nodes in post-order, given a certain target height
@@ -416,6 +423,7 @@ object SplitHash {
     }
     def chunk = this
     def chunkHeight = 0
+    def parts = nodes.toArray
   }
 
   final val Unknown: Byte = 0
@@ -809,13 +817,13 @@ object SplitHash {
     }
   }
 
+  def emptySH[X]: SHNode[X] = null
+  def intNode(i: Int): SHNode[Int] = IntNode(i)
+
   // *************************************
   // EXPOSITION OF ALL THE NICE PROPERTIES
   // *************************************
   final def main(args: Array[String]): Unit = {
-
-    def emptySH[X]: SHNode[X] = null
-    def intNode(i: Int): SHNode[Int] = IntNode(i)
 
     var s1 = emptySH[Int]
     var s2 = emptySH[Int]

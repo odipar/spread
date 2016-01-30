@@ -19,10 +19,11 @@ import scala.language.existentials
 
 object Spread {
 
-  // An Expr[X] carries the authenticated trace that lead up to itself.
+  // An Expr[X] carries the authenticated trace that leads up to itself.
   // In turn, this trace can be (weakly) memoized for re-use.
   //
   trait Expr[V] extends Hashable with Hash {
+    def size = 1
     def trace: SHNode[Expr[_]] = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
 
@@ -53,11 +54,16 @@ object Spread {
     }
   }
 
+  var traceReuse: Boolean = false
+
   case class WeakMemoizationContext(m: mutable.WeakHashMap[Expr[_],Expr[_]]) extends MemoizationContext {
     def mput(o1: Expr[_], ev: Expr[_]) = WeakMemoizationContext(m += (o1->ev))
     def mget[X](o1: Expr[X]): Expr[X] = m.get(o1) match {
       case None => null
-      case Some(x) => x.asInstanceOf[Expr[X]]
+      case Some(x) => {
+        if (traceReuse) { println("REUSED: " + o1) }
+        x.asInstanceOf[Expr[X]]
+      }
     }
   }
 
@@ -70,7 +76,10 @@ object Spread {
     override def toString = o.toString + "@" + distance
   }
 
-  trait F0[X] extends Expr[X] with Hashable with Hash { def value: X }
+  trait F0[X] extends Expr[X] with Hashable with Hash {
+    def unary_! = value
+    def value: X
+  }
   trait FA1[A,X] extends (F0[A] => Expr[X]) with CodeHash
   trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash
 
@@ -107,8 +116,18 @@ object Spread {
   }
 
   def fullEval[V](e: Expr[V], c: MemoizationContext): (Expr[V],MemoizationContext) = {
+    val me = c.mget(e)
+    if (me != null) (me,c)
+    else {
+      val (ev,c2) = fullEval2(e,c)
+      if (ev != e) (ev,c2.mput(e,ev))
+      else (ev,c2)
+    }
+  }
+
+  def fullEval2[V](e: Expr[V], c: MemoizationContext): (Expr[V],MemoizationContext) = {
     val (e2,c2) = eval(e,c)
-    if (e2 != e) fullEval(e2,c2)
+    if (e2 != e) fullEval2(e2,c2)
     else (e2,c2)
   }
 
@@ -123,27 +142,38 @@ object Spread {
   }
 
   case class TracedExpr[V](override val trace: SHNode[Expr[_]]) extends Expr[V] {
+    override def size = trace.size
     def lazyHash = siphash24(trace.hashCode - magic_p3, magic_p3 * trace.hashCode)
     def hashAt(i: Int) = {
       if (i == 0) hashCode
       else siphash24(trace.hashAt(i), magic_p2 * trace.hashCode)
     }
-    override def toString = trace.toString
-  }
+    override def toString = "[" + trace.toString + "]"
 
-  def node[X](e: Expr[X]) = ExprSHNode(e)
-
-  def eval[X](e: Expr[X], c: MemoizationContext): (Expr[X],MemoizationContext) ={
-    val me = c.mget(e)
-    if (me != null) (me,c)
-    else {
-      val (ev,c2) = tracedEval(e,c)
-      if (ev != e) (ev,c2.mput(e,ev))
-      else (ev,c2)
+    def atDepth(s: String, d: Int) = {
+      var r = ""
+      var i  = 0
+      while (i < d) {
+        r = r + "   "
+        i = i + 1
+      }
+      r + s + "\n"
     }
   }
 
-  def tracedEval[X](e: Expr[X], c: MemoizationContext): (Expr[X],MemoizationContext) = e match {
+  case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
+    def lazyHash = siphash24(value.hash.hashCode * magic_p3, magic_p2 - value.hash.hashCode)
+    def hashAt(i: Int) = {
+      if (i == 0) lazyHash
+      else siphash24(value.hash.hashAt(i) - magic_p2, magic_p3 * value.hashCode)
+    }
+    override def toString = "$("+value+")"
+  }
+
+  def node[X](e: Expr[X]) = ExprSHNode(e)
+  def expr[X](e: SHNode[X]) = LeafExpr(e)
+
+  def eval[X](e: Expr[X], c: MemoizationContext): (Expr[X],MemoizationContext) = e match {
     case f1: F1[_,X] => (f1.v1.head) match {
       case x1: F0[_] => (TracedExpr(node(Eval(f1,1)).concat(node(f1.f(x1)))),c)
       case x1 => {
@@ -180,8 +210,8 @@ object Spread {
   }
 
   // convenience
-  def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = F1(f, a)
-  def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f, a, b)
+  def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] =  F1(f, a)
+  def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f,a,b)
 
   // Ideally with should recursively Hash all the java byte code (full dependency graph)
   // For now we just use global constants until we implement that
