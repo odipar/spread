@@ -1,6 +1,6 @@
 package spread
 
-//  SPREAD: Incremental Authenticated Computational Reuse
+//  SPREAD: Incremental Authenticated Computations
 //
 //  Features:
 
@@ -19,7 +19,7 @@ import scala.language.existentials
 
 object Spread {
 
-  // An Expr[X] carries the authenticated trace that leads up to itself.
+  // An Expr[X] carries the authenticated trace of computations that leads up to itself.
   // In turn, this trace can be (weakly) memoized for re-use.
   //
   trait Expr[V] extends Hashable with Hash {
