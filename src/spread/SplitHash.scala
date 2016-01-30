@@ -19,7 +19,6 @@ object SplitHash {
   import Hashing._
 
   trait SplitHash[X, SH <: SplitHash[X,SH]] extends Hashable {
-    def hash: Hash                  // O(1)
     def size: Int                   // O(1)
     def concat(other: SH): SH       // O(log(size))
     def split(at: Int): (SH, SH)    // O(log(size))
@@ -27,26 +26,12 @@ object SplitHash {
     def first: X                    // O(log(size))
     def last: X                     // O(log(size))
     def chunk: SH                   // O(unchunked)
-    def parts: Array[SH]            // O(1)
+    def splitParts: Array[SH]       // O(1)
   }
 
-  // A Hashable object
-  trait Hashable {
-    def hash: Hash
-  }
-
-  // An 'infinitely' indexable and expandable Hash that *must* obey the following property:
-  // The chance that two (slightly) different objects have equal hashes at index i
-  // *must* exponentially decrease at higher indices.
-  //
-  // Hashes that don't exhibit this property may cause SplitHash to get stuck in an infinite loop.
-
-  trait Hash {
-    def hashAt(i: Int): Int
-  }
 
   // A canonical tree SH(Split Hash)Node
-  trait SHNode[X] extends SplitHash[X,SHNode[X]] with Hash with Hashable {
+  trait SHNode[X] extends SplitHash[X,SHNode[X]] with Hash {
     def size: Int
     def hash = this
     def concat(other: SHNode[X]) = SplitHash.concat(this,other)
@@ -82,7 +67,7 @@ object SplitHash {
       if (isMultipleOf(n)) RLENode(mget(this),msize(this) + msize(n))
       else TempBinNode(this,n)
     }
-
+    def parts: Array[Hashable] = splitParts.asInstanceOf[Array[Hashable]]
     def !(other: SHNode[X]): SHNode[X] = this.concat(other)
   }
 
@@ -110,7 +95,7 @@ object SplitHash {
     def isChunked = false
     def chunkHeight = 0
 
-    def parts = Array(this)
+    def splitParts = Array()
   }
 
   case class IntNode(value: Int) extends LeafNode[Int] {
@@ -190,7 +175,7 @@ object SplitHash {
         else nt
       }
     }
-    def parts = Array(left,right)
+    def splitParts = Array(left,right)
     override def toString = left + " ! " + right
   }
 
@@ -219,7 +204,7 @@ object SplitHash {
     def isChunked = node.isChunked
     def first = node.first
     def last = node.last
-    def parts = Array(left,right)
+    def splitParts = Array(left,right)
     override def toString = multiplicity + ":" + node
   }
 
@@ -234,7 +219,7 @@ object SplitHash {
     def isChunked = error
     def chunkHeight = error
     def hashAt(i: Int) = error
-    def parts = error
+    def splitParts = error
   }
 
   // Iterates sub-nodes in post-order, given a certain target height
@@ -423,7 +408,7 @@ object SplitHash {
     }
     def chunk = this
     def chunkHeight = 0
-    def parts = nodes.toArray
+    def splitParts = nodes.toArray
   }
 
   final val Unknown: Byte = 0

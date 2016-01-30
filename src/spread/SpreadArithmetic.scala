@@ -35,7 +35,7 @@ object SpreadArithmetic {
       else if (index == 1) siphash24(value + magic_p3, hashCode * magic_p2)
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
-    def parts = Array(this)
+    def parts = Array()
     override def toString = i.toString
   }
 

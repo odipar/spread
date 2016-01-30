@@ -4,6 +4,7 @@ import spread.SpreadArithmetic._
 import spread.Spread._
 import SplitHash._
 import scala.collection.mutable.WeakHashMap
+import SetHash._
 
 // EXPOSITION:
 //
@@ -47,6 +48,11 @@ object Test {
     var (f3,_) = fullEval(fib2,wcontext)
     println("fib(8): " + f3.head)
     println("trace size: " + f3.trace.size)
+
+    // Some other radical stuff
+    var st = HashNode(Array(),0)
+    val m = store(f3.trace,st)
+    println("st: " + m)
   }
 
   object fac extends FA1[Int,Int] {
@@ -82,7 +88,7 @@ object Test {
       val ss = !s
       if (ss.size == 1) ss.last
       else {
-        val parts = ss.parts
+        val parts = ss.splitParts
         var ssum = %(sum,expr(parts(0)))
 
         var i = 1
@@ -96,5 +102,24 @@ object Test {
     }
     override def toString = "sum"
     def codeID = 1000
+  }
+
+  import Hashing._
+
+  def store[X](node: Hashable, h: HashNode): Map[FiniteHash,Hashable] = {
+    val hh = store2(node,h)
+    store3(node,hh,Map())
+  }
+
+  def store2[X](node: Hashable, h: HashNode): HashNode = {
+    var hh = h
+    for (p <- node.parts) hh = store2(p,hh.put(node).put(p))
+    hh
+  }
+
+  def store3[X](node: Hashable, h: HashNode, m: Map[FiniteHash,Hashable]): Map[FiniteHash,Hashable] = {
+    var mm = m
+    for (p <- node.parts)  mm = store3(p,h,mm + (h.hash(p)->p) + (h.hash(node)->node))
+    mm
   }
 }

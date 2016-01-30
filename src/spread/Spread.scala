@@ -40,7 +40,6 @@ object Spread {
 
     def trace: SH = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
-    def parts: Array[Expr[_]]
     def size = 1
 
     var lHash = 0
@@ -237,6 +236,7 @@ object Spread {
   // Ideally we should recursively Hash all the java byte code (full dependency graph)
   // For now we just use global constants until we implement that
   trait CodeHash extends Hashable with Hash {
+    def parts = Array()
     def hash = this
     def codeID: Int  // MUST be globally unique
     override val hashCode = siphash24(codeID + magic_p1,codeID * magic_p2)
