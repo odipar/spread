@@ -65,7 +65,7 @@ object SplitHash {
     def height: Int
 
     // Equality check that's based on content equality, rather than structure equality (==)
-    // (Used to detect node repetitions)
+    // (used to detect node repetitions)
     def equalTo(other: SHNode[X]): Boolean = (this == other)
 
     // chunking
@@ -83,7 +83,7 @@ object SplitHash {
       else TempBinNode(this,n)
     }
 
-    def ::(other: SHNode[X]): SHNode[X] = this.concat(other)
+    def !(other: SHNode[X]): SHNode[X] = this.concat(other)
   }
 
   // Utility methods to detect and deal with consecutive, equal nodes
@@ -191,7 +191,7 @@ object SplitHash {
       }
     }
     def parts = Array(left,right)
-    override def toString = left + " :: " + right
+    override def toString = left + " ! " + right
   }
 
   // A RLE(Run Length Encoded) node denotes the repetition of another node

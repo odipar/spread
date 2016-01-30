@@ -19,8 +19,8 @@ object Test {
 
   final def main(args: Array[String]): Unit = {
 
-    val seq1 = 1 :: 2 :: 3 :: 4 :: 5 :: 6
-    val seq2 = 1 :: 2 :: 3 :: 8 :: 5 :: 6
+    val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
+    val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
 
     val sum1 = %(sum,expr(seq1))
     val sum2 = %(sum,expr(seq2))
@@ -43,7 +43,7 @@ object Test {
 
     if (f1 != f2) { sys.error("Internal inconsistency") }  // the traces must be structurally equal
 
-    val fib2 = %(fib,8)
+    val fib2 = %(fib,15)
     var (f3,_) = fullEval(fib2,wcontext)
     println("fib(8): " + f3.head)
     println("trace size: " + f3.trace.size)
@@ -74,7 +74,7 @@ object Test {
   type INode = SHNode[Int]
   type FINode = F0[SHNode[Int]]
 
-  // We could easily have generalized sum with a generic fold
+  // We could easily have implemented sum with a generic fold
   // But for now we just explicitly show how to use the DSL and API
   object sum extends FA1[INode,Int] {
     def apply(s: FINode) = {
