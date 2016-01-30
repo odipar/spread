@@ -1,7 +1,7 @@
 package spread
 
 //
-// Integer expressions + evaluation
+// Integer expressions + evaluation + DSL
 //
 // Copyright 2016: Robbert van Dalen
 //
@@ -35,6 +35,7 @@ object SpreadArithmetic {
       else if (index == 1) siphash24(value + magic_p3, hashCode * magic_p2)
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
+    def parts = Array(this)
     override def toString = i.toString
   }
 
@@ -73,6 +74,7 @@ object SpreadArithmetic {
     def error = sys.error("Wrapper object. Should not be called.")
     def lazyHash = error
     def hashAt(i: Int) = error
+    def parts = error
   }
 
   def wrap(i: I): IntExpr = i match {

@@ -26,6 +26,7 @@ object Spread {
     def size = 1
     def trace: SHNode[Expr[_]] = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
+    def parts: Array[Expr[_]]
 
     var lHash = 0
     def lazyHash: Int
@@ -73,6 +74,7 @@ object Spread {
       if (i == 0) lazyHash
       else siphash24(hashAt(i-1) - magic_p3,(magic_p2*distance) ^ o.lazyHash)
     }
+    def parts = o.parts
     override def toString = o.toString + "@" + distance
   }
 
@@ -96,6 +98,7 @@ object Spread {
         else siphash24(f.hash.hashAt(nindex) + (magic_p1 * hashCode),v1.hash.hashAt(index - nindex) + magic_p3)
       }
     }
+    def parts = Array(v1)
   }
 
   case class F2[A,B,X](f: FA2[A,B,X], v1: Expr[A], v2: Expr[B]) extends Expr[X] {
@@ -113,6 +116,7 @@ object Spread {
         else siphash24(v2.hash.hashAt(i3) - magic_p3,siphash24(f.hash.hashAt(i2) + (magic_p1 * hashCode),v1.hash.hashAt(nindex) + magic_p3))
       }
     }
+    def parts = Array(v1,v2)
   }
 
   def fullEval[V](e: Expr[V], c: MemoizationContext): (Expr[V],MemoizationContext) = {
@@ -148,6 +152,7 @@ object Spread {
       if (i == 0) hashCode
       else siphash24(trace.hashAt(i), magic_p2 * trace.hashCode)
     }
+    def parts = Array(this)
     override def toString = "[" + trace.toString + "]"
   }
 
@@ -157,6 +162,7 @@ object Spread {
       if (i == 0) lazyHash
       else siphash24(value.hash.hashAt(i) - magic_p2, magic_p3 * value.hashCode)
     }
+    def parts = Array(this)
     override def toString = "$("+value+")"
   }
 

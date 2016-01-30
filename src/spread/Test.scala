@@ -55,6 +55,9 @@ object Test {
     def codeHash = 1000
   }
 
+
+  val wcontext = WeakMemoizationContext(new WeakHashMap())
+
   // Authenticated re-usable computations = authenticated spreadsheets!
   final def main(args: Array[String]): Unit = {
 
@@ -64,9 +67,7 @@ object Test {
     val e1 = %(sum,expr(k1))
     val e2 = %(sum,expr(k2))
 
-    var wcontext = WeakMemoizationContext(new WeakHashMap())
     traceReuse = true
-
     val (r1,_) = fullEval(e1,wcontext)
     println(r1)
     var (r2,_) = fullEval(e2,wcontext)
@@ -82,7 +83,7 @@ object Test {
 
     val fib2 = %(fib,8)
     var (s3,c3) = fullEval(fib2,wcontext)
-    println("fib(30): " + s3.head)
+    println("fib(8): " + s3.head)
     println("trace size: " + s3.trace.size)
 
     if (s1 != s2) { sys.error("Internal inconsistency") }  // the traces must be structurally equal
