@@ -14,7 +14,7 @@ object SpreadArithmetic {
 
   type I = Expr[Int]
   type II = F0[Int]
-  
+
   trait IntExpr extends I {
     def unwrap: I
 
@@ -82,7 +82,7 @@ object SpreadArithmetic {
     case _ => IWrap(i)
   }
 
-  // Automatic conversion to drive the DSL
+  // Automatic conversion to bootstrap the DSL
   implicit def toIntExpr(i: Int): IntExpr = IExpr(i)
   implicit def toIntExpr2(i: I): IntExpr = wrap(i)
 }
