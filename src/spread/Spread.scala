@@ -19,14 +19,23 @@ import scala.language.existentials
 
 object Spread {
 
-  // An Expr[X] carries the authenticated trace of computations that leads up to itself.
-  // In turn, this trace can be (weakly) memoized for re-use.
   //
-  trait Expr[V] extends Hashable with Hash {
-    def size = 1
-    def trace: SHNode[Expr[_]] = ExprSHNode(this)
+  // A SPREAD expression carries the authenticated trace of computations that leads up to itself.
+  // In turn, traces can be (weakly) memoized for re-use.
+  //
+  // For efficient concatenation and authentication, traces are stored as SplitHashes.
+  //
+
+  trait SPREAD[V,SH <: SplitHash[_,SH]] extends Hashable with Hash {
+    def trace: SH
+  }
+
+  // Concrete default implementation
+  trait Expr[V] extends SPREAD[V,SHNode[Expr[_]]] {
+    def trace = ExprSHNode(this)
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
     def parts: Array[Expr[_]]
+    def size = 1
 
     var lHash = 0
     def lazyHash: Int
@@ -37,6 +46,7 @@ object Spread {
     def hash = this
   }
 
+  // A memoization context that is associated during evaluation
   trait MemoizationContext {
     def mput(o1: Expr[_], ev: Expr[_]): MemoizationContext
     def mget[X](o1: Expr[X]): Expr[X]
@@ -68,6 +78,7 @@ object Spread {
     }
   }
 
+  // Denotes an evaluation
   case class Eval[V](o: Expr[V], distance: Int) extends Expr[V] {
     def lazyHash = siphash24(o.hashCode + magic_p1,distance - magic_p3)
     def hashAt(i: Int) = {
@@ -78,13 +89,17 @@ object Spread {
     override def toString = o.toString + "@" + distance
   }
 
+  // Nullary function that MUST evaluate to it's canonical value in O(1)
   trait F0[X] extends Expr[X] with Hashable with Hash {
     def unary_! = value
     def value: X
   }
+  // Unary (lazy) function
   trait FA1[A,X] extends (F0[A] => Expr[X]) with CodeHash
+  // Binary (lazy) function
   trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash
 
+  // Denotes an unary function call
   case class F1[A,X](f: FA1[A,X], v1: Expr[A]) extends Expr[X] {
     override def toString = f+"("+v1+")"
     def lazyHash = siphash24(f.hashCode + magic_p2 ,v1.hashCode - magic_p3)
@@ -101,6 +116,7 @@ object Spread {
     def parts = Array(v1)
   }
 
+  // Denotes an binary function call
   case class F2[A,B,X](f: FA2[A,B,X], v1: Expr[A], v2: Expr[B]) extends Expr[X] {
     override def toString = "(" + v1 + " " + f + " " + v2 + ")"
     def lazyHash = siphash24(f.hashCode + magic_p1,siphash24(v1.hashCode + magic_p2 ,v2.hashCode - magic_p3))
@@ -119,6 +135,7 @@ object Spread {
     def parts = Array(v1,v2)
   }
 
+  // Fully evaluate an expression, possibly re-using evaluations held by the MemoizationContext
   def fullEval[V](e: Expr[V], c: MemoizationContext): (Expr[V],MemoizationContext) = {
     val me = c.mget(e)
     if (me != null) (me,c)
@@ -145,6 +162,7 @@ object Spread {
     override def toString = o.toString
   }
 
+  // A TracedExpr holds the history of computations that leads up to itself.
   case class TracedExpr[V](override val trace: SHNode[Expr[_]]) extends Expr[V] {
     override def size = trace.size
     def lazyHash = siphash24(trace.hashCode - magic_p3, magic_p3 * trace.hashCode)
@@ -169,6 +187,7 @@ object Spread {
   def node[X](e: Expr[X]) = ExprSHNode(e)
   def expr[X](e: SHNode[X]) = LeafExpr(e)
 
+  // Evaluation via pattern matching - in association with a MemoizationContext
   def eval[X](e: Expr[X], c: MemoizationContext): (Expr[X],MemoizationContext) = e match {
     case f1: F1[_,X] => (f1.v1.head) match {
       case x1: F0[_] => (TracedExpr(node(Eval(f1,1)).concat(node(f1.f(x1)))),c)
@@ -213,10 +232,11 @@ object Spread {
   // For now we just use global constants until we implement that
   trait CodeHash extends Hashable with Hash {
     def hash = this
-    def codeHash: Int  // should be globally unique
+    def codeID: Int  // MUST be globally unique
+    override val hashCode = siphash24(codeID + magic_p1,codeID * magic_p2)
     def hashAt(index: Int) = {
       if (index == 0) hashCode
-      else if (index == 1) siphash24(codeHash + magic_p3, hashCode * magic_p2)
+      else if (index == 1) siphash24(codeID + magic_p3, hashCode * magic_p2)
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
   }

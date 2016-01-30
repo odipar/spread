@@ -44,25 +44,25 @@ object SpreadArithmetic {
   trait add2 extends BinIntOp {
     def apply(o1: II, o2: II) = IExpr(o1.value + o2.value)
     override def toString = "!+"
-    def codeHash = 0
+    def codeID = 0
   }
 
   trait sub2 extends BinIntOp {
     def apply(o1: II, o2: II) = IExpr(o1.value - o2.value)
     override def toString = "!-"
-    def codeHash = 1
+    def codeID = 1
   }
 
   trait mul2 extends BinIntOp {
     def apply(o1: II, o2: II) = IExpr(o1.value * o2.value)
     override def toString = "!*"
-    def codeHash = 2
+    def codeID = 2
   }
 
   trait div2 extends BinIntOp {
     def apply(o1: II, o2: II) = IExpr(o1.value / o2.value)
     override def toString = "!/"
-    def codeHash = 3
+    def codeID = 3
   }
 
   object add extends add2
