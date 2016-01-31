@@ -5,7 +5,7 @@ I want to *exactly* know what my software is doing. Better still, I want *crypto
 Wouldn't you?
 If not, read no further.
 
-Currently, I can't know what my Windows 10 is doing, or is *very* hard to find out. That's because most of Windows 10:
+Currently, I can't know what my Windows 10 is doing, or it is *very* hard to find out. That's because most of Windows 10:
 
 * Is compiled to machine code that bears no resemblence to the original source code.
 * Hides intricate worlds of mutable objects after abstract interfaces.
