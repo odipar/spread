@@ -3,25 +3,23 @@ I want to *exactly* know what my software is doing. Better still, I want *crypto
 
 Wouldn't you?
 
-If not, read no further.
+Currently, I don't know what my Windows 10 is doing, or it is *very* hard to find out.
 
-Currently, I can't know what my Windows 10 is doing, or it is *very* hard to find out. 
+That's because most of Windows 10
 
-That's because most of Windows 10:
-
-* Is compiled to machine code that bears no resemblance to the original source code.
-* Hides intricate worlds of mutable objects after abstract interfaces.
-* And destroys precious machine state after machine state.
+* is compiled to machine code that bears no resemblance to the original source code,
+* hides intricate worlds of mutable objects after abstract interfaces,
+* and destroys precious machine state after machine state.
 
 Welcome to SPREAD!
 
 In SPREAD, all data, machines states, code and computations are cryptographically authenticated.
 
-Of course, some practical issues had to be resolved to make SPREAD a reality. First and  foremost, SPREAD almost completely eradicated the use of mutability.
+Of course, some practical issues had to be resolved to make SPREAD a reality. First and foremost, SPREAD almost completely eradicated the use of mutability.
 
-Obviously, keeping all machine states for authentication purposes would require enormous amounts of storage. SPREAD solves that issue by cryptographically 'signing' machine states *incrementally*, while also allowing full user-control over which states need to be signed, and at what granularity.
+Obviously, keeping all machine states for authentication purposes would require enormous amounts of storage. SPREAD solves that issue by cryptographically 'signing' states *incrementally*, while also allowing full user-control over which ones need to be signed, and at what level of granularity.
 
-Alternatively, one could decide to keep full machine states, which are also stored incrementally by SPREAD. In turn, this allows the pervasive re-use of results that where calculated earlier.
+Alternatively, full machine states can also be stored incrementally by SPREAD. In turn, this allows the pervasive re-use of results that where calculated earlier.
 
 So SPREAD kinda acts like a spreadsheet because a spreadsheet also re-uses the previous calculation of a workbook to optimally recalculate the next.
 
