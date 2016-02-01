@@ -29,10 +29,13 @@ So can SPREAD be used as a drop-in Excel replacement?
 
 Not *exactly*. Actually not by a mile.
 
-However, the spreadsheet spirit is there. In fact, SPREAD can be considered the next-generation spreadsheet, and possibly software in general.
+However, the spreadsheet spirit is there. In fact, SPREAD can be considered the next-generation spreadsheet, and possibly the next-generation of software in general.
 
 ####Warning
-SPREAD is currently in ALPHA stage. But there are already some goodies to be found in the repository, most notably the new SplitHash data structure.
+SPREAD is currently in ALPHA stage. But there is already some interesting to be found in the repository:
+
+
+####SplitHash: an immutable, uniquely represented Sequence Authenticated Data Structure
 ```
 Some sample code will be posted soon
 ```
