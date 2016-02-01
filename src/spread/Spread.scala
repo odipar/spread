@@ -49,6 +49,7 @@ object Spread {
       lHash
     }
     def hash = this
+    def fullEval = Spread.fullEval(this,EmptyContext)._1
   }
 
   // A memoization context that is associated during evaluation
@@ -176,7 +177,7 @@ object Spread {
       else siphash24(trace.hashAt(i), magic_p2 * trace.hashCode)
     }
     def parts = Array(this)
-    override def toString = "[" + trace.toString + "]"
+    override def toString = prettyPrint(trace,0)
   }
 
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
@@ -245,5 +246,34 @@ object Spread {
       else if (index == 1) siphash24(codeID + magic_p3, hashCode * magic_p2)
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
+  }
+
+  // Pretty print a trace
+  def prettyPrint(e: SHNode[Expr[_]], depth: Int): String = {
+    if (e == null) ""
+    else if (e.size == 1) prettyAtDepth(e.first,depth)
+    else if (e.size == 2) prettyAtDepth(e.first,depth) + " => " + e.last
+    else e.first match {
+      case Eval(x,i) => {
+        val (l,r) = e.split(i + 1)
+        val (l2,r2) = l.split(1)
+
+        if ((l2.size == 1) && (r2.size == 1)) prettyPrint(l2 ! r2,depth) + "\n" + prettyPrint(r,depth)
+        else prettyPrint(l2,depth) + " =>\n" + prettyPrint(r2,depth + 1) + "\n" + prettyPrint(r,depth)
+      }
+      case x => prettyAtDepth(x,depth)
+    }
+  }
+
+  def prettyAtDepth(e: Expr[_], depth: Int): String = e match {
+    case Eval(x,_) => wsp(depth) + x
+    case TracedExpr(t) => wsp(depth) + "[" + "\n" + prettyPrint(t, depth+1) + "\n" + wsp(depth) + "]"
+    case x => wsp(depth) + x
+  }
+
+  def wsp(d: Int): String = {
+    if (d == 0) ""
+    else if (d == 1) "\t"
+    else wsp(d/2) + wsp(d - (d/2))
   }
 }

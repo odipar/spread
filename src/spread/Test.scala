@@ -19,9 +19,14 @@ object Test {
   val econtext = EmptyContext
 
   final def main(args: Array[String]): Unit = {
+    val e = ((1 !+ 2) !* (3 !+ 4))
+    val e2 = e.fullEval
+    println(e2)
+
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
     val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
     val seq3 = seq1 ! seq2
+    println("seq3: " + seq3)
 
     val sum1 = %(sum,expr(seq1))
     val sum2 = %(sum,expr(seq2))

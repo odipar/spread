@@ -38,7 +38,7 @@ object SplitHash {
     def split(at: Int) = {
       val l = leftSplit(this,at)
       val r = rightSplit(this,at)
-      assert((l.size + r.size) == size)
+      // nulls, assert((l.size + r.size) == size)
       (l,r)
     }
     def first: X
@@ -785,7 +785,7 @@ object SplitHash {
   // Split the right side of a canonical tree
   def rightSplit[X](h: SHNode[X], size: Int): SHNode[X] = {
     if (size <= 0) h
-    else if (size > h.size) null
+    else if (size >= h.size) null
     else {
       val rs = rightSplit2(h,h.size - size).toArray.reverse
       val cm = compress(rs)

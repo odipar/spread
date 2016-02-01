@@ -17,7 +17,7 @@ object SetHash {
     // TODO: remove
   }
 
-  case class HashNode(a: Array[Hashable], bits: Int) extends SetHash[HashNode] with Hash with Ref[HashNode] {
+  case class HashNode(a: Array[Hashable], bits: Int) extends SetHash[HashNode] with Hash {
     def parts = a.clone
     def put(o: Hashable): HashNode = put(o,0)
     def put(o: Hashable ,nibble: Int): HashNode = {

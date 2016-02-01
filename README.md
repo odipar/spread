@@ -3,7 +3,7 @@ I want to know *exactly* what my software is doing. Better still, I want *crypto
 
 Wouldn't you?
 
-Currently, I don't know what my Windows 10 is doing (or it is *very* hard to find out) and I hate that.
+Currently, I don't know what Windows 10 is doing (or it is *very* hard to find out) and I hate that.
 
 That's because most of Windows 10:
 
@@ -21,9 +21,9 @@ Obviously, keeping *all* the state for authentication purposes would require eno
 
 Alternatively, full machine states can also be stored incrementally by SPREAD. In turn, this allows the pervasive re-use of state that was calculated earlier.
 
-So SPREAD kinda acts like a spreadsheet because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
+So SPREAD kinda acts like a spreadsheet. Because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
 
-Unlike SPREAD however, spreadsheets aren't capable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows referentially transparant functions as primitives.
+Unlike SPREAD however, spreadsheets aren't capable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows referentially transparent functions as primitives.
 
 So can SPREAD be used as a drop-in Excel replacement?
 
@@ -31,45 +31,65 @@ Not *exactly*. Actually not by a mile.
 
 However, the spreadsheet spirit is there. In fact, SPREAD can be considered the next-generation spreadsheet, and possibly the next-generation of software in general.
 
-Let's start with some introductionary code :
+####Warning
+SPREAD is currently in extreme ALPHA stage. For the impatient, there is already something novelty to be found in the repository:
 
-```scala
-(1 !+ 2) !* (3 !+ 4)
-```
+####[SplitHash](https://github.com/odipar/spread/blob/master/src/spread/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
 
-which is the SPREAD version of:
-
-```
-(1 + 2) * (3 + 4)
-```
-
+### Implementation
 SPREAD is currently implemented as a Scala DSL. This is not an absolute requirement for SPREAD to work, but Scala does bring some nice benefits to the table:
 
 * It runs on the JVM
-* Purely functional (where needed)
+* Purely functional (where appropriate)
 * Strongly typed at compile time
-* Supports the creation of Domain Specific Languages (DSL)
+* And it supports the creation of Domain Specific Languages (DSLs)
 
-To be honest, I would have rather liked to implement SPREAD in the Avail Programming Language, but alas Avail's toolchain is not there yet.
+(to be honest, I would have rather liked to implement SPREAD in the Avail Programming Language, but Avail's toolchain isn't just there yet).
 
-TO BE CONTINUED SHORTLY....
+###The anotomy of a simple SPREAD expression
 
-####Warning
-SPREAD is currently in ALPHA stage. For the impatient, there is already some interesting to be found in the repository:
+Now let's take a look at this standard Scala code:
+```java
+val e: Int = (1 + 2) * (3 + 4)
+```
+A Scala compiler would compile the above source code into bytecode that produces a single *Int * result.
 
+And this is the SPREAD equivalent of the same Scala code:
+```scala
+val e: Expr[Int] = (1 !+ 2) !* (3 !+ 4)
+```
 
-####SplitHash: an immutable, uniquely represented Sequence Authenticated Data Structure
-We will discuss SplitHash's intricacies later. 
+Notice the exclamation(!) marks. In SPREAD, each operation that is prefixed by an exclamation only *constructs* an expression, and will not be directly evaluated. And when we do need results, we need to explicitly request the *evaluation* of expressions.
+
+Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, and that includes the 'ancestor' expression!
+
+So what happens if we run this?
+
+```scala
+println(e.fullEval)
+```
+we will get the following result:
+```
+((1 !+ 2) !* (3 !+ 4)) =>
+	(1 !+ 2) => 3
+	(3 !+ 4) => 7
+	(3 !* 7)
+(3 !* 7) => 21
+```
+
+Notice that the full evaluation trace encompasses the final value. Alternatively, we may want to destroy the trace, by requesting its head , i.e the following expression will yield **true**:
+
+```scala
+e.fullEval.head == (21:Expr[Int])
+```
+Intriguing?
+
+Different?
+
+Weird?
+
+Could be, but you have to take my word: SPREAD's default evaluation scheme yields extreme benefits for **much** bigger stuff. Do you dare to have a look in the repository?
+
+TO BE CONTINUED.
 
 Copyright 2016: Robbert van Dalen
-
-
-
-
-
-
-
-
-
-
-
