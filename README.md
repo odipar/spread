@@ -15,7 +15,7 @@ Welcome to SPREAD!
 
 In SPREAD, all data, machines states, code and computations are cryptographically authenticated.
 
-Of course, some practical issues had to be resolved to make SPREAD a reality. First and foremost, SPREAD almost completely eradicates mutable state.
+To put it mildly, some practical issues had to be resolved to make SPREAD a reality. First and foremost, SPREAD almost completely eradicates mutable state.
 
 Obviously, keeping *all* the state for authentication purposes would require enormous amounts of storage. SPREAD solves that issue by cryptographically 'signing' states *incrementally*, while still allowing full user-control over which ones need to be signed, and at what level of granularity.
 
@@ -61,7 +61,7 @@ val e: Expr[Int] = (1 !+ 2) !* (3 !+ 4)
 
 Notice the exclamation(!) marks. In SPREAD, each operation that is prefixed by an exclamation only *constructs* an expression, and will not be directly evaluated. And when we do need results, we need to explicitly request the *evaluation* of expressions.
 
-Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, and that includes the 'ancestor' expression!
+Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, including the ancestral expression!
 
 So what happens if we run this?
 
@@ -77,7 +77,7 @@ we will get the following result:
 (3 !* 7) => 21
 ```
 
-Notice that the full evaluation trace encompasses the final value. Alternatively, we may want to destroy the trace, by requesting its head , i.e the following expression will yield **true**:
+Notice that the full trace encompasses the final value. Alternatively, we may want to destroy the trace by requesting its head , i.e the following expression will yield **true**:
 
 ```scala
 e.fullEval.head == (21:Expr[Int])
@@ -88,7 +88,7 @@ Different?
 
 Weird?
 
-Could be, but you have to take my word: SPREAD's default evaluation scheme yields extreme benefits for **much** bigger stuff. Do you dare to have a look in the repository?
+Could be, but you have to take my word for it: SPREAD's default evaluation scheme yields extreme benefits for **much** bigger stuff. Do you dare to have a look in the repository?
 
 TO BE CONTINUED.
 
