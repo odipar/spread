@@ -8,6 +8,7 @@ package spread
 
 object SetHash {
   import Hashing._
+  import Reference._
 
   trait SetHash[SH <: SetHash[SH]] extends Hashable {
     def put(e: Hashable): SH
@@ -16,7 +17,7 @@ object SetHash {
     // TODO: remove
   }
 
-  case class HashNode(a: Array[Hashable], bits: Int) extends SetHash[HashNode] with Hash {
+  case class HashNode(a: Array[Hashable], bits: Int) extends SetHash[HashNode] with Hash with Ref[HashNode] {
     def parts = a.clone
     def put(o: Hashable): HashNode = put(o,0)
     def put(o: Hashable ,nibble: Int): HashNode = {

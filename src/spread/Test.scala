@@ -19,9 +19,9 @@ object Test {
   val econtext = EmptyContext
 
   final def main(args: Array[String]): Unit = {
-
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
     val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
+    val seq3 = seq1 ! seq2
 
     val sum1 = %(sum,expr(seq1))
     val sum2 = %(sum,expr(seq2))
@@ -55,15 +55,16 @@ object Test {
     println("fac(7): " + fc2.head)
     println()
 
-    val fib2 = %(fib,15)
+    val fib2 = %(fib,25)
     var (f3,_) = fullEval(fib2,wcontext)
     println("fib(8): " + f3.head)
     println("trace size: " + f3.trace.size)
 
     // Some other radical stuff - NOT YET DONE
     var st = HashNode(Array(),0)
-    val m = store(f3.trace,st)
-    println("st: " + m.size)
+/*    var (r,x) = store(seq3,st)
+    println("r: " + r)
+    println("x: " + x)   */
   }
 
   object fac extends FA1[Int,Int] {
@@ -117,20 +118,38 @@ object Test {
 
   import Hashing._
 
-  def store[X](node: Hashable, h: HashNode): Map[FiniteHash,Hashable] = {
-    val hh = store2(node,h)
-    store3(node,hh,Map())
+/*  def store[X](node: SHNode[X], h: HashNode) = {
+    val ids = store2(node,h)
+    rebuild(node,ids,HashNode(Array(),0))
   }
-
+*/
   def store2[X](node: Hashable, h: HashNode): HashNode = {
     var hh = h
-    for (p <- node.parts) hh = store2(p,hh.put(node).put(p))
+    for (p <- node.parts) {
+      hh = store2(p,hh.put(node).put(p))
+    }
     hh
   }
 
-  def store3[X](node: Hashable, h: HashNode, m: Map[FiniteHash,Hashable]): Map[FiniteHash,Hashable] = {
-    var mm = m
-    for (p <- node.parts)  mm = store3(p,h,mm + (h.hash(p)->p) + (h.hash(node)->node))
-    mm
-  }
+ /* def rebuild[X](node: SHNode[X], ids: HashNode, h: HashNode): (NPair[X],HashNode) = {
+     node match {
+      case BinNode(l,r,s) => {
+        val (ll,lh) = rebuild(l,ids,h)
+        val (rr,rh) = rebuild(r,ids,lh)
+        val ii = ids.hash(node)
+        val nn = BinNode(ll,rr,s)
+        val nnn = IndexedNode[X](ii,node.height,node.chunkHeight,node.size)
+        val p = NPair(nnn,nn)
+        (p,rh.put(p))
+      }
+      case nn: SHNode[X] => {
+        val ii = ids.hash(node)
+        val nnn = IndexedNode[X](ii,nn.height,nn.chunkHeight,nn.size)
+        val p = NPair(nnn,nn)
+        (p,h.put(p))
+      }
+    }
+  } */
+
+
 }

@@ -1,9 +1,10 @@
 package spread
 
 object Hashing {
+  import Reference._
 
   // A Hashable object
-  trait Hashable {
+  trait Hashable extends Ref[Hashable] {
     def hash: Hash
     def parts: Array[Hashable]
   }

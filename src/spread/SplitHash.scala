@@ -899,4 +899,45 @@ object SplitHash {
     println("unlikely > 64 bit consumption: " + unlikely)
   }
 
+  import SetHash.HashNode
+
+  case class NPair[X](idx: IndexedNode[X], node: SHNode[X]) extends Hashable with Hash {
+    override def hashCode = idx.id.hashCode
+    def hashAt(i: Int) = idx.id.hashAt(i)
+    def hash = this
+    def parts = sys.error("NO")
+  }
+
+
+  case class IndexedNode[X](id: FiniteHash, height: Int, chunkHeight: Int, size: Int) extends SHNode[X]  {
+    def error = sys.error("NO")
+    override def hashCode = id.hashAt(0)
+    def hashAt(i: Int) = id.hashAt(i)
+
+    def left = error
+    def right = error
+    def first = error
+    def last = error
+    def isChunked = error
+    def chunk = error
+    def splitParts = error
+  }
+
+  case class IndexNode2[X](n: SHNode[X], height: Int, chunkHeight: Int, size: Int, h: HashNode) extends SHNode[X] {
+    def left = {
+      val l = n.left.asInstanceOf[IndexedNode[X]]
+      IndexNode2(h.get(l.id).asInstanceOf[SHNode[X]], l.height, l.chunkHeight, l.size, h)
+    }
+    def right = {
+      val r = n.right.asInstanceOf[IndexedNode[X]]
+      IndexNode2(h.get(r.id).asInstanceOf[SHNode[X]], r.height, r.chunkHeight, r.size, h)
+    }
+    override def hashCode = n.hashCode
+    def hashAt(i: Int) = n.hashAt(i)
+    def first = n.first
+    def last = n.last
+    def isChunked = n.isChunked
+    def chunk = n.chunk
+    def splitParts = n.splitParts
+  }
 }
