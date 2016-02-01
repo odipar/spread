@@ -23,7 +23,7 @@ Alternatively, full machine states can also be stored incrementally by SPREAD. I
 
 So SPREAD kinda acts like a spreadsheet. Because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
 
-Unlike SPREAD however, spreadsheets aren't capable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows referentially transparent functions as primitives.
+Unlike SPREAD however, spreadsheets are incapable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows referentially transparent functions as primitives.
 
 So can SPREAD be used as a drop-in Excel replacement?
 
