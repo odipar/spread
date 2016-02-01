@@ -3,7 +3,7 @@ I want to *exactly* know what my software is doing. Better still, I want *crypto
 
 Wouldn't you?
 
-Currently, I don't know what my Windows 10 is doing, or it is *very* hard to find out.
+Currently, I don't know what my Windows 10 is doing (or it is *very* hard to find out) and I hate that.
 
 That's because most of Windows 10
 
@@ -15,7 +15,7 @@ Welcome to SPREAD!
 
 In SPREAD, all data, machines states, code and computations are cryptographically authenticated.
 
-Of course, some practical issues had to be resolved to make SPREAD a reality. First and foremost, SPREAD almost completely eradicated the use of mutability.
+Of course, some practical issues had to be resolved to make SPREAD a reality. First and foremost, SPREAD almost completely eradicates the use of mutability.
 
 Obviously, keeping all machine states for authentication purposes would require enormous amounts of storage. SPREAD solves that issue by cryptographically 'signing' states *incrementally*, while also allowing full user-control over which ones need to be signed, and at what level of granularity.
 
@@ -23,7 +23,7 @@ Alternatively, full machine states can also be stored incrementally by SPREAD. I
 
 So SPREAD kinda acts like a spreadsheet because a spreadsheet also re-uses the previous calculation of a workbook to optimally recalculate the next.
 
-Unlike SPREAD however, spreadsheets aren't able to keep *all* its versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows pure functions and fully persistent data structures as primitives.
+Unlike SPREAD however, spreadsheets aren't able to keep *all* their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows pure functions and fully persistent data structures to be used as primitives.
 
 So can SPREAD be used as a drop-in Excel replacement?
 
