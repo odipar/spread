@@ -19,11 +19,11 @@ To put it mildly, some practical issues had to be resolved to make SPREAD a real
 
 Obviously, keeping *all* the state for authentication purposes would require enormous amounts of storage. SPREAD solves that issue by cryptographically 'signing' states *incrementally*, while still allowing full user-control over which ones need to be signed, and at what level of granularity.
 
-Alternatively, full machine states can also be stored incrementally by SPREAD. In turn, this allows the pervasive re-use of state that was calculated earlier.
+Alternatively, full machine states can also be incrementally stored by SPREAD. In turn, this allows the pervasive re-use of state that was calculated earlier.
 
 So SPREAD kinda acts like a spreadsheet. Because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
 
-Unlike SPREAD however, spreadsheets are incapable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only allows referentially transparent functions as primitives.
+Unlike SPREAD however, spreadsheets are incapable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only permits referentially transparent functions as primitives.
 
 So can SPREAD be used as a drop-in Excel replacement?
 
@@ -39,7 +39,7 @@ SPREAD is currently in extreme ALPHA stage. For the impatient, there is already 
 ### Implementation
 SPREAD is currently implemented as a Scala DSL. This is not an absolute requirement for SPREAD to work, but Scala does bring some nice benefits to the table:
 
-* It runs on the JVM
+* It runs on the Java Virtual Machine (JVM)
 * Purely functional (where appropriate)
 * Strongly typed at compile time
 * And it supports the creation of Domain Specific Languages (DSLs)
@@ -49,26 +49,26 @@ SPREAD is currently implemented as a Scala DSL. This is not an absolute requirem
 ###The anotomy of a simple SPREAD expression
 
 Now let's take a look at this standard Scala code:
-```java
-val e: Int = (1 + 2) * (3 + 4)
+```scala
+val e = (1 + 2) * (3 + 4)
 ```
-A Scala compiler would compile the above source code into bytecode that produces a single *Int * result.
+A Scala compiler would compile the above source code into bytecode that would produce a single *Int * result when executed on the JVM.
 
 And this is the SPREAD equivalent of the same Scala code:
 ```scala
-val e: Expr[Int] = (1 !+ 2) !* (3 !+ 4)
+val e = (1 !+ 2) !* (3 !+ 4)
 ```
 
-Notice the exclamation(!) marks. In SPREAD, each operation that is prefixed by an exclamation only *constructs* an expression, and will not be directly evaluated. And when we do need results, we need to explicitly request the *evaluation* of expressions.
+Notice the exclamation(!) marks. In SPREAD, each operation that is prefixed by an exclamation mark *constructs* an expression, and is not directly evaluated. We need to explicitly request the *evaluation* of an expression to get to its final value.
 
-Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, including the ancestral expression!
+Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, including its ancestral one!
 
 So what happens if we run this?
 
 ```scala
 println(e.fullEval)
 ```
-we will get the following result:
+we get the following result:
 ```
 ((1 !+ 2) !* (3 !+ 4)) =>
 	(1 !+ 2) => 3
@@ -77,19 +77,15 @@ we will get the following result:
 (3 !* 7) => 21
 ```
 
-Notice that the full trace encompasses the final value. Alternatively, we may want to destroy the trace by requesting its head , i.e the following expression will yield **true**:
+Notice that the full trace encompasses the final value 21. Alternatively, we may want to destroy the trace by requesting its head, i.e the following expression prints **true**:
 
 ```scala
-e.fullEval.head == (21:Expr[Int])
+println(e.fullEval.head === 21) // true
 ```
-Intriguing?
 
-Different?
+Although it does directly go against the spirit of SPREAD, destroying traces is certainly possible. If keeping full traces is not an option it is better to cryptographically sign a trace, and keep that.  This way, it is still possible to authenticate a computational trace.
 
-Weird?
+Authenticating a trace can be achieved by prefixing a tilde (~) to any expression. When such expression is evaluated, it will yield a default 128 bit cryptographic hash of its trace, together with its final value. Likewise, more cryptographic bits can be acquired by prefixing more consecutive tildes.
 
-Could be, but you have to take my word for it: SPREAD's default evaluation scheme yields extreme benefits for **much** bigger stuff. Do you dare to have a look in the repository?
-
-TO BE CONTINUED.
 
 Copyright 2016: Robbert van Dalen

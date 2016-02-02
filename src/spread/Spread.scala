@@ -10,7 +10,7 @@ package spread
 //
 //  Copyright 2016: Robbert van Dalen
 //
-
+import java.nio.IntBuffer
 import scala.collection.immutable.Map
 import SplitHash._
 import Hashing._
@@ -42,14 +42,19 @@ object Spread {
     def head: Expr[V] = trace.last.asInstanceOf[Expr[V]]
     def size = 1
 
+    def hash = this
+    def fullEval = Spread.fullEval(this,EmptyContext)._1
+    def ===(o: Expr[V]) = this == o
+    def unary_~ = Signed(this,1)
+  }
+
+  trait HashedExpr[V] extends Expr[V] {
     var lHash = 0
     def lazyHash: Int
     override def hashCode = {
       if (lHash == 0) lHash = lazyHash
       lHash
     }
-    def hash = this
-    def fullEval = Spread.fullEval(this,EmptyContext)._1
   }
 
   // A memoization context that is associated during evaluation
@@ -84,12 +89,40 @@ object Spread {
     }
   }
 
+  val encoder = java.util.Base64.getEncoder
+
+  case class CryptoSigned[X](a: Array[Int]) extends Expr[X] {
+    def hashAt(i: Int) = a(i % (a.size-1))
+    def parts = Array(this)
+    override def toString = {
+      var s = a.size * 4
+      val b: Array[Byte] = new Array(s)
+      var i = 0
+      while (i < s) {
+        var ii = i % 3
+        var bb = (a(i >> 2) >>> (8 * ii)).toByte
+        b(i) = bb
+        i = i + 1
+      }
+       "#"+javax.xml.bind.DatatypeConverter.printHexBinary(b)
+    }
+  }
+
+  def copyHash(h: Hash, s: Int): Array[Int] = {
+    var i = 0
+    var a: Array[Int] = new Array(s)
+    while (i < s) {
+      a(i) = h.hashAt(i)
+      i = i + 1
+    }
+    a
+  }
   // Denotes an evaluation
-  case class Eval[V](o: Expr[V], distance: Int) extends Expr[V] {
+  case class Eval[V](o: Expr[V], distance: Int) extends HashedExpr[V] {
     def lazyHash = siphash24(o.hashCode + magic_p1,distance - magic_p3)
     def hashAt(i: Int) = {
-      if (i == 0) lazyHash
-      else siphash24(hashAt(i-1) - magic_p3,(magic_p2*distance) ^ o.lazyHash)
+      if (i == 0) hashCode
+      else siphash24(hashAt(i-1) - magic_p3,(magic_p2*distance) ^ o.hashCode)
     }
     def parts = o.parts
     override def toString = o.toString + "@" + distance
@@ -106,7 +139,7 @@ object Spread {
   trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash
 
   // Denotes an unary function call
-  case class F1[A,X](f: FA1[A,X], v1: Expr[A]) extends Expr[X] {
+  case class F1[A,X](f: FA1[A,X], v1: Expr[A]) extends HashedExpr[X] {
     override def toString = f+"("+v1+")"
     def lazyHash = siphash24(f.hashCode + magic_p2 ,v1.hashCode - magic_p3)
     def hashAt(index: Int) = {
@@ -123,7 +156,7 @@ object Spread {
   }
 
   // Denotes an binary function call
-  case class F2[A,B,X](f: FA2[A,B,X], v1: Expr[A], v2: Expr[B]) extends Expr[X] {
+  case class F2[A,B,X](f: FA2[A,B,X], v1: Expr[A], v2: Expr[B]) extends HashedExpr[X] {
     override def toString = "(" + v1 + " " + f + " " + v2 + ")"
     def lazyHash = siphash24(f.hashCode + magic_p1,siphash24(v1.hashCode + magic_p2 ,v2.hashCode - magic_p3))
     def hashAt(index: Int) = {
@@ -169,7 +202,7 @@ object Spread {
   }
 
   // A TracedExpr holds the history of computations that leads up to itself.
-  case class TracedExpr[V](override val trace: SHNode[Expr[_]]) extends Expr[V] {
+  case class TracedExpr[V](override val trace: SHNode[Expr[_]]) extends HashedExpr[V] {
     override def size = trace.size
     def lazyHash = siphash24(trace.hashCode - magic_p3, magic_p3 * trace.hashCode)
     def hashAt(i: Int) = {
@@ -178,6 +211,18 @@ object Spread {
     }
     def parts = Array(this)
     override def toString = prettyPrint(trace,0)
+  }
+
+  case class Signed[X](signed: Expr[X], a: Int) extends HashedExpr[X] {
+    override def size = trace.size
+    def lazyHash = siphash24(signed.hashCode * magic_p3, magic_p3 - signed.hashCode)
+    def hashAt(i: Int) = {
+      if (i == 0) hashCode
+      else siphash24(signed.hashAt(i) - magic_p1, magic_p1 * signed.hashCode)
+    }
+    def parts = Array(this)
+    override def unary_~ = Signed(signed,a+1)
+    override def toString = wsp(a,"~")+signed
   }
 
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
@@ -191,7 +236,7 @@ object Spread {
   }
 
   def node[X](e: Expr[X]) = ExprSHNode(e)
-  def expr[X](e: SHNode[X]) = LeafExpr(e)
+  def expr[X <: Hashable](e: X) = LeafExpr(e)
 
   // Evaluation via pattern matching - in association with a MemoizationContext
   def eval[X](e: Expr[X], c: MemoizationContext): (Expr[X],MemoizationContext) = e match {
@@ -226,6 +271,12 @@ object Spread {
       val (r2,cc) = eval(r1,c)
       if (r1 == r2) (t,cc)
       else (TracedExpr(concat(t.trace,r2.trace)),cc)
+    }
+    case Signed(e,cnt) => {
+      val (ev: Expr[X],c2) = fullEval(e,c)
+      val crypr: Expr[X] = CryptoSigned(copyHash(ev,cnt*4))
+      val tt = node(Eval(e,2)).concat(node(crypr)).concat(node(ev.head))
+      (TracedExpr(tt),c2)
     }
     case _ => (e,c)
   }
@@ -271,9 +322,11 @@ object Spread {
     case x => wsp(depth) + x
   }
 
-  def wsp(d: Int): String = {
+  def wsp(d: Int): String = wsp(d,"\t")
+
+  def wsp(d: Int, v: String): String = {
     if (d == 0) ""
-    else if (d == 1) "\t"
-    else wsp(d/2) + wsp(d - (d/2))
+    else if (d == 1) v
+    else wsp(d/2,v) + wsp(d - (d/2),v)
   }
 }

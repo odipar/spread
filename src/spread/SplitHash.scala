@@ -2,7 +2,7 @@ package spread
 
 object SplitHash {
   //
-  // SplitHash is an immutable, uniquely represented Sequence ADT (Authenticated Data Structure).
+  // SplitHash is an immutable, uniquely represented Sequence ADS (Authenticated Data Structure).
   // It is based on a novel hashing scheme that was first introduced with SeqHash.
   // (See http://www.bu.edu/hic/files/2015/01/versum-ccs14.pdf).
   //
@@ -11,7 +11,7 @@ object SplitHash {
   // It also solves SeqHash's issue with repeating nodes by applying RLE (Run Length Encoding) compression.
   // To improve cache coherence and memory bandwidth, SplitHashes can be optionally chunked into n-ary trees.
   //
-  // SplitHash is the first known History-Independent(HI) ADT that holds all these properties.
+  // SplitHash is the first known History-Independent(HI) ADS that holds all these properties.
   //
   // Copyright 2016: Robbert van Dalen.
   //
