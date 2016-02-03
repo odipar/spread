@@ -4,6 +4,7 @@ import spread.SpreadArithmetic._
 import spread.Spread._
 import SplitHash._
 import scala.collection.mutable.WeakHashMap
+import scala.collection.immutable.HashMap
 import SetHash._
 
 // EXPOSITION:
@@ -15,18 +16,11 @@ import SetHash._
 
 object Test {
 
-  val wcontext = WeakMemoizationContext(new WeakHashMap())
+  val scontext = StrongMemoizationContext(HashMap())
+  val wcontext = WeakMemoizationContext(WeakHashMap())
   val econtext = EmptyContext
 
   final def main(args: Array[String]): Unit ={
-    var i = 0
-    val s = 10
-    while (i < s) {
-      val e: _Int = i !+ i
-      val e2 = ~e
-      print(e2.fullEval)
-      i = i + 1
-    }
 
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
     val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
@@ -36,7 +30,7 @@ object Test {
 
     traceReuse = true
 
-    val (r1,_) = fullEval(sum1,wcontext)
+    var (r1,_) = fullEval(sum1,wcontext)
     println(r1)
 
     var (r2,_) = fullEval(sum2,wcontext)
@@ -63,11 +57,10 @@ object Test {
     println("fac(7): " + fc2.head)
     println()
 
-    val fib2 = %(fib,25)
+    val fib2 = %(Test.fib2,25)
     var (f3,_) = fullEval(fib2,wcontext)
-    println("fib(8): " + f3.head)
+    println("fib(25): " + f3.head)
     println("trace size: " + f3.trace.size)
-
   }
 
   object fac extends FA1[Int,Int] {

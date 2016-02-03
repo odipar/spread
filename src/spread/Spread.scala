@@ -10,7 +10,7 @@ package spread
 //
 //  Copyright 2016: Robbert van Dalen
 //
-import java.nio.IntBuffer
+
 import scala.collection.immutable.Map
 import SplitHash._
 import Hashing._
@@ -43,9 +43,11 @@ object Spread {
     def size = 1
 
     def hash = this
-    def fullEval = Spread.fullEval(this,EmptyContext)._1
     def ===(o: Expr[V]) = this == o
-    def unary_~ = Signed(this,1)
+    def unary_~ = SignedExpr(this,1)
+
+    def fullEval = Spread.fullEval(this,EmptyContext)._1
+    def fullEval(m: MemoizationContext) = Spread.fullEval(this,m)
   }
 
   trait HashedExpr[V] extends Expr[V] {
@@ -218,17 +220,18 @@ object Spread {
     def parts = Array(this)
     override def toString = prettyPrint(trace,0)
   }
-
-  case class Signed[X](signed: Expr[X], a: Int) extends HashedExpr[X] {
+  
+  // A SignedExpr holds the Expr to be crypto signed with hash size of (a * 128) bits
+  case class SignedExpr[X](signed: Expr[X], bits_128: Int) extends HashedExpr[X] {
     override def size = trace.size
-    def lazyHash = siphash24(signed.hashCode * magic_p3, magic_p3 - signed.hashCode)
+    def lazyHash = siphash24(signed.hashCode * magic_p3, magic_p3 - bits_128.hashCode)
     def hashAt(i: Int) = {
       if (i == 0) hashCode
       else siphash24(signed.hashAt(i) - magic_p1, magic_p1 * signed.hashCode)
     }
     def parts = Array(this)
-    override def unary_~ = Signed(signed,a+1)
-    override def toString = wsp(a,"~")+signed
+    override def unary_~ = SignedExpr(signed,bits_128+1)
+    override def toString = wsp(bits_128,"~")+signed
   }
 
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
@@ -278,11 +281,11 @@ object Spread {
       if (r1 == r2) (t,cc)
       else (TracedExpr(concat(t.trace,r2.trace)),cc)
     }
-    case Signed(ee,cnt) => {
-      val (ev: Expr[X],c2) = fullEval(ee,c)
+    case SignedExpr(ee,cnt) => {
+      val (ev: Expr[X],_) = fullEval(ee,EmptyContext) // we don't need to memoize the sub-trace
       val crypr: Expr[X] = CryptoSigned(copyHash(ev,cnt*4))
       val tt = node(Eval(e,2)).concat(node(crypr)).concat(node(ev.head))
-      (TracedExpr(tt),c2)
+      (TracedExpr(tt),c)
     }
     case _ => (e,c)
   }
@@ -294,7 +297,7 @@ object Spread {
   def ~%[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = ~(%(f,a,b))
 
   // Ideally we should recursively Hash all the java byte code (full dependency graph)
-  // For now we just use the full qualified class name until we implement that
+  // For now we just use hash the full qualified class name until we implement that.
   trait CodeHash extends Hashable with Hash {
     var lazy_hash: Array[Int] = null
 

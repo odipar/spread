@@ -21,7 +21,7 @@ Obviously, keeping *all* the state for authentication purposes would require eno
 
 Alternatively, full machine states can also be incrementally stored by SPREAD. In turn, this allows the pervasive re-use of state that was calculated earlier.
 
-So SPREAD kinda acts like a spreadsheet. Because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
+So SPREAD kinda acts like a spreadsheet. That's because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
 
 Unlike SPREAD however, spreadsheets are incapable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only permits referentially transparent functions as primitives.
 
@@ -32,7 +32,7 @@ Not *exactly*. Actually not by a mile.
 However, the spreadsheet spirit is there. In fact, SPREAD can be considered the next-generation spreadsheet, and possibly the next-generation of software in general.
 
 ####Warning
-SPREAD is currently in extreme ALPHA stage. For the impatient, there is already something novelty to be found in the repository:
+SPREAD is currently in extreme ALPHA stage. For the impatient, there is already some novelty to be found in the repository:
 
 ####[SplitHash](https://github.com/odipar/spread/blob/master/src/spread/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
 
@@ -58,9 +58,9 @@ And this is the SPREAD equivalent of the same Scala code:
 ```scala
 val e = (1 !+ 2) !* (3 !+ 4)
 ```
-Notice the exclamation(`!`) marks. In SPREAD, each operation that is prefixed by an exclamation mark *constructs* an expression, and is not directly evaluated. We need to explicitly request the *evaluation* of an expression to get to its final value.
+Notice the exclamation `!` marks. In SPREAD, each operation that is prefixed by an exclamation mark *constructs* an expression, and is not directly evaluated. Consequently,  to get to the canonical value of an expression, we need to explicitly request its *evaluation*.
 
-Now here is where the SPREAD magic comes in: the final evaluation result won't just be a single Int, but a full trace of all (sub)computations that lead up to that Int, including its ancestral one!
+Now here is where the SPREAD magic comes in: the final result won't just be a single `Int`, but a full trace of all (sub)computations that lead up to that `Int`, including all the ancestor expressions!
 
 So what happens if we run this?
 
@@ -76,18 +76,14 @@ we get the following result:
 (3 !* 7) => 21
 ```
 
-Notice that the full trace encompasses the final value 21. Alternatively, we may want to destroy the trace by requesting its head, i.e the following expression prints `true`:
+Notice that the full trace holds the final value 21. Alternatively, we may choose to destroy the trace by requesting its head.
 
-```scala
-println(e.fullEval.head === 21) // true
-```
+Indeed, destroying data in SPREAD is certainly possible, but directly goes against the grain of SPREAD. That said, keeping all traces is not always an option (due to memory constraints). So in that case, it is better to cryptographically sign a trace, rather than to destroy it. With signing, it will still possible to fully authenticate every computation.
 
-So destroying traces is certainly possible, but it goes directly against the spirit of SPREAD. When keeping full traces is not an option, it is better to cryptographically sign a trace, and keep that. This way, it is still possible to authenticate a computational trace.
-
-Authenticating a trace can be achieved by prefixing a tilde (`~`) to any expression. When such expression is evaluated, it will yield a default 128 bit cryptographic hash of its trace, together with its final value. Likewise, more cryptographic bits can be acquired by prefixing more consecutive tildes.
+Authenticating a trace can be achieved by prefixing a tilde `~` to any expression. When such expression is evaluated, it will yield a default 128 bit cryptographic hash of its trace, together with its final value. In similar fashion, more cryptographic bits can be acquired by prefixing more consecutive tildes.
 
 ### Fibonacci revisited
-To see how well this works in practice we first define the infamous fibonacci function in plain Scala:
+To show how well this works in practice we first define the infamous fibonacci function in plain Scala:
 
 ```scala
 object fib extends Function1[Int,Int] {
@@ -97,16 +93,15 @@ object fib extends Function1[Int,Int] {
     }
 }
 ```
-Of course, this can be abbreviated to:
+Of course, real Scala wizards would abbreviate the above to:
 
 ```scala
 val fib: Int=>Int = i => { if (i < 2) 1 ; else fib(i-1) + fib(i-2) }
 ```
-.. but that's slight differnt from the first definition. The first definition creates an dynamically created function object, while the later creates an immutable top-level object. As it turns out, in SPREAD we want functions to be immutable top-level objects (this will be explained later on).
+.. but that's slightly different from the first definition: the first definition dynamically creates an anynomous function object, while the later creates an immutable top-level object. As it turns out, SPREAD only permits user-defined functions to be immutable top-level objects (this will be explained later).
 
-Now here is the same fib function in SPREAD format:
+Now here is the same `fib` function in SPREAD format:
 ```scala
-
 object fib extends FA1[Int,Int] {
     def apply(i: $Int) = {
       if (!i < 2) 1
@@ -114,9 +109,9 @@ object fib extends FA1[Int,Int] {
     }
 }
 ```
-.. which is not too bad! Apart from the extra syntactic noise (due to limits of the DSL), the SPREAD function definition pretty much matches the regular Scala version.
+.. which I actually believe is not too bad: apart from the extra syntactic noise (due to limitations of the DSL) the SPREAD version pretty much matches the idiomatic Scala version.
 
-Now if we evaluate fib(4):
+when we evaluate fib(4):
 
 ```scala
 println(%(fib,4).fullEval)
@@ -145,25 +140,25 @@ fib(4) => (fib(3) !+ fib(2))
 	(3 !+ 2)
 (3 !+ 2) => 5
 ```
-That's a big trace, just to calculate fib(4)! As traces are values on their own, keeping the trace of - say `fac(25)` - would incur a big memory overhead (the trace of `fib(25)` would contain 971138 items).
+This generates a big trace already, just to calculate `fib(4)`. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
 
-In SPREAD, there are multiple strategies to reduce the size of the trace with each of them having certain benefits and certain drawbacks.
+Fortunately, there are multiple strategies to choose from in order reduce the size of the trace. Of course, which strategy to use depends on certain trade-offs.
 ###Pruning traces
-The first strategy is to prune the trace at certain levels. We can encode this pruning directly in another version of the fib function:
+The first strategy is to prune a trace at certain levels. We can encode this pruning directly in another version of the fib function:
 ```scala
 object fib2 extends FA1[Int,Int] {
     def apply(i: $Int) = {
       if (!i < 2) 1
-      else if (%i < 5) ~%(fib,!i)
+      else if (!i < 5) ~%(fib,!i)
       else %(fib2,!i-1) + %(fib2,!i-2)
     }
 }
 ```
-So we just apply the tilde(`~`) operator on `fib(i)` when `fib2(i)` is called with `i < 5`. Now if we evaluate:
+We apply the tilde(`~`) operator on `fib(i)` when `fib2(i)` is called with `i < 5`:
 ```scala
 println(%(fib2,6).fullEval)
 ```
-..  we get the following trace:
+..  after evaluation, we get the following trace:
 ```
 fib2(6) => (fib2(5) !+ fib2(4))
 (fib2(5) !+ fib2(4)) =>
@@ -184,6 +179,54 @@ fib2(6) => (fib2(5) !+ fib2(4))
 (8 !+ 5) => 13
 ```
 
-TO BE CONTINUED TONIGHT.
+Notice that the fulll (sub)trace of fib(4) is now replaced by its cryptographic hash (indicated by the `#` prefix).
+###Memoizing traces
+A possibly more advantageous strategy is to reduce the memory footprint via (dynamic) memoization. Memoization is nothing more than keeping a map (or index) that maps function calls to traces, during evaluation.
+
+Applying memoization has 2 major benefits:
+
+- the resulting trace of a function call can be re-used
+- (sub)traces can be structurally shared via their references
+
+If we look at `fib2(6)` then it is easy to spot the potential re-use of `fib(4)`. Via the memoization index, we don't need to calculate fib(4) twice, but only once.
+
+Memoization works pretty good in practice for almost all algorithms. But memoization doesn't work when past (sub)computations don't share a lot of structure with future (sub)computations.
+
+Memoization is easy to set up in SPREAD. We just need to associate every evaluation with a so called MemoizationContext. During evaluation, SPREAD memoizes and re-uses all function calls via the associated MemoizationContext.
+
+There are currently three default Memoization strategies to choose from:
+
+- EmptyContext : this context doesn't store anything
+- StrongMemoizationContext: this context strongly references its items
+- WeakMemoizationContext: this context weakly references its items
+
+Here is an example that shows each strategy:
+```scala
+val empty  = EmptyMemoizationContext
+val strong = StrongMemoizationContext(HashMap())
+val weak   = WeakMemoizationContext(WeakHashMap())
+
+var (result1,new_empty)  = %(fib,25).fullEval(empty)
+var (result2,new_strong) = %(fib,25).fullEval(strong)
+var (result3,new_weak)   = %(fib,25).fullEval(weak)
+
+result1 = null
+result2 = null
+result3 = null
+
+System.gc()
+```
+
+Althoug all three computations *must* return the same result, the computational and memory bounds are completely different.
+
+- The first computation is very inefficient as it cannot re-use previous `fib` calls. As a consequence, both the time complexity and the memory complexity are bound by `O(exp(n))`. However, memory will be garbage collected (GC'ed) and reclaimed as soon as the result becomes unreachable.
+
+- The second computation is much more very efficient, as it does re-use the previous `fib` calls. Through memoization, both time- and memory complexity becomes `O(log(n)*n)`. However, traces will **never** be GC'ed, as long as the context still holds **strong** references to them.
+
+- The third computation is as efficient as the second. But in this case, only *weak* references were held to every trace, so memory can be fully reclaimed when the result becomes unreachable.
+
+Remember that the trace of  `fib(n)` grows exponentially with `n`. So how is it possible that the second and third computations are only bound by a memory complexity of `O(n*log(n))`?
+
+
 
 Copyright 2016: Robbert van Dalen
