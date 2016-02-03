@@ -142,7 +142,7 @@ fib(4) => (fib(3) !+ fib(2))
 ```
 Just calculating `fib(4)` already generates a medium size trace. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
 
-Fortunately, the size of can be reduces by applying various evaluation strategies. Of course, which strategy to choose from depends on certain trade-offs that have to be made.
+Fortunately, the size of a trace can be reduces by applying various evaluation strategies. Of course, which strategy to choose depends on certain trade-offs that have to be made.
 ###Pruning traces
 Our first strategy is to prune a trace at certain levels. We can encode pruning directly in another version of the fib function:
 ```scala
@@ -184,7 +184,7 @@ Notice that the fulll (sub)trace of fib(4) is now replaced by its cryptographic 
 ###Memoizing traces
 A possibly more advantageous strategy is to reduce the memory footprint via (dynamic) memoization. Memoization is nothing more than keeping a map (or index) that maps function calls to traces, during evaluation.
 
-Memoization yields to 2 major benefits:
+Memoization yields 2 major benefits:
 
 - the resulting trace of a function call can be re-used
 - (sub)traces can be structurally shared by reference
@@ -193,7 +193,7 @@ Now if we take a closer look at `fib2(6)` it is easy to spot a potential re-use 
 
 Memoization works pretty good in practice for most algorithms. But it is not a silver bullet: memoization is only practical when past (sub)computations share a lot of structure with future (sub)computations.
 
-Memoization is easy to set up in SPREAD. We just need to associate evaluations with a so called MemoizationContext. During evaluation, SPREAD memoizes and re-uses all function calls via the associated MemoizationContext.
+Memoization is easy to set up in SPREAD. We just need to associate an evaluation with a so-called MemoizationContext. During evaluation, SPREAD memoizes and re-uses all function calls via the associated MemoizationContext.
 
 There are currently three default Memoization strategies to choose from:
 
@@ -226,7 +226,7 @@ Although all three computations *must* return the same result, their computation
 
 - The third computation is as efficient as the second. But in this case, only *weak* references were held to every trace, so memory can be fully reclaimed when the result becomes unreachable.
 
-But remember that the trace of  `fib(n)` grows exponentially with `n`. So how is it possible to get a memory bound of `O(n*log(n))`?
+But remember that the trace of  `fib(n)` grows exponentially with `n`. So how is it possible to get such a low memory bound of `O(n*log(n))`?
 ### Exponential Data Structures
 To get an idea of how to reach that bound we need to first consider the following simple example
 ```scala
@@ -284,7 +284,7 @@ trait Hash {
 }
 ```
 
-Pending crypthographic scrutiny, this API makes hash collisions very unlikely. Only objects that implement the Hash trait may be put into a SplitHash, so it is no surprise that all SPREAD primitives also do, including a SplitHash itself!
+Pending crypthographic scrutiny, this API makes hash collisions very unlikely. Only objects that implement the Hash trait may be put into a SplitHash, so it is no surprise that all SPREAD primitives are Hashes, including SplitHash itself!
 
 ###Building them
 It's very easy to create and split SplitHashes. See if you can follow what is going on:
@@ -423,7 +423,7 @@ sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 !
 (15 !+ 26) => 41
 ```
 ###**DID YOU NOTICE ANY DIFFERENCE BETWEEN THE TWO?**
-Of course you did! But did you also notice that there where some (sub)sums shared between `sum1` and `sum2`.
+Of course you did! But did you also notice that there were some (sub)sums shared between `sum1` and `sum2`.
 
 Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in the sequence is changed - we only need to do `O(log(n))` extra work to re-calculate the new sum.
 
@@ -432,7 +432,7 @@ For know, I'm done explaining the basics of SPREAD. I hope that you liked it.
 
 So what's next?
 
-Probably the coming two months I'll spend writing a formal paper on SplitHash. After that I'm planning to implement some radical new database technology on top of SPREAD:
+Probably the coming two months I'll spend writing a formal paper on SplitHash. After thatI'm planning to implement some radical new database technology on top of SPREAD:
 
 ###SPREAD: A database like Datomic but then with spreadsheet like capabilities!
 
