@@ -142,7 +142,7 @@ fib(4) => (fib(3) !+ fib(2))
 ```
 Just calculating `fib(4)` already generates a medium size trace. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
 
-Fortunately, the size of a trace can be reduces by applying various evaluation strategies. Of course, which strategy to choose depends on certain trade-offs that have to be made.
+Fortunately, the size of a trace can be reduced by applying various evaluation strategies. Of course, which strategy to choose depends on certain trade-offs that have to be made.
 ###Pruning traces
 Our first strategy is to prune a trace at certain levels. We can encode pruning directly in another version of the fib function:
 ```scala
@@ -154,7 +154,8 @@ object fib2 extends FA1[Int,Int] {
     }
 }
 ```
-Notice that, when `fib2(i)` is called with `i < 5`, it applies the tilde(`~`) operator on `fib(i)`
+Notice that, when `fib2(i)` is called with `i < 5`, it applies the tilde(`~`) operator on `fib(i)`.
+
 So,
 ```scala
 println(%(fib2,6).fullEval)
@@ -228,7 +229,7 @@ Although all three computations *must* return the same result, their computation
 
 But remember that the trace of  `fib(n)` grows exponentially with `n`. So how is it possible to get such a low memory bound of `O(n*log(n))`?
 ### Exponential Data Structures
-To get an idea of how to reach that bound we need to first consider the following simple example
+To get an idea of how to reach that bound we need to first consider the following simple example:
 ```scala
   def concat(x: List[Any], y: List[Any]): List[Any] = List(x,y)
   def size(x: List[Any]): Int= x match {
@@ -423,20 +424,20 @@ sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 !
 (15 !+ 26) => 41
 ```
 ###**DID YOU NOTICE ANY DIFFERENCE BETWEEN THE TWO?**
-Of course you did! But did you also notice that there were some (sub)sums shared between `sum1` and `sum2`.
+Of course you did! But did you also notice that there were some (sub)sums shared between `sum1` and `sum2`?
 
-Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in the sequence is changed - we only need to do `O(log(n))` extra work to re-calculate the new sum.
+Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in a sequence is changed - we only need to do `O(log(n))` extra work to re-calculate its sum.
 
 ###Conclusion
 For know, I'm done explaining the basics of SPREAD. I hope that you liked it.
 
 So what's next?
 
-Probably the coming two months I'll spend writing a formal paper on SplitHash. After thatI'm planning to implement some radical new database technology on top of SPREAD:
+Probably the coming two months I'll spend writing a formal paper on SplitHash. After that I'm planning to implement some radical new database technology on top of SPREAD:
 
 ###SPREAD: A database like Datomic but then with spreadsheet like capabilities!
 
-Until then!
+Oh yeah, and SPREAD *finally* supersedes the [Enchilada Programming Language](http://www.enchiladacode.nl).
 
 * * *
 
