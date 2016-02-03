@@ -245,7 +245,7 @@ To get an idea of how to reach that bound we need to first consider the followin
   }
   println("size: " + size(l)) // 20 steps -> 4194304
 ```
-With simple Lists we can already create `O(n*exp(n))` sized structures in `O(n)` time. But alas, to get to a specific element at a certain index also takes `O(n)`.
+With simple Lists we can already create `O(exp(n))` sized structures in `O(n)` time. But alas, to get to a specific element at a certain index also takes `O(n)`.
 
 For SPREAD, a more advanced Sequence Abstract Data Type (ADT) has been implemented:
 
