@@ -344,7 +344,7 @@ println(sum2)
 ```
 What now follows is the output of the two sums:
 
-###**WE FIRST LOOK AT TRACE OF THE FIRST SUM1. KEEP SCROLLING**
+###**WE FIRST LOOK AT THE TRACE OF THE FIRST SUM1. KEEP SCROLLING**
 ```
 sum($(1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 ! 7 ! 8)))
 (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 ! 7 ! 8))) =>
@@ -384,7 +384,7 @@ sum($(1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 !
 (10 !+ 26) => 36
 ```
 
-###**NOW WE LOOK AT TRACE OF THE SECOND SUM2. KEEP SCROLLING**
+###**NOW WE LOOK AT THE TRACE OF THE SECOND SUM2. KEEP SCROLLING**
 ```
 sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 ! 7 ! 8)))
 (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 ! 7 ! 8))) =>
