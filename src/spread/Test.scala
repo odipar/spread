@@ -21,6 +21,15 @@ object Test {
   val econtext = EmptyContext
 
   final def main(args: Array[String]): Unit ={
+    {
+      val s1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
+      val s2 = s1 ! s1
+      val (s3,s4) = s2.split(12)
+      val (s5,s6) = s2.split(2)
+      val s7 = s4 ! s5
+      val s8 = 5 ! 6 ! 7 ! 8 ! 1 ! 2
+      println(s7 == s8) // true
+    }
 
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
     val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
@@ -89,20 +98,18 @@ object Test {
   }
 
 
-  type INode = SHNode[Int]
-  type FINode = F0[SHNode[Int]]
+  type _SplitHash[X] = SHNode[X]
+  type $SplitHash[X] = F0[SHNode[X]]
 
   // We could easily have implemented sum with a generic fold
   // But for now we just explicitly show how to use the DSL and API
-  object sum extends FA1[INode,Int] {
-    def apply(s: FINode) = {
-
+  object sum extends FA1[_SplitHash[Int],Int] {
+    def apply(s: $SplitHash[Int]) = {
       val ss = !s
       if (ss.size == 1) ss.last
       else {
         val parts = ss.splitParts
         var ssum = %(sum,expr(parts(0)))
-
         var i = 1
         while (i < parts.length) {
           ssum = ssum !+ %(sum,expr(parts(i)))
@@ -110,9 +117,7 @@ object Test {
         }
         ssum
       }
-
     }
-    override def toString = "sum"
   }
 
   import Hashing._
