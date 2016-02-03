@@ -12,23 +12,22 @@ import scala.language.implicitConversions
 
 object SpreadArithmetic {
 
-  type I = Expr[Int]
-  type II = F0[Int]
+  type _Int = Expr[Int]
+  type $Int = F0[Int]
 
-  trait IntExpr extends I {
-    def unwrap: I
+  trait IntExpr extends _Int {
+    def unwrap: _Int
 
-    def !+(o: I): I = F2(add,unwrap,o)
-    def !-(o: I): I = F2(sub,unwrap,o)
-    def !*(o: I): I = F2(mul,unwrap,o)
-    def !/(o: I): I = F2(div,unwrap,o)
+    def !+(o: _Int): _Int = F2(add,unwrap,o)
+    def !-(o: _Int): _Int = F2(sub,unwrap,o)
+    def !*(o: _Int): _Int = F2(mul,unwrap,o)
+    def !/(o: _Int): _Int = F2(div,unwrap,o)
 
     // TODO: MORE primitives
   }
 
-  case class IExpr(i: Int) extends II with IntExpr {
+  case class IExpr(value: Int) extends $Int with IntExpr {
     def unwrap = this
-    def value = i
     def lazyHash = siphash24(value - magic_p1,value + magic_p2)
     def hashAt(index: Int) = {
       if (index == 0) hashCode
@@ -36,31 +35,31 @@ object SpreadArithmetic {
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
     def parts = Array()
-    override def toString = i.toString
+    override def toString = value.toString
   }
 
-  trait BinIntOp extends FA2[Int,Int,Int]
+  trait BinIntOp extends FA2[Int,Int,Int] with InfixOperator
 
   trait add2 extends BinIntOp {
-    def apply(o1: II, o2: II) = IExpr(o1.value + o2.value)
+    def apply(o1: $Int, o2: $Int) = IExpr(o1.value + o2.value)
     override def toString = "!+"
     def codeID = 1
   }
 
   trait sub2 extends BinIntOp {
-    def apply(o1: II, o2: II) = IExpr(o1.value - o2.value)
+    def apply(o1: $Int, o2: $Int) = IExpr(o1.value - o2.value)
     override def toString = "!-"
     def codeID = 2
   }
 
   trait mul2 extends BinIntOp {
-    def apply(o1: II, o2: II) = IExpr(o1.value * o2.value)
+    def apply(o1: $Int, o2: $Int) = IExpr(o1.value * o2.value)
     override def toString = "!*"
     def codeID = 3
   }
 
   trait div2 extends BinIntOp {
-    def apply(o1: II, o2: II) = IExpr(o1.value / o2.value)
+    def apply(o1: $Int, o2: $Int) = IExpr(o1.value / o2.value)
     override def toString = "!/"
     def codeID = 4
   }
@@ -70,19 +69,19 @@ object SpreadArithmetic {
   object mul extends mul2
   object div extends div2
 
-  case class IWrap(unwrap: I) extends IntExpr {
+  case class IWrap(unwrap: _Int) extends IntExpr {
     def error = sys.error("Wrapper object. Should not be called.")
     def lazyHash = error
     def hashAt(i: Int) = error
     def parts = error
   }
 
-  def wrap(i: I): IntExpr = i match {
+  def wrap(i: _Int): IntExpr = i match {
     case w: IWrap => w
     case _ => IWrap(i)
   }
 
   // Automatic conversion to bootstrap the DSL
   implicit def toIntExpr(i: Int): IntExpr = IExpr(i)
-  implicit def toIntExpr2(i: I): IntExpr = wrap(i)
+  implicit def toIntExpr2(i: _Int): IntExpr = wrap(i)
 }

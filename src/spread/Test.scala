@@ -18,15 +18,18 @@ object Test {
   val wcontext = WeakMemoizationContext(new WeakHashMap())
   val econtext = EmptyContext
 
-  final def main(args: Array[String]): Unit = {
-    val e = ~((1 !+ 2) !* (3 !+ 4))
-    val e2 = e.fullEval
-    println(e2)
+  final def main(args: Array[String]): Unit ={
+    var i = 0
+    val s = 10
+    while (i < s) {
+      val e: _Int = i !+ i
+      val e2 = ~e
+      print(e2.fullEval)
+      i = i + 1
+    }
 
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
     val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
-    val seq3 = seq1 ! seq2
-    println("seq3: " + seq3)
 
     val sum1 = %(sum,expr(seq1))
     val sum2 = %(sum,expr(seq2))
@@ -39,7 +42,7 @@ object Test {
     var (r2,_) = fullEval(sum2,wcontext)
     println(r2)
 
-    val fib1 = %(fib,5)
+    val fib1 = %(Test.fib2,6)
 
     var (f1,_) = fullEval(fib1,econtext)
     println("slow: " + f1)
@@ -53,7 +56,7 @@ object Test {
 
     val fac1 = %(fac,5)
     var (fc1,_) = fullEval(fac1,wcontext)
-    println("fac(5): " + fc1.head)
+    println("fac(5): " + fc1)
 
     val fac2 = %(fac,7)
     var (fc2,_) = fullEval(fac2,wcontext)
@@ -65,34 +68,33 @@ object Test {
     println("fib(8): " + f3.head)
     println("trace size: " + f3.trace.size)
 
-    // Some other radical stuff - NOT YET DONE
-    var st = HashNode(Array(),0)
-/*    var (r,x) = store(seq3,st)
-    println("r: " + r)
-    println("x: " + x)   */
   }
 
   object fac extends FA1[Int,Int] {
-    def apply(i: II): I = {
-
-      if (!i == 0) 1
-      else i !* %(fac,!i - 1)
-
+    def apply(i: $Int) = {
+      if (!i < 2) 1
+      else i !* {
+        if (!i < 5) ~%(fac,!i - 1) // We only capture the crypto hash for fac(i), i < 5
+        else %(fac,!i - 1)         // For i >= 5 we capture the full trace
+      }
     }
-    override def toString = "fac"
-    def codeID = 100
   }
 
   object fib extends FA1[Int,Int] {
-    def apply(i: II) = {
-
+    def apply(i: $Int) = {
       if (!i < 2) 1
       else %(fib,!i - 1) !+ %(fib,!i - 2)
-
     }
-    override def toString = "fib"
-    def codeID = 200
   }
+
+  object fib2 extends FA1[Int,Int] {
+    def apply(i: $Int) = {
+      if (!i < 2) 1
+      else if (!i < 5) ~%(fib,i)
+      else %(fib2,!i - 1) !+ %(fib2,!i - 2)
+    }
+  }
+
 
   type INode = SHNode[Int]
   type FINode = F0[SHNode[Int]]
@@ -118,7 +120,6 @@ object Test {
 
     }
     override def toString = "sum"
-    def codeID = 1000
   }
 
   import Hashing._

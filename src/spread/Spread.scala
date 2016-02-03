@@ -91,7 +91,7 @@ object Spread {
 
   val encoder = java.util.Base64.getEncoder
 
-  case class CryptoSigned[X](a: Array[Int]) extends Expr[X] {
+  case class CryptoSigned[X](a: Seq[Int]) extends Expr[X] {
     def hashAt(i: Int) = a(i % (a.size-1))
     def parts = Array(this)
     override def toString = {
@@ -128,15 +128,18 @@ object Spread {
     override def toString = o.toString + "@" + distance
   }
 
+  trait Operator { override def toString = getClass().getSimpleName.replace("$","") }
+  trait InfixOperator extends Operator
+
   // Nullary function that MUST evaluate to its canonical value in O(1)
   trait F0[X] extends Expr[X] with Hashable with Hash {
     def unary_! = value
     def value: X
   }
   // Unary (lazy) function
-  trait FA1[A,X] extends (F0[A] => Expr[X]) with CodeHash
+  trait FA1[A,X] extends (F0[A] => Expr[X]) with CodeHash with Operator
   // Binary (lazy) function
-  trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash
+  trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash with Operator
 
   // Denotes an unary function call
   case class F1[A,X](f: FA1[A,X], v1: Expr[A]) extends HashedExpr[X] {
@@ -157,7 +160,10 @@ object Spread {
 
   // Denotes an binary function call
   case class F2[A,B,X](f: FA2[A,B,X], v1: Expr[A], v2: Expr[B]) extends HashedExpr[X] {
-    override def toString = "(" + v1 + " " + f + " " + v2 + ")"
+    override def toString = f match {
+      case i: InfixOperator => "(" + v1 + " " + f + " " + v2 + ")"
+      case _ =>  f + "(" + v1 + "," + v2 + ")"
+    }
     def lazyHash = siphash24(f.hashCode + magic_p1,siphash24(v1.hashCode + magic_p2 ,v2.hashCode - magic_p3))
     def hashAt(index: Int) = {
       if (index == 0) hashCode
@@ -272,8 +278,8 @@ object Spread {
       if (r1 == r2) (t,cc)
       else (TracedExpr(concat(t.trace,r2.trace)),cc)
     }
-    case Signed(e,cnt) => {
-      val (ev: Expr[X],c2) = fullEval(e,c)
+    case Signed(ee,cnt) => {
+      val (ev: Expr[X],c2) = fullEval(ee,c)
       val crypr: Expr[X] = CryptoSigned(copyHash(ev,cnt*4))
       val tt = node(Eval(e,2)).concat(node(crypr)).concat(node(ev.head))
       (TracedExpr(tt),c2)
@@ -284,19 +290,33 @@ object Spread {
   // convenience
   def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] =  F1(f, a)
   def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f,a,b)
+  def ~%[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = ~(%(f,a))
+  def ~%[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = ~(%(f,a,b))
 
   // Ideally we should recursively Hash all the java byte code (full dependency graph)
-  // For now we just use global constants until we implement that
+  // For now we just use the full qualified class name until we implement that
   trait CodeHash extends Hashable with Hash {
+    var lazy_hash: Array[Int] = null
+
+    def bhash: Array[Int] = {
+      import java.security.MessageDigest
+      if (lazy_hash == null) {
+        var md = MessageDigest.getInstance("SHA-256");
+        md.update(getClass().toString.getBytes())
+        val bb = java.nio.ByteBuffer.wrap(md.digest).asIntBuffer
+        val ib: Array[Int] = new Array(bb.limit)
+        bb.get(ib)
+        lazy_hash = ib
+      }
+      lazy_hash
+    }
     def parts = Array()
     def hash = this
-    def codeID: Int  // MUST be globally unique
-    override val hashCode = siphash24(codeID + magic_p1,codeID * magic_p2)
-    def hashAt(index: Int) = {
-      if (index == 0) hashCode
-      else if (index == 1) siphash24(codeID + magic_p3, hashCode * magic_p2)
-      else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
+    def hashAt(i: Int) = {
+      if (i == 0) hashCode
+      else bhash(i % (bhash.size-1))
     }
+    override def hashCode = bhash(0)
   }
 
   // Pretty print a trace
