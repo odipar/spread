@@ -78,7 +78,7 @@ we get the following result:
 
 Notice that the full trace holds the final value 21. Alternatively, we may choose to destroy the trace by requesting its head.
 
-Indeed, destroying data in SPREAD is certainly possible, but directly goes against the grain of SPREAD. That said, keeping all traces is not always an option (due to memory constraints). So in that case, it is better to cryptographically sign a trace, rather to destroy it. With signing, it remains possible to fully authenticate every computation.
+Indeed, destroying data in SPREAD is certainly possible, but directly goes against the grain of SPREAD. That said, keeping all traces is not always an option (due to memory constraints). So in that case, it is better to cryptographically sign a trace, rather than to destroy it. With signing, it remains possible to fully authenticate every computation.
 
 Authenticating a trace can be achieved by prefixing a tilde `~` to any expression. When such expression is evaluated, it will yield a default 128 bit cryptographic hash of its trace, together with its final value. In similar fashion, more cryptographic bits can be acquired by prefixing more consecutive tildes.
 
@@ -140,9 +140,9 @@ fib(4) => (fib(3) !+ fib(2))
 	(3 !+ 2)
 (3 !+ 2) => 5
 ```
-Just calculating `fib(4)` already generates a medium size trace. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
+Just calculating `fib(4)` already generates a medium sized trace. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
 
-Fortunately, the size of a trace can be reduced by applying various evaluation strategies. Of course, which strategy to choose depends on certain trade-offs that have to be made.
+Fortunately, the size of a trace can be reduced by applying various evaluation strategies. Of course, which strategy to choose from depends on certain trade-offs that have to be made.
 ###Pruning traces
 Our first strategy is to prune a trace at certain levels. We can encode pruning directly in another version of the fib function:
 ```scala
@@ -183,7 +183,7 @@ fib2(6) => (fib2(5) !+ fib2(4))
 
 Notice that the fulll (sub)trace of fib(4) is now replaced by its cryptographic hash (indicated by the `#` prefix).
 ###Memoizing traces
-A possibly more advantageous strategy is to reduce the memory footprint via (dynamic) memoization. Memoization is nothing more than keeping a map (or index) that maps function calls to traces, during evaluation.
+A possibly more advantageous strategy is to reduce the memory footprint via (dynamic) memoization. Memoization is nothing more than a special kind of index that maps function calls to traces, during evaluation.
 
 Memoization yields 2 major benefits:
 
@@ -251,7 +251,7 @@ For SPREAD, a more advanced Sequence Abstract Data Type (ADT) has been implement
 
 ```scala
 trait Sequence[X] {
-	def size: Long
+	def size: Int
 	def concat(o: Sequence[X]): Sequence[X]
     def split(i: Int): (Sequence[X], Sequence[X])
     def first: X
