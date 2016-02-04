@@ -23,7 +23,7 @@ Alternatively, full machine states can also be incrementally stored by SPREAD. I
 
 So SPREAD kinda acts like a spreadsheet. That's because spreadsheets also re-use the previous states of a workbook to optimally recalculate the next.
 
-Unlike SPREAD however, spreadsheets are incapable to keep all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only permits referentially transparent functions as primitives.
+Unlike SPREAD however, spreadsheets are incapable of keeping all their versions around. And typically, Excel plug-ins completely destroy the (otherwise) purely functional nature of spreadsheets. In contrast, SPREAD only permits referentially transparent functions as primitives.
 
 So can SPREAD be used as a drop-in Excel replacement?
 
@@ -274,7 +274,7 @@ Here is an example. Let's say that you've just calculated the SHA256 hash of a b
 The question is: how fast can you recalculate the SHA256 hash of that slightly modified file?
 
 ###SplitHash
-The first known Sequence ADT that is capable to incrementally re-hash slightly modified data in `O(log(n))` is called SplitHash.
+The first known Sequence ADT that is able to incrementally re-hash slightly modified data in `O(log(n))` is called SplitHash.
 
 What's interesting about SplitHash is that it isn't build on top of a single cryptographic hash type (like GIT's SHA1), but on top of 'infinite' hashes with the following API.
 
