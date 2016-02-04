@@ -274,7 +274,7 @@ Here is an example. Let's say that you've just calculated the SHA256 hash of a b
 The question is: how fast can you recalculate the SHA256 hash of that slightly modified file?
 
 ###SplitHash
-The first know Sequence ADT that is capable to incrementally re-hash slightly modified data in `O(log(n))` is called SplitHash.
+The first known Sequence ADT that is capable to incrementally re-hash slightly modified data in `O(log(n))` is called SplitHash.
 
 What's interesting about SplitHash is that it isn't build on top of a single cryptographic hash type (like GIT's SHA1), but on top of 'infinite' hashes with the following API.
 
