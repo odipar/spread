@@ -1,6 +1,7 @@
 package spread
 
 import spread.SpreadArithmetic._
+import spread.SpreadLogic._
 import spread.Spread._
 import SplitHash._
 import scala.collection.mutable.WeakHashMap
@@ -29,6 +30,13 @@ object Test {
       val s7 = s4 ! s5
       val s8 = 5 ! 6 ! 7 ! 8 ! 1 ! 2
       println(s7 == s8) // true
+    }
+
+    {
+      val a = true !|| false
+      val b = true !&& false
+      val c = a !^^ b
+      println(c.fullEval)
     }
 
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
@@ -103,8 +111,8 @@ object Test {
 
   // We could easily have implemented sum with a generic fold
   // But for now we just explicitly show how to use the DSL and API
-  object sum extends FA1[_SplitHash[Int],Int] {
-    def apply(s: $SplitHash[Int]) = {
+  object sum extends FA1[_SplitHash[Int],Int]{
+    def apply(s: $SplitHash[Int]) ={
       val ss = !s
       if (ss.size == 1) ss.last
       else {
@@ -119,41 +127,4 @@ object Test {
       }
     }
   }
-
-  import Hashing._
-
-/*  def store[X](node: SHNode[X], h: HashNode) = {
-    val ids = store2(node,h)
-    rebuild(node,ids,HashNode(Array(),0))
-  }
-*/
-  def store2[X](node: Hashable, h: HashNode): HashNode = {
-    var hh = h
-    for (p <- node.parts) {
-      hh = store2(p,hh.put(node).put(p))
-    }
-    hh
-  }
-
- /* def rebuild[X](node: SHNode[X], ids: HashNode, h: HashNode): (NPair[X],HashNode) = {
-     node match {
-      case BinNode(l,r,s) => {
-        val (ll,lh) = rebuild(l,ids,h)
-        val (rr,rh) = rebuild(r,ids,lh)
-        val ii = ids.hash(node)
-        val nn = BinNode(ll,rr,s)
-        val nnn = IndexedNode[X](ii,node.height,node.chunkHeight,node.size)
-        val p = NPair(nnn,nn)
-        (p,rh.put(p))
-      }
-      case nn: SHNode[X] => {
-        val ii = ids.hash(node)
-        val nnn = IndexedNode[X](ii,nn.height,nn.chunkHeight,nn.size)
-        val p = NPair(nnn,nn)
-        (p,h.put(p))
-      }
-    }
-  } */
-
-
 }
