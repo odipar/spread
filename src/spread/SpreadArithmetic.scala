@@ -9,6 +9,7 @@ package spread
 import spread.Spread._
 import Hashing._
 import scala.language.implicitConversions
+import scala.reflect.runtime.universe.TypeTag
 
 object SpreadArithmetic {
 
@@ -18,12 +19,18 @@ object SpreadArithmetic {
   trait IntExpr extends _Int {
     def unwrap: _Int
 
-    def !+(o: _Int): _Int = F2(add,unwrap,o)
-    def !-(o: _Int): _Int = F2(sub,unwrap,o)
-    def !*(o: _Int): _Int = F2(mul,unwrap,o)
-    def !/(o: _Int): _Int = F2(div,unwrap,o)
+    def !+(o: _Int): _Int = %(add,unwrap,o)
+    def !-(o: _Int): _Int = %(sub,unwrap,o)
+    def !*(o: _Int): _Int = %(mul,unwrap,o)
+    def !/(o: _Int): _Int = %(div,unwrap,o)
 
     // TODO: MORE primitives
+  }
+
+  case class IVarExpr(s: Symbol)(implicit t2: TypeTag[Int]) extends IntExpr with Variable[Int] {
+    def t = t2
+    def unwrap = this
+    def _unquote = this
   }
 
   case class IExpr(value: Int) extends $Int with IntExpr {
@@ -35,6 +42,8 @@ object SpreadArithmetic {
       else siphash24(hashCode * magic_p2, hashAt(index-1) - magic_p1)
     }
     def parts = Array()
+    def _unquote = this
+    def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]) = this
     override def toString = value.toString
   }
 
@@ -70,6 +79,8 @@ object SpreadArithmetic {
     def lazyHash = error
     def hashAt(i: Int) = error
     def parts = error
+    def _unquote = error
+    def _bindVariable[Y : TypeTag](s: Symbol, x: Expr[Y]) = error
   }
 
   def wrap(i: _Int): IntExpr = i match {
@@ -78,6 +89,7 @@ object SpreadArithmetic {
   }
 
   // Automatic conversion to bootstrap the DSL
+  implicit def toVarExpr(s: Symbol)(implicit t2: TypeTag[Int]): IntExpr = IVarExpr(s)
   implicit def toIntExpr(i: Int): IntExpr = IExpr(i)
   implicit def toIntExpr2(i: _Int): IntExpr = wrap(i)
 }

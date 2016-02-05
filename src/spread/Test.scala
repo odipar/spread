@@ -22,7 +22,7 @@ object Test {
   val econtext = EmptyContext
 
   final def main(args: Array[String]): Unit ={
-    {
+  /*  {
       val s1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
       val s2 = s1 ! s1
       val (s3,s4) = s2.split(12)
@@ -30,53 +30,80 @@ object Test {
       val s7 = s4 ! s5
       val s8 = 5 ! 6 ! 7 ! 8 ! 1 ! 2
       println(s7 == s8) // true
+      println
+    }
+    {
+      val a = (1 !+ 2) !* (3 !+ 4)
+      val b = a.fullEval
+      val c = b !+ b
+      val d = a !+ a
+      println(c.fullEval == d.fullEval) // true
+      println
+    }   */
+
+    {
+      val a = (1 !+ 'a) !* (3 !+ 4.quote)
+      val b = a.unquote.bind('a,(7 !- 5)).fullEval
+      val c = a.unquote.fullEval
+      val d = c.bind('a,(7 !- 5))
+      println(a)
+      println
+      println(b)
+      println
+      println(c)
+      println
+      println(d.fullEval)
+      println
     }
 
     {
-      val a = ((5 !+ 6) !== (6 !+ 6)) !? (1 !+ 2, 3 !+ 4)
-      val b = a.fullEval
-      println(b)
+      val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
+      val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
+
+      val sum1 = %(sum,expr(seq1))
+      val sum2 = %(sum,expr(seq2))
+
+      traceReuse = true
+
+      var (r1,_) = sum1.fullEval(wcontext)
+      println(r1)
+
+      var (r2,_) = sum2.fullEval(wcontext)
+      println(r2)
     }
 
-    val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
-    val seq2 = 1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8
+    {
+      val fib1 = %(Test.fib2,6)
 
-    val sum1 = %(sum,expr(seq1))
-    val sum2 = %(sum,expr(seq2))
+      var (f1,_) = fib1.fullEval(econtext)
+      println("slow: " + f1)
 
-    traceReuse = true
+      var (f2,_) = fib1.fullEval(wcontext)
+      println("fast: " + f2)
 
-    var (r1,_) = sum1.fullEval(wcontext)
-    println(r1)
+      if (f1 != f2) {
+        sys.error("Internal inconsistency")
+      } // the traces must be structurally equal
+      println()
+    }
 
-    var (r2,_) = sum2.fullEval(wcontext)
-    println(r2)
+    {
+      val fac1 = %(fac,5)
+      var (fc1,_) = fac1.fullEval(wcontext)
+      println("fac(5): " + fc1)
 
-    val fib1 = %(Test.fib2,6)
+      val fac2 = %(fac,7)
+      var (fc2,_) = fac2.fullEval(wcontext)
+      println("fac(7): " + fc2.head)
+      println()
 
-    var (f1,_) = fib1.fullEval(econtext)
-    println("slow: " + f1)
-
-    var (f2,_) = fib1.fullEval(wcontext)
-    println("fast: " + f2)
-
-    if (f1 != f2) { sys.error("Internal inconsistency") }  // the traces must be structurally equal
-
-    println()
-
-    val fac1 = %(fac,5)
-    var (fc1,_) = fac1.fullEval(wcontext)
-    println("fac(5): " + fc1)
-
-    val fac2 = %(fac,7)
-    var (fc2,_) = fac2.fullEval(wcontext)
-    println("fac(7): " + fc2.head)
-    println()
-
-  /*  val fib2 = %(Test.fib2,25)
-    var (f3,_) = fullEval(fib2,wcontext)
-    println("fib(25): " + f3.head)
-    println("trace size: " + f3.trace.size)     */
+      val fac3 = %(Test.fac2,5)
+      var (fc3,_) = fac3.fullEval(wcontext)
+      println("fac2(5): " + fc3)
+      println()
+      val (fc4,_) = fc3.unquote.fullEval(wcontext)
+      println("fac2(5).unquote: " + fc4)
+    }
   }
 
   object fac extends FA1[Int,Int] {
@@ -86,6 +113,15 @@ object Test {
         if (!i < 5) ~%(fac,!i - 1) // We only capture the crypto hash for fac(i), i < 5
         else %(fac,!i - 1)         // For i >= 5 we capture the full trace
       }
+    }
+  }
+
+  object fac2 extends FA1[Int,Int] {   // Quoted + if then else
+    def apply(i: $Int) = {
+      (i !== 1) !? (        // if (i == 1)
+        1.quote,            // then quote 1
+        i !* %(fac2,i !- 1) // else i * fac(i-1)
+      )
     }
   }
 
@@ -103,7 +139,6 @@ object Test {
       else %(fib2,!i - 1) !+ %(fib2,!i - 2)
     }
   }
-
 
   type _SplitHash[X] = SHNode[X]
   type $SplitHash[X] = F0[SHNode[X]]
