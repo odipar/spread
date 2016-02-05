@@ -429,7 +429,7 @@ Of course you did! But did you also notice that there were some (sub)sums shared
 Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in a sequence is changed - we only need to do `O(log(n))` extra work to re-calculate its sum.
 
 ###Conclusion
-For know, I'm done explaining the basics of SPREAD. I hope that you liked it.
+For now, I'm done explaining the basics of SPREAD. I hope that you liked it.
 
 So what's next?
 
