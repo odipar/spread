@@ -478,8 +478,14 @@ object Spread {
     override def _containsVariable = head.containsVariable
     override def _depth = head.depth + 1
 
-    override def _unquote = this
-    def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]) = this
+    override def _unquote = {
+      if (containsQuote) head._unquote
+      else this
+    }
+    def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]) = {
+      if (containsVariable) head._bindVariable(s,x)
+      else this
+    }
 
     def parts = Array(this)
     override def toString = prettyPrint(trace,0,"")
