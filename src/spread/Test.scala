@@ -33,10 +33,9 @@ object Test {
     }
 
     {
-      val a = true !|| false
-      val b = true !&& false
-      val c = a !^^ b
-      println(c.fullEval)
+      val a = ((5 !+ 6) !== (6 !+ 6)) !? (1 !+ 2, 3 !+ 4)
+      val b = a.fullEval
+      println(b)
     }
 
     val seq1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
@@ -47,18 +46,18 @@ object Test {
 
     traceReuse = true
 
-    var (r1,_) = fullEval(sum1,wcontext)
+    var (r1,_) = sum1.fullEval(wcontext)
     println(r1)
 
-    var (r2,_) = fullEval(sum2,wcontext)
+    var (r2,_) = sum2.fullEval(wcontext)
     println(r2)
 
     val fib1 = %(Test.fib2,6)
 
-    var (f1,_) = fullEval(fib1,econtext)
+    var (f1,_) = fib1.fullEval(econtext)
     println("slow: " + f1)
 
-    var (f2,_) = fullEval(fib1,wcontext)
+    var (f2,_) = fib1.fullEval(wcontext)
     println("fast: " + f2)
 
     if (f1 != f2) { sys.error("Internal inconsistency") }  // the traces must be structurally equal
@@ -66,18 +65,18 @@ object Test {
     println()
 
     val fac1 = %(fac,5)
-    var (fc1,_) = fullEval(fac1,wcontext)
+    var (fc1,_) = fac1.fullEval(wcontext)
     println("fac(5): " + fc1)
 
     val fac2 = %(fac,7)
-    var (fc2,_) = fullEval(fac2,wcontext)
+    var (fc2,_) = fac2.fullEval(wcontext)
     println("fac(7): " + fc2.head)
     println()
 
-    val fib2 = %(Test.fib2,25)
+  /*  val fib2 = %(Test.fib2,25)
     var (f3,_) = fullEval(fib2,wcontext)
     println("fib(25): " + f3.head)
-    println("trace size: " + f3.trace.size)
+    println("trace size: " + f3.trace.size)     */
   }
 
   object fac extends FA1[Int,Int] {

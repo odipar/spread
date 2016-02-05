@@ -21,10 +21,19 @@ object SpreadLogic{
     def !||(o: _Boolean): _Boolean = F2(or,unwrap,o)
     def !^^(o: _Boolean): _Boolean = F2(xor,unwrap,o)
 
+    def !?[X,Y](e1: Expr[X], e2: Expr[X]): Expr[X] = {
+      F2(then3[X],unwrap,Either(e1,e2))
+    }
     // TODO: MORE primitives
   }
 
   trait BinBoolOp extends FA2[Boolean,Boolean,Boolean] with InfixOperator
+
+  case class Either[X](left: Expr[X], right: Expr[X]) extends F0[X] {
+      def value = sys.error("Not for consumption")
+      def hashAt(i: Int) = 0
+      def parts = Array(left,right)
+  }
 
   trait BExpr extends $Boolean with BooleanExpr {
     def asInt: Int
@@ -71,9 +80,23 @@ object SpreadLogic{
     override def toString = "!^^"
   }
 
+  trait then2[X] extends FA2[Boolean,X,X] {
+    def apply(c: $Boolean, e: F0[X]): Expr[X] = e match {
+      case Either(e1,e2) => {
+        if (c.value) e1
+        else e2
+      }
+      case _ => e
+    }
+    override def toString = "!?"
+  }
+
   object and extends and2
   object or extends or2
   object xor extends xor2
+  object then22 extends then2[Nothing]
+
+  def then3[X] = then22.asInstanceOf[then2[X]]
 
   case class BWrap(unwrap: _Boolean) extends BooleanExpr {
     def error = sys.error("Wrapper object. Should not be called.")
