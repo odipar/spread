@@ -566,20 +566,18 @@ object Spread {
   def ~%[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = ~(%(f,a,b))
   def ~%[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = ~(%(f,a,b,c))
 
-  // Ideally we should recursively Hash all the java byte code (full dependency graph)
-  // For now we just use hash the full qualified class name until we implement that.
+  // Gets the authenticated hash from the custum class loader
   trait CodeHash extends Hashable with Hash {
     var lazy_hash: Array[Int] = null
 
     def bhash: Array[Int] = {
-      import java.security.MessageDigest
       if (lazy_hash == null) {
-        var md = MessageDigest.getInstance("SHA-256");
-        md.update(getClass().toString.getBytes())
-        val bb = java.nio.ByteBuffer.wrap(md.digest).asIntBuffer
-        val ib: Array[Int] = new Array(bb.limit)
-        bb.get(ib)
-        lazy_hash = ib
+        val loader = getClass.getClassLoader
+        if (loader.getClass.getName.startsWith("spread.ClassLoader$AuthenticatedClassLoader")) {
+          val m = loader.getClass.getMethod("cryptoSignClass", classOf[Class[_]])
+          lazy_hash = m.invoke(loader, getClass).asInstanceOf[Array[Int]]
+        }
+        else sys.error("SPREAD bytecode needs to be loaded by SPREADs authenticating classLoader")
       }
       lazy_hash
     }
