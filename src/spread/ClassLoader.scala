@@ -40,7 +40,7 @@ object ClassLoader {
       else super.loadClass(name)
     }
 
-    // For full crypto, we have to sign the full topological set of classes that this class depends on
+    // For full crypto, we have to sign the full topologically sorted set of classes that this class depends on
     // For now we just take the single class
     def cryptoSignClass(c: Class[_]): Array[Int] = {
       import java.security.MessageDigest
