@@ -194,13 +194,13 @@ Now if we take a closer look at `fib2(6)` it is easy to spot a potential re-use 
 
 Memoization works pretty good in practice for most algorithms. But it is not a silver bullet: memoization is only practical when past (sub)computations share a lot of structure with future (sub)computations.
 
-Memoization is easy to set up in SPREAD. We just need to associate an evaluation with a so-called MemoizationContext. During evaluation, SPREAD memoizes and re-uses all function calls via the associated MemoizationContext.
+Memoization is easy to set up in SPREAD. We just need to associate an evaluation with a so-called `MemoizationContext`. During evaluation, SPREAD memoizes and re-uses all function calls via the associated `MemoizationContext`.
 
 There are currently three default Memoization strategies to choose from:
 
-- EmptyContext : this context doesn't store anything
-- StrongMemoizationContext: this context strongly references its items
-- WeakMemoizationContext: this context weakly references its items
+- `EmptyContext` : this context doesn't store anything
+- `StrongMemoizationContext`: this context strongly references its items
+- `WeakMemoizationContext`: this context weakly references its items
 
 Here is an example that shows each strategy:
 ```scala
