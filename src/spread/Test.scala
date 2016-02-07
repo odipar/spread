@@ -34,7 +34,7 @@ object Test {
 
     final def main(args: Array[String]): Unit =
     {
-        {
+      {
         val s1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
         val s2 = s1 ! s1
         val (s3,s4) = s2.split(12)
@@ -49,7 +49,15 @@ object Test {
         val b = a.fullEval
         val c = b !+ b
         val d = a !+ a
-        println(c.fullEval == d.fullEval) // true
+        println(c.fullEval == d.fullEval)
+        println("b: " + b)
+        println
+      }
+      {
+        val a = ('a !+ 2) !* (3 !+ 4)
+        val b = (5 !+ 6) !* (7 !+ 8)
+        val c = a !+ b
+        println(c.bind('a,2).fullEval)
         println
       }
       {
@@ -80,8 +88,11 @@ object Test {
 
         var (r2,_) = sum2.fullEval(wcontext)
         println(r2)
+        println
       }
       {
+        traceReuse = true
+
         val fib1 = %(fib2,6)
 
         var (f1,_) = fib1.fullEval(econtext)
@@ -111,11 +122,12 @@ object Test {
         println()
         val (fc4,_) = fc3.unquote.fullEval(wcontext)
         println("fac2(5).unquote: " + fc4)
+        println
       }
     }
 
     object fac extends FA1[Int,Int]{
-      def apply(i: $Int) ={
+      def apply2(i: $Int) ={
         if (!i < 2) 1
         else i !* {
           if (!i < 5) ~%(fac,!i - 1) // We only capture the crypto hash for fac(i), i < 5
@@ -126,7 +138,7 @@ object Test {
 
     object fac2 extends FA1[Int,Int]{
       // Quoted + if then else
-      def apply(i: $Int) ={
+      def apply2(i: $Int) ={
         (i !== 1) !?( // if (i == 1)
           1.quote, // then quote 1
           i !* %(fac2,i !- 1) // else i * fac(i-1)
@@ -135,14 +147,14 @@ object Test {
     }
 
     object fib extends FA1[Int,Int]{
-      def apply(i: $Int) ={
+      def apply2(i: $Int) ={
         if (!i < 2) 1
         else %(fib,!i - 1) !+ %(fib,!i - 2)
       }
     }
 
     object fib2 extends FA1[Int,Int]{
-      def apply(i: $Int) ={
+      def apply2(i: $Int) ={
         if (!i < 2) 1
         else if (!i < 5) ~%(fib,i)
         else %(fib2,!i - 1) !+ %(fib2,!i - 2)
@@ -155,7 +167,7 @@ object Test {
     // We could easily have implemented sum with a generic fold
     // But for now we just explicitly show how to use the DSL and API
     object sum extends FA1[_SplitHash[Int],Int]{
-      def apply(s: $SplitHash[Int]) ={
+      def apply2(s: $SplitHash[Int]) ={
         val ss = !s
         if (ss.size == 1) ss.last
         else {

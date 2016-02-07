@@ -75,16 +75,17 @@ object Spread {
     def _containsQuote: Boolean  = false
     def _depth: Int = 1
 
-    def unquote: Expr[V] = %(unquote2,WrappedExpr(this))
+    def unquote: Expr[V] = %(unquote2,this)
     def _unquote: Expr[V]
 
-    def bind[Y](s: Symbol, x: Expr[Y])(implicit t: TypeTag[Y]): Expr[V] = {
-      val e: Expr[Expr[V]] = WrappedExpr(this)
-      val v: Expr[Variable[Y]] = expr(VariableImpl(s)(t))
-      val b: Expr[Expr[Y]] = WrappedExpr(x)
+    def bind[Y](s: Symbol, y: Expr[Y])(implicit t: TypeTag[Y]): Expr[V] = {
+      val v: Variable[Y] = VariableImpl(s)(t)
+      val b: Expr[Y] = y
+      val e: Expr[V] = this
 
-      %[Expr[V],Variable[Y],Expr[Y],V](bind2,e,v,b)
+      %[V,Y,Y,V](bind2,e,v,b)
     }
+
     def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]): Expr[V]
     final def containsVariable: Boolean = toBool((properties >>> 30) & 1)
     final def containsQuote: Boolean = toBool((properties >>> 31) & 1)
@@ -101,26 +102,30 @@ object Spread {
   }
 
   trait EvaluationContext {
-    def eval[X](e: Expr[X]) = e._eval(this)
+    def eval[X](e: Expr[X]) =  e._eval(this)
+
     def fullEval[X](e: Expr[X]): (Expr[X], EvaluationContext) = {
-      val (e2,c2) = eval(e)
-      if (e2 != e) c2.fullEval(e2)
-      else (e2,c2)
+        val (e2,c2) = eval(e)
+        if (e2 != e) c2.fullEval(e2)
+        else  (e2,c2)
+      }
     }
-  }
-  
+
   // A memoization context that is associated during evaluation
   trait MemoizationContext extends EvaluationContext  {
     override def fullEval[V](e: Expr[V]): (Expr[V],EvaluationContext) = {
       val me = get(e)
-      if (me != null) (me,this)
+      if (me != null) {
+        if (traceReuse) { println("REUSED: " + e) }
+        (me,this)
+      }
       else {
         val (ev,c2: MemoizationContext) = fullEval2(e)
         if (ev != e) (ev,c2.put(e,ev))
         else (ev,c2)
       }
     }
-    def fullEval2[V](e: Expr[V]): (Expr[V],EvaluationContext) ={
+    def fullEval2[V](e: Expr[V]): (Expr[V],EvaluationContext) = {
       val (e2,c2: MemoizationContext) = eval(e)
       if (e2 != e) c2.fullEval2(e2)
       else (e2,c2)
@@ -149,7 +154,6 @@ object Spread {
       m.get(e1) match {
         case None => null
         case Some(x) => {
-          if (traceReuse) println("REUSED: "+ e1)
           (x.asInstanceOf[Expr[X]])
         }
       }
@@ -212,12 +216,30 @@ object Spread {
     def value: X
   }
   // Unary (lazy) function
-  trait FA1[A,X] extends (F0[A] => Expr[X]) with CodeHash with Operator
+  trait FA1[A,X] extends (Expr[A] => Expr[X]) with CodeHash with Operator {
+    def apply(a: Expr[A]): Expr[X] = a match {
+      case (a: F0[A]) => apply2(a)
+      case _ => %(this,a)
+    }
+    def apply2(a: F0[A]): Expr[X]
+  }
   // Binary (lazy) function
-  trait FA2[A,B,X] extends ((F0[A],F0[B]) => Expr[X]) with CodeHash with Operator
+  trait FA2[A,B,X] extends ((Expr[A],Expr[B]) => Expr[X]) with CodeHash with Operator {
+    def apply(a: Expr[A], b: Expr[B]): Expr[X] = (a,b) match {
+      case (aa: F0[A], bb: F0[B]) => apply2(aa,bb)
+      case _ => %(this,a,b)
+    }
+    def apply2(a: F0[A], b: F0[B]): Expr[X]
+  }
 
   // Ternary (lazy) function
-  trait FA3[A,B,C,X] extends ((F0[A],F0[B],F0[C]) => Expr[X]) with CodeHash with Operator
+  trait FA3[A,B,C,X] extends ((Expr[A],Expr[B],Expr[C]) => Expr[X]) with CodeHash with Operator {
+    def apply(a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = (a,b,c) match {
+      case (aa: F0[A], bb: F0[B], cc: F0[C]) => apply2(aa,bb,cc)
+      case _ => %(this,a,b,c)
+    }
+    def apply2(a: F0[A], b: F0[B], c: F0[C]): Expr[X]
+  }
 
   // Denotes an unary function call
   private case class F1[A,X](f: FA1[A,X], v1: Expr[A]) extends HashedExpr[X] {
@@ -236,41 +258,27 @@ object Spread {
         else siphash24(f.hash.hashAt(nindex) + (magic_p1 * hashCode),v1.hash.hashAt(index - nindex) + magic_p3)
       }
     }
-    override def _eval(c: EvaluationContext): (Expr[X], EvaluationContext) = v1.head match {
-      case x1: F0[A] => {
-        var trace: SHNode[Expr[_]] = null
-        val n = node(f(x1))
-
-        val t1 = v1.trace.size == 1
-
-        if (!t1) trace = concat(trace,v1.trace)
-
-        if (!t1) {
-          // patch the traces
-          val (Eval(f1,_)) = v1.first
-          val n2 = %(f,x1)
-          val n3 = Eval(n2,1)
-          trace = node(Eval(%(f,f1),trace.size+1)).concat(trace).concat(node(n2)).concat(node(n3)).concat(n)
-          (TracedExpr(trace),c)
-        }
-        else (TracedExpr(node(Eval(this,1)).concat(n)),c)
-      }
+    override def _eval(c: EvaluationContext): (Expr[X], EvaluationContext) = (v1.head) match {
+      case x1: F0[A] => (TracedExpr(node(Eval(this,1)).concat(node(f(x1)))),c)
       case x1 => {
-        val (e1,c2) = c.fullEval(x1)
-        var trace: SHNode[Expr[_]] = null
+        val (e1,c2) = x1.fullEval(c)
 
-        //val t1 = (e1 == x1)
-        val t1 = e1.trace.size == 1
-
-        if (!t1) trace = concat(trace,e1.trace)
+        val t1 = e1 == x1
 
         if (!t1) {
-          trace = concat(trace,node(%(f,e1.head)))
-          (TracedExpr[X](node(Eval(this,trace.size)).concat(trace)),c2)
+          var trace: SHNode[Expr[_]] = e1.trace
+          trace = concat(trace,node(F1(f,e1.head)))
+          trace = concat(node(Eval(this,trace.size)),trace)
+          (TracedExpr(trace),c2)
         }
-        else (this,c)
+        else {
+          val ev = f(x1)
+          if (ev != this) (TracedExpr(node(Eval(this,1)).concat(node(ev))),c2)
+          else (this,c)
+        }
       }
     }
+
     def _unquote = {
       if (containsQuote) %(f,v1._unquote)
       else this
@@ -283,6 +291,12 @@ object Spread {
     override def _containsQuote = v1.containsQuote
     override def _containsVariable = v1.containsVariable
     def parts = Array(f,v1)
+  }
+
+
+  def tsize(t: SHNode[Expr[_]]): Int = {
+    if (t == null) 0
+    else t.size
   }
 
   // Denotes an binary function call
@@ -305,49 +319,34 @@ object Spread {
       }
     }
 
-    // TODO: compress this code - there is redundancy
     override def _eval(c: EvaluationContext): (Expr[X], EvaluationContext) = (v1.head,v2.head) match {
-      case (x1: F0[A],x2: F0[B]) => {
-        var trace: SHNode[Expr[_]] = null
-        val n = node(f(x1,x2))
-
-        val t1 = v1.trace.size == 1
-        val t2 = v2.trace.size == 1
-
-        if (!t1) trace = concat(trace,v1.trace)
-        if (!t2) trace = concat(trace,v2.trace)
-
-        if (!t1 || !t2) {
-          // patch the traces
-
-          val (Eval(f1,_)) = v1.first
-          val (Eval(f2,_)) = v2.first
-          val n2 = %(f,x1,x2)
-          val n3 = Eval(n2,1)
-          trace = node(Eval(%(f,f1,f2),trace.size+1)).concat(trace).concat(node(n2)).concat(node(n3)).concat(n)
-          (TracedExpr(trace),c)
-        }
-        else (TracedExpr(node(Eval(this,1)).concat(n)),c)
-      }
+      case (x1: F0[A],x2: F0[B]) => (TracedExpr(node(Eval(this,1)).concat(node(f(x1,x2)))),c)
       case (x1,x2) => {
         val (e1,c2) = x1.fullEval(c)
         val (e2,c3) = x2.fullEval(c2)
-        var trace: SHNode[Expr[_]] = null
 
-        val t1 = e1.trace.size == 1
-        val t2 = e2.trace.size == 1
-
-        if (!t1) trace = concat(trace,e1.trace)
-        if (!t2) trace = concat(trace,e2.trace)
+        val t1 = e1 == x1
+        val t2 = e2 == x2
 
         if (!t1 || !t2) {
-          trace = concat(trace,node(%(f,e1.head,e2.head)))
-          (TracedExpr(node(Eval(this,trace.size)).concat(trace)),c3)
-        }
-        else (this,c)
-      }
+          var trace: SHNode[Expr[_]] = null
 
+          if (!t1) trace = concat(trace,e1.trace)
+          if (!t2) trace = concat(trace,e2.trace)
+
+          trace = concat(trace,node(F2(f,e1.head,e2.head)))
+          trace = concat(node(Eval(this,trace.size)),trace)
+          (TracedExpr(trace),c3)
+        }
+        else {
+          val ev = f(x1,x2)
+
+          if (ev != this) (TracedExpr(node(Eval(this,1)).concat(node(ev))),c3)
+          else (this,c)
+        }
+      }
     }
+
     override def _depth = (v1.depth max v2.depth) + 1
     override def _containsQuote = v1.containsQuote || v2.containsQuote
     override def _containsVariable = v1.containsVariable || v2.containsVariable
@@ -385,54 +384,34 @@ object Spread {
       }
     }
     override def _eval(c: EvaluationContext): (Expr[X], EvaluationContext) = (v1.head,v2.head,v3.head) match {
-      case (x1: F0[A],x2: F0[B], x3: F0[C]) => {
-        var trace: SHNode[Expr[_]] = null
-        val n = node(f(x1,x2,x3))
-
-        val t1 = v1.trace.size == 1
-        val t2 = v2.trace.size == 1
-        val t3 = v3.trace.size == 1
-
-        if (!t1) trace = concat(trace,v1.trace)
-        if (!t2) trace = concat(trace,v2.trace)
-        if (!t3) trace = concat(trace,v3.trace)
-
-        if (!t1 || !t2 || !t3) {
-          // patch the traces
-          val (Eval(f1,_)) = v1.first
-          val (Eval(f2,_)) = v2.first
-          val (Eval(f3,_)) = v3.first
-
-          val n2 = %(f,x1,x2,x3)
-          val n3 = Eval(n2,1)
-
-          trace = node(Eval(%(f,f1,f2,f3),trace.size+1)).concat(trace).concat(node(n2)).concat(node(n3)).concat(n)
-          (TracedExpr(trace),c)
-        }
-        else (TracedExpr(node(Eval(this,1)).concat(n)),c)
-      }
+      case (x1: F0[A],x2: F0[B],x3: F0[C]) => (TracedExpr(node(Eval(this,1)).concat(node(f(x1,x2,x3)))),c)
       case (x1,x2,x3) => {
         val (e1,c2) = x1.fullEval(c)
         val (e2,c3) = x2.fullEval(c2)
         val (e3,c4) = x3.fullEval(c3)
 
-        var trace: SHNode[Expr[_]] = null
-
-        val t1 = e1.size == 1
-        val t2 = e2.size == 1
-        val t3 = e3.size == 1
-
-        if (!t1) trace = concat(trace,e1.trace)
-        if (!t2) trace = concat(trace,e2.trace)
-        if (!t3) trace = concat(trace,e3.trace)
+        val t1 = e1 == x1
+        val t2 = e2 == x2
+        val t3 = e3 == x3
 
         if (!t1 || !t2 || !t3) {
-          trace = concat(trace,node(%(f,e1.head,e2.head,e3.head)))
-          (TracedExpr(node(Eval(this,trace.size)).concat(trace)),c4)
-        }
-        else (this,c)
-      }
+          var trace: SHNode[Expr[_]] = null
 
+          if (!t1) trace = concat(trace,e1.trace)
+          if (!t2) trace = concat(trace,e2.trace)
+          if (!t3) trace = concat(trace,e3.trace)
+
+          trace = concat(trace,node(F3(f,e1.head,e2.head,e3.head)))
+          trace = concat(node(Eval(this,trace.size)),trace)
+          (TracedExpr(trace),c4)
+        }
+        else {
+          val ev = f(x1,x2,x3)
+
+          if (ev != this) (TracedExpr(node(Eval(this,1)).concat(node(ev))),c4)
+          else (this,c)
+        }
+      }
     }
     override def _depth = (v1.depth max v2.depth max v3.depth) + 1
     override def _containsQuote = v1.containsQuote || v2.containsQuote || v3.containsQuote
@@ -486,42 +465,39 @@ object Spread {
       if (containsVariable) head._bindVariable(s,x)
       else this
     }
-
     def parts = Array(this)
     override def toString = prettyPrint(trace,0,"")
   }
-  
+
   // A SignedExpr holds the Expr to be crypto signed with hash size of (a * 128) bits
-  case class SignedExpr[X](signed: Expr[X], bits_128: Int) extends HashedExpr[X] {
+  case class SignedExpr[X](signed: Expr[X], bits_128: Int) extends HashedExpr[X]{
     override def size = trace.size
-    def lazyHash = siphash24(signed.hashCode * magic_p3, magic_p3 - bits_128.hashCode)
-    def hashAt(i: Int) = {
+    def lazyHash = siphash24(signed.hashCode * magic_p3,magic_p3 - bits_128.hashCode)
+    def hashAt(i: Int) ={
       if (i == 0) hashCode
-      else siphash24(signed.hashAt(i) - magic_p1, magic_p1 * signed.hashCode)
+      else siphash24(signed.hashAt(i) - magic_p1,magic_p1 * signed.hashCode)
     }
-    override def _eval(c: EvaluationContext): (Expr[X],EvaluationContext) = {
+    override def _eval(c: EvaluationContext): (Expr[X],EvaluationContext) ={
       val (ev: Expr[X],_) = EmptyContext.fullEval(signed) // we don't need to memoize the sub-trace
-      val crypr: Expr[X] = CryptoSigned(copyHash(ev,bits_128*4))
+      val crypr: Expr[X] = CryptoSigned(copyHash(ev,bits_128 * 4))
       val tt = node(Eval(this,2)).concat(node(crypr)).concat(node(ev.head))
       (TracedExpr(tt),c)
     }
-    def _unquote = {
+    def _unquote ={
       if (containsQuote) SignedExpr(signed._unquote,bits_128)
       else this
     }
-    def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]) = {
+    def _bindVariable[Y: TypeTag](s: Symbol,x: Expr[Y]) ={
       if (containsVariable) SignedExpr(signed._bindVariable(s,x),bits_128)
       else this
     }
     override def _containsQuote = signed.containsQuote
     override def _containsVariable = signed.containsVariable
     override def _depth = signed.depth + 1
-
     def parts = Array(this)
-    override def unary_~ = SignedExpr(signed,bits_128+1)
-    override def toString = wsp(bits_128,"~")+signed
+    override def unary_~ = SignedExpr(signed,bits_128 + 1)
+    override def toString = wsp(bits_128,"~") + signed
   }
-
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
     def lazyHash = siphash24(value.hash.hashCode * magic_p3, magic_p2 - value.hash.hashCode)
     def hashAt(i: Int) = {
@@ -534,34 +510,65 @@ object Spread {
     override def toString = "$("+value+")"
   }
 
-  case class WrappedExpr[X](value: Expr[X]) extends F0[Expr[X]] {
-    def lazyHash = siphash24(value.hash.hashCode - magic_p3, magic_p2 * value.hash.hashCode)
-    def hashAt(i: Int) = {
-      if (i == 0) lazyHash
-      else siphash24(value.hash.hashAt(i) + magic_p2, magic_p3 - value.hashCode)
-    }
-    def parts = Array(this)
-    override def _containsQuote = value.containsQuote
-    override def _containsVariable = value.containsVariable
-    override def _depth = value.depth + 1
-    def _unquote = {
-      if (containsQuote) WrappedExpr(value._unquote)
-      else this
-    }
-    def _bindVariable[Y: TypeTag](s: Symbol, x: Expr[Y]) = {
-      if (containsVariable) WrappedExpr(value._bindVariable(s,x))
-      else this
-    }
-    override def toString = "" + value
-  }
-
   def node[X](e: Expr[X]) = ExprSHNode(e)
   def expr[X <: Hashable](e: X) = LeafExpr(e)
 
+  def first[X](e: Expr[X]): Expr[X] = {
+    if (e.size == 1) e
+    else {
+      val (Eval(e1,_)) = e.first
+      e1
+    }
+  }
+
+  def head[X](e: Expr[X]): Expr[X] = {
+    if (e.size == 1) e
+    else e.head
+  }
+
+  def trace2[X](e: Expr[X]): SHNode[Expr[_]] = {
+    if (e.size == 1) null
+    else e.trace
+  }
+
   // smart constructors
-  def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = F1(f,a.head)
-  def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = F2(f,a,b)
-  def %[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = F3(f,a,b,c)
+  def %[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = {
+    if (a.size > 1) {
+      val a1 = first(a)
+      val a2 = head(a)
+
+      val t = trace2(a)
+      TracedExpr(node(Eval(F1(f,a1),t.size+1)).concat(t).concat(node(F1(f,a2))))
+    }
+    else F1(f,a)
+  }
+  def %[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = {
+    if ((a.size > 1) || (b.size > 1)) {
+      val a1 = first(a)
+      val a2 = head(a)
+      val b1 = first(b)
+      val b2 = head(b)
+
+      val t = concat(trace2(a),trace2(b))
+      TracedExpr(node(Eval(F2(f,a1,b1),t.size+1)).concat(t).concat(node(F2(f,a2,b2))))
+    }
+    else F2(f,a,b)
+  }
+  def %[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = {
+    if ((a.size > 1) || (b.size > 1) || (c.size > 1)) {
+      val a1 = first(a)
+      val a2 = head(a)
+      val b1 = first(b)
+      val b2 = head(b)
+      val c1 = first(c)
+      val c2 = head(c)
+
+      val t = concat(concat(trace2(a),trace2(b)),trace2(c))
+      TracedExpr(node(Eval(F3(f,a1,b1,c1),t.size+1)).concat(t).concat(node(F3(f,a2,b2,c2))))
+    }
+    else F3(f,a,b,c)
+  }
+
   def ~%[A, X](f: FA1[A,X], a: Expr[A]): Expr[X] = ~(%(f,a))
   def ~%[A, B, X](f: FA2[A,B,X], a: Expr[A], b: Expr[B]): Expr[X] = ~(%(f,a,b))
   def ~%[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = ~(%(f,a,b,c))
@@ -627,7 +634,7 @@ object Spread {
   }
 
   trait Equal2[X] extends FA2[X,X,Boolean] with InfixOperator {
-    def apply(x: F0[X], y: F0[X]) = SpreadLogic.bexpr(x.value == y.value)
+    def apply2(x: F0[X], y: F0[X]) = SpreadLogic.bexpr(x.value == y.value)
     override def toString = "!=="
   }
 
@@ -635,20 +642,25 @@ object Spread {
 
   def equal2[X]: FA2[X,X,Boolean] = Equal3.asInstanceOf[Equal2[X]]
 
-  trait Unquote2[X] extends FA1[Expr[X],X] with PostfixOperator {
-    def apply(x: F0[Expr[X]]) = x.value._unquote
+  trait Unquote2[X] extends FA1[X,X] with PostfixOperator {
+    override def apply(x: Expr[X]) = x._unquote
+    def apply2(x: F0[X]) = apply(x)
     override def toString = "unquote"
   }
 
   object Unquote3 extends Unquote2[Nothing]
-  def unquote2[X]: FA1[Expr[X],X] = Unquote3.asInstanceOf[FA1[Expr[X],X]]
+  def unquote2[X]: FA1[X,X] = Unquote3.asInstanceOf[FA1[X,X]]
 
-  trait Bind2[X,Y] extends FA3[Expr[X],Variable[Y],Expr[Y],X] with PostfixOperator {
-    def apply(x: F0[Expr[X]], v: F0[Variable[Y]], b: F0[Expr[Y]]) = x.value._bindVariable(v.value.s,b.value)(v.value.t)
+  trait Bind2[X,Y] extends FA3[X,Y,Y,X] with PostfixOperator {
+    override def apply(x: Expr[X], v: Expr[Y], b: Expr[Y]) = v match {
+      case (v1: Variable[Y]) =>  x._bindVariable(v1.s,b)(v1.t)
+      case _ =>  sys.error("no")
+    }
+    def apply2(x: F0[X], v: F0[Y], b: F0[Y]) =  apply(x,v,b)
     override def toString = "bind"
   }
   object Bind3 extends Bind2[Nothing,Nothing]
-  def bind2[X,Y]: FA3[Expr[X],Variable[Y],Expr[Y],X] = Bind3.asInstanceOf[FA3[Expr[X],Variable[Y],Expr[Y],X]]
+  def bind2[X,Y]: FA3[X,Y,Y,X] = Bind3.asInstanceOf[FA3[X,Y,Y,X]]
 
   case class Quoted[X](e: Expr[X]) extends HashedExpr[X] {
     def lazyHash = siphash24(e.hashCode * magic_p1, e.hashCode * magic_p2 + e.hashCode)

@@ -84,27 +84,27 @@ object SpreadLogic{
   }
 
   trait and2 extends BinBoolOp {
-    def apply(o1: $Boolean, o2: $Boolean) = bexpr(o1.value & o2.value)
+    def apply2(o1: $Boolean, o2: $Boolean) = bexpr(o1.value & o2.value)
     override def toString = "!&&"
   }
 
   trait or2 extends BinBoolOp {
-    def apply(o1: $Boolean, o2: $Boolean) = bexpr(o1.value | o2.value)
+    def apply2(o1: $Boolean, o2: $Boolean) = bexpr(o1.value | o2.value)
     override def toString = "!||"
   }
 
   trait xor2 extends BinBoolOp {
-    def apply(o1: $Boolean, o2: $Boolean) = bexpr(o1.value ^ o2.value)
+    def apply2(o1: $Boolean, o2: $Boolean) = bexpr(o1.value ^ o2.value)
     override def toString = "!^^"
   }
 
   trait not2 extends FA1[Boolean,Boolean] {
-    def apply(o1: $Boolean) = bexpr(!o1.value)
+    def apply2(o1: $Boolean) = bexpr(!o1.value)
     override def toString = "!!"
   }
 
   trait then2[X] extends FA2[Boolean,X,X] {
-    def apply(c: $Boolean, e: F0[X]): Expr[X] = e match {
+    def apply2(c: $Boolean, e: F0[X]): Expr[X] = e match {
       case Either(e1,e2) => {
         if (c.value) e1
         else e2

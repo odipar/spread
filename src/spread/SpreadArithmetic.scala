@@ -50,22 +50,22 @@ object SpreadArithmetic {
   trait BinIntOp extends FA2[Int,Int,Int] with InfixOperator
 
   trait add2 extends BinIntOp {
-    def apply(o1: $Int, o2: $Int) = IExpr(o1.value + o2.value)
+    def apply2(o1: $Int, o2: $Int) = IExpr(o1.value + o2.value)
     override def toString = "!+"
   }
 
   trait sub2 extends BinIntOp {
-    def apply(o1: $Int, o2: $Int) = IExpr(o1.value - o2.value)
+    def apply2(o1: $Int, o2: $Int) = IExpr(o1.value - o2.value)
     override def toString = "!-"
   }
 
   trait mul2 extends BinIntOp {
-    def apply(o1: $Int, o2: $Int) = IExpr(o1.value * o2.value)
+    def apply2(o1: $Int, o2: $Int) = IExpr(o1.value * o2.value)
     override def toString = "!*"
   }
 
   trait div2 extends BinIntOp {
-    def apply(o1: $Int, o2: $Int) = IExpr(o1.value / o2.value)
+    def apply2(o1: $Int, o2: $Int) = IExpr(o1.value / o2.value)
     override def toString = "!/"
   }
 

@@ -27,7 +27,6 @@ object ClassLoader {
           }
 
           buffer.flush()
-
           var b: Array[Byte] = buffer.toByteArray
 
           val c: Class[_] = defineClass(name,b,0,b.length)
@@ -41,13 +40,13 @@ object ClassLoader {
     }
 
     // For full crypto, we have to sign the full topologically sorted set of classes that this class depends on
-    // For now we just take the single class
+    // But that would require byte-code analysis, so for now we just take the single class
     def cryptoSignClass(c: Class[_]): Array[Int] = {
       import java.security.MessageDigest
       import  java.nio.ByteBuffer
 
       val b = bytecode.get(c).get
-      val md = MessageDigest.getInstance("SHA-256");
+      val md = MessageDigest.getInstance("SHA-256")
 
       md.reset
       md.update(b)
@@ -55,6 +54,7 @@ object ClassLoader {
       val bb = ByteBuffer.wrap(md.digest).asIntBuffer
       val ib: Array[Int] = new Array(bb.limit)
       bb.get(ib)
+
       ib
     }
   }
