@@ -139,10 +139,10 @@ object Test {
     object fac2 extends FA1[Int,Int]{
       // Quoted + if then else
       def apply2(i: $Int) ={
-        (i !== 1) !?( // if (i == 1)
-          1.quote, // then quote 1
-          i !* %(fac2,i !- 1) // else i * fac(i-1)
-          )
+        (i !== 1) !?(           // if (i == 1)
+          1.quote,              // then quote 1
+          i !* %(fac2,i !- 1)   // else i * fac(i-1)
+        )
       }
     }
 

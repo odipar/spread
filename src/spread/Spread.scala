@@ -153,9 +153,7 @@ object Spread {
     override def get[X](e1: Expr[X]) = {
       m.get(e1) match {
         case None => null
-        case Some(x) => {
-          (x.asInstanceOf[Expr[X]])
-        }
+        case Some(x) => (x.asInstanceOf[Expr[X]])
       }
     }
     override def put[X](e1: Expr[X], e2: Expr[X]) = WeakMemoizationContext(m += (e1->e2))
@@ -406,6 +404,7 @@ object Spread {
           (TracedExpr(trace),c4)
         }
         else {
+          // the arguments can't be reduced further but are not all F0[_], so apply the function still
           val ev = f(x1,x2,x3)
 
           if (ev != this) (TracedExpr(node(Eval(this,1)).concat(node(ev))),c4)
@@ -498,6 +497,7 @@ object Spread {
     override def unary_~ = SignedExpr(signed,bits_128 + 1)
     override def toString = wsp(bits_128,"~") + signed
   }
+
   case class LeafExpr[X <: Hashable](value: X) extends F0[X] {
     def lazyHash = siphash24(value.hash.hashCode * magic_p3, magic_p2 - value.hash.hashCode)
     def hashAt(i: Int) = {
@@ -554,7 +554,8 @@ object Spread {
     }
     else F2(f,a,b)
   }
-  def %[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = {
+  def %[A, B, C, X](f: FA3[A,B,C,X], a: Expr[A], b: Expr[B], cc: Expr[C]): Expr[X] = {
+    val c = cc
     if ((a.size > 1) || (b.size > 1) || (c.size > 1)) {
       val a1 = first(a)
       val a2 = head(a)
@@ -694,14 +695,14 @@ object Spread {
     def _bindVariable[Y](ss: Symbol, x: Expr[Y])(implicit ot: TypeTag[Y]) = {
       def evt = t.tpe
       def ovt = ot.tpe
-      if ((ss == s) &&( evt <:< ovt)) x.asInstanceOf[Expr[X]]  // checks whether it's a subtype that can be bound
+      if ((ss == s) && (evt <:< ovt)) x.asInstanceOf[Expr[X]]  // checks whether it's a subtype that can be bound
       else this
     }
     override def toString = s.toString
   }
 
   case class VariableImpl[X](s: Symbol)(implicit t2: TypeTag[X]) extends Variable[X] {
-    def t = t2
+    def t: TypeTag[X] = t2
     def _unquote = this
   }
 }

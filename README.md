@@ -98,7 +98,7 @@ Of course, real Scala wizards would abbreviate the above to:
 ```scala
 val fib: Int=>Int = i => { if (i < 2) 1 ; else fib(i-1) + fib(i-2) }
 ```
-.. but that's slightly different from the first definition: the first definition dynamically creates an anynomous function object, while the latter creates an immutable top-level object. Currently, SPREAD only permits user-defined functions to be immutable top-level objects (this restriction will eventually be lifted).
+.. but that's slightly different from the first definition: the latter definition dynamically creates an anynomous function object, while the first creates an immutable top-level object. Currently, SPREAD only permits user-defined functions to be immutable top-level objects (this restriction will eventually be lifted).
 
 Now here is the same `fib` function in SPREAD format:
 ```scala
@@ -109,7 +109,7 @@ object fib extends FA1[Int,Int] {
     }
 }
 ```
-.. which I actually believe is not too bad: apart from the extra syntactic noise (due to limitations of the DSL) the SPREAD version pretty much matches the idiomatic Scala version.
+.. which I actually believe is not too bad: apart from the extra syntactic noise (due to limitations of the DSL) the SPREAD version pretty much matches with the idiomatic Scala version.
 
 now if we evaluate fib(4):
 
@@ -259,7 +259,7 @@ trait Sequence[X] {
 }
 ```
 
-SPREAD works on top of this ADT, where all operations **must** be within time complexity bound `O(log(n))` (with the exception of `size` which **must** be `O(1)`). The Sequence ADT is used by SPREAD's evaluation algorithm that combines and concatenate (sub)traces into bigger traces.
+SPREAD works on top of this ADT, where all operations **must** be within time complexity bound `O(log(n))` (with the exception of `size` which **must** be `O(1)`). The Sequence ADT is used by SPREAD's evaluation algorithm that combines and concatenates (sub)traces into bigger traces.
 
 There are numerous known data structures that can be used to implement this ADT. Examples are: AVL trees, Skip Lists, Treaps, Finger Trees, etc. However, none of them can meet another very important constraint:
 
@@ -426,7 +426,7 @@ sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 !
 ###**DID YOU NOTICE ANY DIFFERENCE BETWEEN THE TWO?**
 Of course you did! But did you also notice that there were some (sub)sums shared between `sum1` and `sum2`?
 
-Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in a sequence is changed - we only need to do `O(log(n))` extra work to re-calculate its sum.
+Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in a number sequence is changed - we only need to do `O(log(n))` extra work to re-calculate its sum.
 
 ###Conclusion
 For now, I'm done explaining the basics of SPREAD. I hope that you liked it.
