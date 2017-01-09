@@ -91,7 +91,7 @@ object BinRel{
     }
   }
 
-  class StatisticsAnnotator[@specialized(Int,Long) X,@specialized(Int,Long) Y]
+  case class StatisticsAnnotator[@specialized(Int,Long) X,@specialized(Int,Long) Y]
   (xord: Ordering[X],yord: Ordering[Y])
     extends BArrayAnnotator[X,Y,BStatistics[X,Y]]{
     type S = BStatistics[X,Y]
@@ -138,6 +138,12 @@ object BinRel{
 
   case class BinRel[@specialized(Int,Long) X,@specialized(Int,Long) Y](r: BArrayRel[X,Y,BStatistics[X,Y]],c: BArrayContext[X,Y,BStatistics[X,Y]]){
     implicit def context: BArrayContext[X,Y,BStatistics[X,Y]] = c
+    def statAnnotator: StatisticsAnnotator[X,Y] = context.annotator.asInstanceOf[StatisticsAnnotator[X,Y]]
+    def xord: Ordering[X] = statAnnotator.xord
+    def yord: Ordering[Y] = statAnnotator.yord
+    def domainAndRangeAny: (Domain[X],Domain[Y]) = statistics.domainAndRange(xord,yord)
+    def domainPropagator: ===[X] = ===[X]()
+    def rangePropagator: ===[Y] = ===[Y]()
     def statistics: BStatistics[X,Y] = r.annotation
     def split(x: Long): (BinRel[X,Y],BinRel[X,Y]) ={
       val (left,right) = r.split(x,c)
@@ -153,9 +159,22 @@ object BinRel{
     override def toString: String = r.toString
   }
 
-  trait Propagator
+  trait Propagator[X] {
+    def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X])
+    def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[X],Domain[X]) = {
+      propagate(o1.asInstanceOf[Domain[X]],o2.asInstanceOf[Domain[X]])(ord.asInstanceOf[Ordering[X]])
+    }
+  }
 
-  object === extends Propagator {
+  case class ===[X]() extends Propagator[X] {
+    def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X]) = {
+      (propagateOne(o1,o2),propagateOne(o2,o1))
+    }
+    def propagateOne[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): Domain[X] = {
+      if (ord.gt(o1.lowerBound,o2.upperBound)) EmptyDomain()
+      else if (ord.lt(o1.upperBound,o2.lowerBound)) EmptyDomain()
+      else DomainImpl(ord.max(o1.lowerBound,o2.lowerBound),ord.min(o1.upperBound,o2.upperBound))
+    }
     override def toString = "==="
   }
 
@@ -175,34 +194,53 @@ object BinRel{
     override def toString: String = id + ".R"
   }
 
-  case class RelConstraint(r1: RelCol,r2: RelCol,c: Propagator){
-    override def toString = "" + r1 + c + r2
+  sealed trait RCol[X] {
+    def rel: BinRel[_,_]
+    def left: Boolean
+    def right: Boolean = !left
+    def withID(s: Symbol): RelCol
+  }
+
+  case class LeftRCol[X](r: BinRel[X,_]) extends RCol[X] {
+    def rel: BinRel[_,_] = r
+    def left = true
+    def withID(s: Symbol): RelCol = LeftCol(s)
+  }
+
+  case class RightRCol[Y](r: BinRel[_,Y]) extends RCol[Y] {
+    def rel: BinRel[_,_] = r
+    def left = false
+    def withID(s: Symbol): RelCol = RightCol(s)
+  }
+
+  case class RConstraint[X](r1: RCol[X], r2: RCol[X], prop: Propagator[X])
+
+  case class RelConstraint(r1: RelCol,r2: RelCol, prop: Propagator[_]){
+    override def toString = "" + r1 + prop + r2
   }
 
   def model: Model = Model(Map(),Set(),Map(),true)
 
   trait Domain[X]{
-    def ord: Ordering[X]
     def isValid: Boolean
     def lowerBound: X
     def upperBound: X
-    def propagate(c: Propagator,o: Domain[X]): Domain[X]
-    def propagateAny(c: Propagator,o: Domain[_]): Domain[_] = propagate(c,o.asInstanceOf[Domain[X]])
-    def ==(o: Domain[X]): Domain[X] = propagate(===,o)
+    //def propagate(c: Propagator,o: Domain[X]): Domain[X]
+    //def propagateAny(c: Propagator,o: Domain[_]): Domain[_] = propagate(c,o.asInstanceOf[Domain[X]])
+    //def ==(o: Domain[X]): Domain[X] = propagate(===,o)
     override def toString: String = lowerBound + "..." + upperBound
   }
 
-  case class DomainImpl[X](lowerBound: X,upperBound: X)(implicit o: Ordering[X]) extends Domain[X]{
-    def ord = o
+  case class DomainImpl[X](lowerBound: X,upperBound: X) extends Domain[X]{
     def isValid = true
-    def propagate(c: Propagator,o: Domain[X]): Domain[X] = c match {
+    /*def propagate(c: Propagator,o: Domain[X]): Domain[X] = c match {
       case === => {
         if (ord.gt(lowerBound,o.upperBound)) EmptyDomain()
         else if (ord.lt(upperBound,o.lowerBound)) EmptyDomain()
         else DomainImpl(ord.max(lowerBound,o.lowerBound),ord.min(upperBound,o.upperBound))(ord)
       }
       case _ => sys.error("cannot propagate")
-    }
+    } */
   }
 
   case class EmptyDomain[X]() extends Domain[X]{
@@ -210,7 +248,7 @@ object BinRel{
     def ord = sys.error("domain is empty")
     def lowerBound: X = sys.error("domain is empty")
     def upperBound: X = lowerBound
-    def propagate(c: Propagator,o: Domain[X]): Domain[X] = this
+    //def propagate(c: Propagator,o: Domain[X]): Domain[X] = this
     override def toString: String = ".."
   }
 
@@ -218,40 +256,78 @@ object BinRel{
 
   case class Model(rels: Map[Symbol,BinRel[_,_]],
                    constraints: Set[RelConstraint],
-                   domains: Map[Symbol,(Domain[_],Domain[_])],isValid: Boolean){
+                   domains: Map[Symbol,(Domain[_],Domain[_])],
+                   isValid: Boolean)
+  {
+    val relsInv: Map[BinRel[_,_],Symbol] = rels.map(_.swap)
     def :+[X,Y](id: Symbol,rel: BinRel[X,Y])(implicit xord: Ordering[X],yord: Ordering[Y]): Model ={
       Model(rels + (id -> rel),constraints,domains + (id -> rel.statistics.domainAndRange),isValid)
     }
-    def :!(r1: RelCol,r2: RelCol,cc: Propagator): Model = Model(rels,constraints + RelConstraint(r1,r2,cc),domains,isValid)
-    def :=(r1: RelCol,r2: RelCol): Model = :!(r1,r2,===)
 
-    def propagateConstraints: Model ={
+    def :![X](r1: RCol[X],r2: RCol[X],cc: Propagator[X]): Model = {
+      val id1 = relsInv(r1.rel)
+      val id2 = relsInv(r2.rel)
+
+      Model(rels,constraints + RelConstraint(r1.withID(id1),r2.withID(id2),cc),domains,isValid)
+    }
+    def :=[X](r1: RCol[X],r2: RCol[X]): Model = :!(r1,r2,===[X])
+
+   def propagateConstraints: Model ={
       if (!isValid) this
       else {
         var fixpoint = false
         var newDomains = domains
         var newIsValid = isValid
+
+        // loop until fixpoint or non-valid
         while (!fixpoint && newIsValid) {
           fixpoint = true
           val iter = constraints.iterator
+
+          // iterate through constraints
           while(iter.hasNext && newIsValid) {
             val c = iter.next
+
             val d1 = newDomains(c.r1.id)
             val d2 = newDomains(c.r2.id)
-            val dn = {
+
+            val (dd1,dd2): ((Domain[_],Domain[_]),(Domain[_],Domain[_])) = {
               if (c.r1.left) {
-                if (c.r2.left) (d1._1.propagateAny(c.c,d2._1),d1._2)
-                else (d1._1.propagateAny(c.c,d2._2),d1._2)
+                if (c.r2.left) {
+                  // TODO: remove cast through better generic types
+                  val ord = rels(c.r1.id).statAnnotator.xord
+                  val dd = c.prop.propagateAny(d1._1,d2._1)(ord)
+                  newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
+                  ((dd._1,d1._2),(dd._2,d2._2))
+                }
+                else {
+                  val ord = rels(c.r1.id).statAnnotator.xord
+                  val dd = c.prop.propagateAny(d1._1,d2._2)(ord)
+                  newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
+                  ((dd._1,d1._2),(d2._1,dd._2))
+                }
               }
               else {
-                if (c.r2.left) (d1._1,d1._2.propagateAny(c.c,d2._1))
-                else (d1._1,d1._2.propagateAny(c.c,d2._2))
+                if (c.r2.left) {
+                  val ord = rels(c.r2.id).statAnnotator.xord
+                  val dd = c.prop.propagateAny(d1._2,d2._1)(ord)
+                  newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
+                  ((d1._1,dd._1),(dd._2,d2._2))
+                }
+                else {
+                  val ord = rels(c.r2.id).statAnnotator.yord
+                  val dd = c.prop.propagateAny(d1._2,d2._2)(ord)
+                  newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
+                  ((d1._1,dd._1),(d2._1,dd._2))
+                }
               }
             }
-            newIsValid = newIsValid && (dn._1.isValid) && (dn._2.isValid)
 
-            newDomains = newDomains + (c.r1.id -> dn)
-            if (dn != d1) {
+            newDomains = newDomains + (c.r1.id -> dd1)
+            newDomains = newDomains + (c.r2.id -> dd2)
+
+            // if the new domain is different after propagation, there is no fixpoint
+            if ((d1 != dd1) || (d2 != dd2)) {
               fixpoint = false
             }
           }
@@ -259,6 +335,8 @@ object BinRel{
         Model(rels,constraints,newDomains,newIsValid)
       }
     }
+
+
     def propagateRels: Model ={
       if (!isValid) this
       else {
@@ -267,16 +345,19 @@ object BinRel{
         var iter = rels.keys.iterator
 
         while(iter.hasNext && newIsValid) {
-          val r = iter.next
-          val dm = domains(r)
-          val ordx = dm._1.ord
-          val ordy = dm._2.ord
-          val rd = rels(r).statistics.domainAndRangeAny(ordx,ordy)
-          val p1 = dm._1.propagateAny(===,rd._1)
-          val p2 = dm._2.propagateAny(===,rd._2)
-          val dn = (p1,p2)
-          newIsValid = newIsValid && (dn._1.isValid) && (dn._2.isValid)
-          newDomains = newDomains + (r -> dn)
+          val rid = iter.next
+          val rel = rels(rid)
+          val dm = domains(rid)
+
+          val dR = rel.domainAndRangeAny
+          val rangeProp = rel.rangePropagator
+          val domainProp = rel.domainPropagator
+
+          val p1 = rangeProp.propagateAny(dm._1,dR._1)(rel.xord)._1
+          val p2 = domainProp.propagateAny(dm._2,dR._2)(rel.yord)._1
+
+          newIsValid = newIsValid && p1.isValid && p2.isValid
+          newDomains = newDomains + (rid -> (p1,p2))
         }
         Model(rels,constraints,newDomains,newIsValid)
       }
@@ -285,20 +366,22 @@ object BinRel{
       if (!isValid) sys.error("cannot split. Model has no solutions")
       else {
         var rr: Symbol = null
-        var i = rels.keys.iterator
-        while (i.hasNext) {
-          var r = i.next
-          val dm = domains(r)
-          val ordx = dm._1.ord
-          val ordy = dm._2.ord
-          val rd = rels(r).statistics.domainAndRangeAny(ordx,ordy)
+        var iter = rels.keys.iterator
+        while (iter.hasNext) {
+          val rid = iter.next
+          val rel = rels(rid)
+          val dm = domains(rid)
 
-          val p1 = dm._1.propagateAny(===,rd._1)
-          val p2 = dm._2.propagateAny(===,rd._2)
-          val dn = (p1,p2)
+          val dR = rel.domainAndRangeAny
+          val rangeProp = rel.rangePropagator
+          val domainProp = rel.domainPropagator
 
-          if (dm != rd) rr = r
+          val p1 = rangeProp.propagateAny(dm._1,dR._1)(rel.xord)._1
+          val p2 = domainProp.propagateAny(dm._2,dR._2)(rel.yord)._1
+
+          if (dm != dR) rr = rid
         }
+
         if (rr == null) { rr = rels.keysIterator.next }
 
         val rel: BinRel[_,_] = rels(rr)
@@ -324,10 +407,7 @@ object BinRel{
 
       var doms: Map[Symbol,(Domain[_],Domain[_])] = Map()
       for (r <- r3.keys) {
-        val rr = r3(r)
-        val ordx = domains(r)._1.ord
-        val ordy = domains(r)._2.ord
-        doms = doms + (r -> rr.statistics.domainAndRangeAny(ordx,ordy))
+        doms = doms + (r -> r3(r).domainAndRangeAny)
       }
       Model(r3,constraints,doms,true).propagateConstraints
     }
@@ -370,27 +450,26 @@ object BinRel{
     }
   }
 
-  case class ColSyntax(id: Symbol){
-    def L = LeftCol(id)
-    def R = RightCol(id)
+
+  case class ColSyntax[X,Y](id: BinRel[X,Y]){
+    def L = LeftRCol[X](id)
+    def R = RightRCol[Y](id)
   }
 
-  implicit def toColSyntax(id: Symbol): ColSyntax = ColSyntax(id)
+  implicit def toColSyntax[X,Y](id: BinRel[X,Y]): ColSyntax[X,Y] = ColSyntax(id)
+
   final def main(args: Array[String]): Unit ={
     // a(X,Y),b(Y,X) => a'(X,Y),b'(Y,X)
-   /* var a = createRel(Array(0,1,3,4,5),Array(2,3,6,1,2))
-    var b = createRel(Array(1,2,3,5,6),Array(3,5,6,2,3))
+    var a = createRel(Array(0,1,3,4,5),Array(2.0,3,6,1,2))
+    var b = createRel(Array(1.0,2,3,5,6),Array(3,5,6,2,3))
     val p = model :+
       ('a,a) :+
       ('b,b) :=
-      ('a.L,'b.R) :=
-      ('b.R,'a.L) :=
-      ('b.L,'a.R) :=
-      ('a.R,'b.L)
+      (a.L, b.R) :=
+      (b.L, a.R)
 
-    println(p)
-    val pp = p.propagateConstraints
-    println(pp.solve) */
+    println(p.propagateConstraints.solve)
+
 
     /*var a = createRel((0 to 10).toArray,(15 to 25).toArray)
     var b = createRel((10 to 20).toArray,(15 to 25).toArray)
@@ -418,23 +497,21 @@ object BinRel{
     println("pp: " + pp)
     println("pp: " + pp.isValid)  */
 
-    var a = createRel((0 to 100).toArray,(200 to 300).toArray)
-    var b = createRel((-50 to 50).toArray,(151 to 251).toArray)
+    /*var a = createRel((0 to 100).toArray,(200 to 300).toArray)
+    var b = createRel((-50 to 50).toArray,(150 to 250).toArray)
 
     val p = model :+
       ('a,a) :+
       ('b,b) :=
-      ('a.L,'b.L) :=
-      ('b.L,'a.L) :=
-      ('b.R,'a.R) :=
-      ('a.R,'b.R)
+      (a.L,b.L) :=
+      (a.R,b.R)
 
     val pp = p.propagateConstraints.solve
     println("solves: " +solves)
 
     //println(pp)
     println(pp.isValid)
-    println(pp)
+    println(pp)*/
 
   }
 }
