@@ -32,9 +32,11 @@ object Test {
     val wcontext = WeakMemoizationContext(WeakHashMap())
     val econtext = EmptyContext
 
-    final def main(args: Array[String]): Unit =
-    {
-      {
+    final def main(args: Array[String]): Unit ={
+      /*val a = %(fac,10)
+        println(a.fullEval)
+          */
+      /* {
         val s1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8
         val s2 = s1 ! s1
         val (s3,s4) = s2.split(12)
@@ -123,7 +125,21 @@ object Test {
         val (fc4,_) = fc3.unquote.fullEval(wcontext)
         println("fac2(5).unquote: " + fc4)
         println
-      }
+      }          */
+      /* val aa = 1 !+ 2
+      val bb = 3 !* 'x
+      val cc = aa !+ bb
+
+      println(cc.fullEval(wcontext)._1.bind('x,2).fullEval(wcontext)._1)
+      println(cc.bind('x,2).fullEval(wcontext)._2)    */
+      /*val a = %(fac2,10)
+      println("a: " + a.fullEval(wcontext)._1.unquote.fullEval(wcontext)._1) */
+      /* traceReuse = true
+      val a = %(fib,20)
+      println("a: " + a.fullEval(wcontext)._1.trace.size)   */
+
+      println(fac3(10))
+
     }
 
     object fac extends FA1[Int,Int]{
@@ -145,6 +161,15 @@ object Test {
         )
       }
     }
+
+    def fac3(x: Int): Int = t1(fac3)(x)
+
+    object t1 extends ((Int=>Int)=>(Int=>Int)) {
+      def apply(f: Int=>Int) = {
+        ( x => { if (x<1) 1 ; else x*f(x-1) } )
+      }
+    }
+
 
     object fib extends FA1[Int,Int]{
       def apply2(i: $Int) ={
@@ -183,4 +208,5 @@ object Test {
       }
     }
   }
+
 }

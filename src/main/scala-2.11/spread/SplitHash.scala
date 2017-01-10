@@ -19,14 +19,17 @@ object SplitHash {
   import Hashing._
 
   trait SplitHash[X, SH <: SplitHash[X,SH]] extends Hashable {
-    def size: Int                   // O(1)
-    def concat(other: SH): SH       // O(log(size))
-    def split(at: Int): (SH, SH)    // O(log(size))
+    def size: Int                         // O(1)
+    def concat(other: SH): SH             // O(log(size))
+    def split(at: Int): (SH, SH)          // O(log(size))
 
-    def first: X                    // O(log(size))
-    def last: X                     // O(log(size))
-    def chunk: SH                   // O(unchunked)
-    def splitParts: Array[SH]       // O(1)
+    def first: X                          // O(log(size))
+    def last: X                           // O(log(size))
+    def chunk: SH                         // O(unchunked)
+    def splitParts: Array[SH]             // O(1)
+
+ //   def map[Y](f: X => Y): Seq[Y]         // O(size * f)
+ //   def fold[Y](s: Y, f: (X,Y) => Y): Y   // O(size * f)
   }
 
 
@@ -99,7 +102,7 @@ object SplitHash {
   }
 
   case class IntNode(value: Int) extends LeafNode[Int] {
-    override def hashCode = siphash24(value + magic_p1,value - magic_p2)
+    override val hashCode = siphash24(value + magic_p1,value - magic_p2)
     def hashAt(index: Int) = {
       if (index == 0) hashCode
       else if (index == 1) siphash24(value + magic_p2, hashCode * magic_p1)
@@ -880,7 +883,7 @@ object SplitHash {
       }
 
       // Build the block
-      while (block.size > 1) {
+      while (block.length > 1) {
         block = doRound(block)
       }
 
@@ -890,6 +893,7 @@ object SplitHash {
 
       i = i + 1
     }
+
 
     if (s1 != ss) sys.error("Internal inconsistency")
 

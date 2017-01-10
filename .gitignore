@@ -1,0 +1,15 @@
+# All the compiler-generated stuff
+*.so
+*.jar
+*.war
+ 
+# IDE-specific folders and files
+*.iml
+.idea/
+.metadata/
+.project/
+project/
+nb*.xml
+nbproject/
+out/
+target/

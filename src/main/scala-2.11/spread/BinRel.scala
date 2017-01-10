@@ -33,7 +33,7 @@ object BinRel{
     def append(r1: R,r2: R): M
   }
 
-  case class BArrayRel[@specialized(Int,Long) X,@specialized(Int,Long) Y,M](domain: Array[X],range: Array[Y],annotation: M) extends BRel[X,Y,M,BArrayRel[X,Y,M],BArrayContext[X,Y,M],BArrayAnnotator[X,Y,M]]{
+  case class BArrayRel[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y,M](domain: Array[X],range: Array[Y],annotation: M) extends BRel[X,Y,M,BArrayRel[X,Y,M],BArrayContext[X,Y,M],BArrayAnnotator[X,Y,M]]{
     {
       if (domain.length != range.length) sys.error("domain.length != range.length")
     }
@@ -46,17 +46,20 @@ object BinRel{
     def split(x: Long,c: BArrayContext[X,Y,M]) = c.split(self,x)
     def concat(o: BArrayRel[X,Y,M],c: BArrayContext[X,Y,M]) = c.concat(self,o)
     override def toString: String ={
-      var s = ""
+      var s: StringBuilder = new StringBuilder()
       for (i <- 0 until domain.length) {
-        s = s + domain(i) + "|" + range(i) + "\n"
+        s.append(domain(i)).
+          append("|").
+          append(range(i)).
+          append("\n")
       }
-      s
+      s.toString
     }
   }
 
   trait BArrayAnnotator[X,Y,M] extends BAnnotator[X,Y,M,BArrayRel[X,Y,M],BArrayContext[X,Y,M],BArrayAnnotator[X,Y,M]]
 
-  case class BArrayContext[@specialized(Int,Long) X: ClassTag,@specialized(Int,Long) Y: ClassTag,M](a: BArrayAnnotator[X,Y,M]) extends BContext[X,Y,M,BArrayRel[X,Y,M],BArrayContext[X,Y,M],BArrayAnnotator[X,Y,M]]{
+  case class BArrayContext[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag,M](a: BArrayAnnotator[X,Y,M]) extends BContext[X,Y,M,BArrayRel[X,Y,M],BArrayContext[X,Y,M],BArrayAnnotator[X,Y,M]]{
     type AR = BArrayRel[X,Y,M]
     type AA = BArrayAnnotator[X,Y,M]
     val annotator: AA = a
@@ -73,7 +76,7 @@ object BinRel{
     }
   }
 
-  case class BStatistics[@specialized(Int,Long) X,@specialized(Int,Long) Y](minx: X,maxx: X,miny: Y,maxy: Y,sortedx: Boolean,sortedy: Boolean){
+  case class BStatistics[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y](minx: X,maxx: X,miny: Y,maxy: Y,sortedx: Boolean,sortedy: Boolean){
     override def toString: String ={
       "Stats[" +
         "\n minx: " + minx +
@@ -91,7 +94,7 @@ object BinRel{
     }
   }
 
-  case class StatisticsAnnotator[@specialized(Int,Long) X,@specialized(Int,Long) Y]
+  case class StatisticsAnnotator[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
   (xord: Ordering[X],yord: Ordering[Y])
     extends BArrayAnnotator[X,Y,BStatistics[X,Y]]{
     type S = BStatistics[X,Y]
@@ -114,7 +117,7 @@ object BinRel{
         a1.sortedy && a2.sortedy && yord.lteq(r1.lastRange,r2.firstRange)
       )
     }
-    def mmsorted[@specialized(Int,Long) X](a: Array[X],s: Ordering[X]): (X,X,Boolean) ={
+    def mmsorted[@specialized(Int,Long,Double) X](a: Array[X],s: Ordering[X]): (X,X,Boolean) ={
       var mmin = a(0)
       var mmax = a(0)
       var msorted = true
@@ -128,15 +131,15 @@ object BinRel{
     }
   }
 
-  def ann[@specialized(Int,Long) X,@specialized(Int,Long) Y](xord: Ordering[X],yord: Ordering[Y]): StatisticsAnnotator[X,Y] = new StatisticsAnnotator[X,Y](xord,yord)
-  implicit def cc[@specialized(Int,Long) X: ClassTag,@specialized(Int,Long) Y: ClassTag](implicit xord: Ordering[X],yord: Ordering[Y]): BArrayContext[X,Y,BStatistics[X,Y]] = BArrayContext[X,Y,BStatistics[X,Y]](ann(xord,yord))
-  def createRel[@specialized(Int,Long) X: ClassTag,@specialized(Int,Long) Y: ClassTag](x: Array[X],y: Array[Y])(implicit xord: Ordering[X],yord: Ordering[Y]): BinRel[X,Y] ={
+  def ann[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y](xord: Ordering[X],yord: Ordering[Y]): StatisticsAnnotator[X,Y] = new StatisticsAnnotator[X,Y](xord,yord)
+  implicit def cc[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag](implicit xord: Ordering[X],yord: Ordering[Y]): BArrayContext[X,Y,BStatistics[X,Y]] = BArrayContext[X,Y,BStatistics[X,Y]](ann(xord,yord))
+  def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag](x: Array[X],y: Array[Y])(implicit xord: Ordering[X],yord: Ordering[Y]): BinRel[X,Y] ={
     val c = cc[X,Y]
     val r = c.createBin(x,y)
     BinRel(r,c)
   }
 
-  case class BinRel[@specialized(Int,Long) X,@specialized(Int,Long) Y](r: BArrayRel[X,Y,BStatistics[X,Y]],c: BArrayContext[X,Y,BStatistics[X,Y]]){
+  case class BinRel[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y](r: BArrayRel[X,Y,BStatistics[X,Y]],c: BArrayContext[X,Y,BStatistics[X,Y]]){
     implicit def context: BArrayContext[X,Y,BStatistics[X,Y]] = c
     def statAnnotator: StatisticsAnnotator[X,Y] = context.annotator.asInstanceOf[StatisticsAnnotator[X,Y]]
     def xord: Ordering[X] = statAnnotator.xord
@@ -159,7 +162,7 @@ object BinRel{
     override def toString: String = r.toString
   }
 
-  trait Propagator[X] {
+  trait Propagator[@specialized(Int,Long,Double) X] {
     def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X])
     def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[X],Domain[X]) = {
       propagate(o1.asInstanceOf[Domain[X]],o2.asInstanceOf[Domain[X]])(ord.asInstanceOf[Ordering[X]])
@@ -295,13 +298,13 @@ object BinRel{
               if (c.r1.left) {
                 if (c.r2.left) {
                   // TODO: remove cast through better generic types
-                  val ord = rels(c.r1.id).statAnnotator.xord
+                  val ord = rels(c.r1.id).xord
                   val dd = c.prop.propagateAny(d1._1,d2._1)(ord)
                   newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
                   ((dd._1,d1._2),(dd._2,d2._2))
                 }
                 else {
-                  val ord = rels(c.r1.id).statAnnotator.xord
+                  val ord = rels(c.r1.id).xord
                   val dd = c.prop.propagateAny(d1._1,d2._2)(ord)
                   newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
                   ((dd._1,d1._2),(d2._1,dd._2))
@@ -309,13 +312,13 @@ object BinRel{
               }
               else {
                 if (c.r2.left) {
-                  val ord = rels(c.r2.id).statAnnotator.xord
+                  val ord = rels(c.r2.id).xord
                   val dd = c.prop.propagateAny(d1._2,d2._1)(ord)
                   newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
                   ((d1._1,dd._1),(dd._2,d2._2))
                 }
                 else {
-                  val ord = rels(c.r2.id).statAnnotator.yord
+                  val ord = rels(c.r2.id).yord
                   val dd = c.prop.propagateAny(d1._2,d2._2)(ord)
                   newIsValid = newIsValid && (dd._1.isValid) && (dd._2.isValid)
                   ((d1._1,dd._1),(d2._1,dd._2))
@@ -326,7 +329,7 @@ object BinRel{
             newDomains = newDomains + (c.r1.id -> dd1)
             newDomains = newDomains + (c.r2.id -> dd2)
 
-            // if the new domain is different after propagation, there is no fixpoint
+            // if the new domains are different after propagation, there is no fixpoint
             if ((d1 != dd1) || (d2 != dd2)) {
               fixpoint = false
             }

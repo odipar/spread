@@ -79,7 +79,13 @@ object SetHash {
 
     def id(o: Hashable, nibble: Int): List[Int] = get2(getArrayIndex(getIndex(o,nibble))) match {
       case n: HashNode => {
-        if ((nibble & 3) == 0) o.hash.hashAt(nibble >> 2) +: n.id(o,nibble + 1)
+        if ((nibble & 3) == 0) {
+          val r = n.id(o,nibble+1)
+          if (r != null) {
+            o.hash.hashAt(nibble >> 2) +: r
+          }
+          else null
+        }
         else n.id(o,nibble + 1)
       }
       case x => {
