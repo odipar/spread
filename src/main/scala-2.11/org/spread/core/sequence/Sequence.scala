@@ -38,7 +38,7 @@ object Sequence{
     def split(s: S,x: Long): (S,S)
   }
 
-  case class ArraySeq[X,A,C <: ArraySeqContext[X,A,C]](seq: Array[X],annotation: A)
+  case class ArraySeq[X,A,@specialized C <: ArraySeqContext[X,A,C]](seq: Array[X],annotation: A)
     extends SeqImpl[X,A,ArraySeq[X,A,C],C]{
     type S = ArraySeq[X,A,C]
     def self: S = this
