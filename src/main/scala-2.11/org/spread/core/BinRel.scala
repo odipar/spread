@@ -1,8 +1,7 @@
-package spread
+package org.spread.core
 
+import scala.language.{existentials, implicitConversions}
 import scala.reflect._
-import scala.language.implicitConversions
-import scala.language.existentials
 
 object BinRel{
 

@@ -1,4 +1,4 @@
-package spread
+package org.spread.core
 
 /**
   * Created by rapido on 31/01/16.

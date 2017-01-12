@@ -1,12 +1,12 @@
-package spread
+package org.spread.core
 
-import spread.SpreadArithmetic._
-import spread.SpreadLogic._
-import spread.Spread._
-import SplitHash._
-import scala.collection.mutable.WeakHashMap
+import org.spread.core.SplitHash._
+import org.spread.core.Spread._
+import org.spread.core.SpreadArithmetic._
+import org.spread.core.SpreadLogic._
+
 import scala.collection.immutable.HashMap
-import SetHash._
+import scala.collection.mutable.WeakHashMap
 
 // EXPOSITION:
 //

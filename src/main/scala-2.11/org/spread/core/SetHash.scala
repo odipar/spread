@@ -1,4 +1,4 @@
-package spread
+package org.spread.core
 
 //
 // Bagwell's Ideal Hash Tree with 'infinite' hashes (nibble based)

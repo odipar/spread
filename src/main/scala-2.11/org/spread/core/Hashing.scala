@@ -1,4 +1,4 @@
-package spread
+package org.spread.core
 
 object Hashing {
   import Reference._

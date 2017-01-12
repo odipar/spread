@@ -1,4 +1,4 @@
-package spread
+package org.spread.core
 
 //
 // Integer expressions + evaluation + DSL
@@ -6,8 +6,9 @@ package spread
 // Copyright 2016: Robbert van Dalen
 //
 
-import spread.Spread._
-import Hashing._
+import org.spread.core.Hashing._
+import org.spread.core.Spread._
+
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.TypeTag
 

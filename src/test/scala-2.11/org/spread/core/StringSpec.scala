@@ -1,12 +1,10 @@
-package spread
+package org.spread.core
 
 /**
   * Created by rapido on 10/01/17.
   */
-import org.joda.time.DateTime
 import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.scalacheck.Prop.forAll
-import org.joda.time.format.DateTimeFormat
 
 case class SPair(a: String, b: String)
 

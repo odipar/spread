@@ -1,4 +1,4 @@
-package spread
+package org.spread.core
 
 import java.io._
 
@@ -42,8 +42,8 @@ object ClassLoader {
     // For full crypto, we have to sign the full topologically sorted set of classes that this class depends on
     // But that would require byte-code analysis, so for now we just take the single class
     def cryptoSignClass(c: Class[_]): Array[Int] = {
+      import java.nio.ByteBuffer
       import java.security.MessageDigest
-      import  java.nio.ByteBuffer
 
       val b = bytecode.get(c).get
       val md = MessageDigest.getInstance("SHA-256")
