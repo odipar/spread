@@ -5,13 +5,15 @@ import org.spread.core.constraint.Constraint.EqualP
 
 import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
-/*
- * An annotated BTree implementation with a branching factor between 16 and 64
- *
- * Inspired by Avail's TreeTuple:
- * https://github.com/AvailLang/Avail/blob/master/src/com/avail/descriptor/TreeTupleDescriptor.java
- *
- */
+
+//
+// An annotated BTree implementation with a branching factor between 16 and 64
+//
+// Inspired by Avail's TreeTuple:
+// https://github.com/AvailLang/Avail/blob/master/src/com/avail/descriptor/TreeTupleDescriptor.java
+//
+// Copyright 2016: Robbert van Dalen
+//
 
 object Sequence {
 
@@ -159,8 +161,7 @@ object Sequence {
     }
 
     def childAtIndex(index: Long) = {
-      var i = 0
-      if (index < size && index >= 0) { while (sizes(i) < index) {i = i + 1}; i }
+      if (index < size && index >= 0) { var i = 0 ; while (sizes(i) < index) { i = i + 1 }; i }
       else sys.error("index out of bounds")
     }
     override def toString = childs.foldLeft("<")((x,y) => x + " " + y) + " >"

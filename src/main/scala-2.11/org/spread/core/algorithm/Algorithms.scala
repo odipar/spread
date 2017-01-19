@@ -1,10 +1,15 @@
 package org.spread.core.algorithm
 
-import org.spread.core.BinRel.Model
 import org.spread.core.constraint.Constraint._
 import org.spread.core.relation.Relation._
 
 import scala.language.{existentials, implicitConversions}
+
+//
+// Constraint based relational join algorithm using binary annotated statistics
+//
+// Copyright 2017: Robbert van Dalen
+//
 
 object Algorithms {
 
@@ -83,7 +88,6 @@ object Algorithms {
     def setRelDomain[X,Y](id: Symbol, rel: RelDomain[X,Y]) = {
       Model(rels,relsInv,ctrs,doms + (id->rel),rel.isValid)
     }
-    def invalidate: Model =  Model(rels,relsInv,ctrs,doms,false)
     def propagateConstraints = propagateModelConstraints(this)
     def split = splitModel(this)
     def solve = solveModel(this)

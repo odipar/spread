@@ -6,6 +6,12 @@ import org.spread.core.constraint.Constraint._
 import scala.reflect.ClassTag
 import scala.language.{existentials, implicitConversions}
 
+//
+// A Column oriented Binary Relation based on two efficient 16/64-way BTrees
+//
+// Copyright 2016: Robbert van Dalen
+//
+
 object Relation {
 
   trait BRel[@specialized(Int,Long,Double) X,
@@ -45,7 +51,7 @@ object Relation {
     extends BRel[X,ST[X],Y,ST[Y],DC[X],DC[Y]] {
     type R = BinRel[X,Y]
 
-    {assert(left.size == right.size)}
+    { assert(left.size == right.size) }
 
     implicit def xcontext = xc
     implicit def ycontext = yc

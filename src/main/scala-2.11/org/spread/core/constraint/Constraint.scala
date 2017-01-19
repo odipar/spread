@@ -2,13 +2,14 @@ package org.spread.core.constraint
 
 import org.spread.core.relation.Relation._
 
+//
+// Standard constraint propagation objects
+//
+// Copyright 2016: Robbert van Dalen
+//
+
 object Constraint{
-  // Idea 1:
-  // Domain(1,6) 1,2,3,4,5,6
-  // InverseDomain(1,6) Everything except 1,2,3,4,5,6
-  //
-  // Idea 2:
-  // SortedSet of Ranges
+
   trait Propagator[@specialized(Int,Long,Double) X] {
     def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X])
     def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[X],Domain[X]) = {
