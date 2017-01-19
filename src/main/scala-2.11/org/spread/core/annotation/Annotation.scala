@@ -2,9 +2,11 @@ package org.spread.core.annotation
 
 import org.spread.core.constraint.Constraint.{Domain, EqualP}
 
-/*
- * Sequence annotators, most notably StatisticsAnnotator
- */
+//
+// Sequence Annotators, most notably StatisticsAnnotator
+//
+// Copyright 2017: Robbert van Dalen
+//
 
 object Annotation {
 
