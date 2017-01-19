@@ -5,7 +5,7 @@ import org.spread.core.relation.Relation._
 //
 // Standard constraint propagation objects
 //
-// Copyright 2016: Robbert van Dalen
+// Copyright 2017: Robbert van Dalen
 //
 
 object Constraint{

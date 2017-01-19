@@ -9,7 +9,7 @@ import scala.language.{existentials, implicitConversions}
 //
 // A Column oriented Binary Relation based on two efficient 16/64-way BTrees
 //
-// Copyright 2016: Robbert van Dalen
+// Copyright 2017: Robbert van Dalen
 //
 
 object Relation {

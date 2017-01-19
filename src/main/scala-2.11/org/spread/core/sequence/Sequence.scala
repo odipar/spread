@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 // Inspired by Avail's TreeTuple:
 // https://github.com/AvailLang/Avail/blob/master/src/com/avail/descriptor/TreeTupleDescriptor.java
 //
-// Copyright 2016: Robbert van Dalen
+// Copyright 2017: Robbert van Dalen
 //
 
 object Sequence {
