@@ -52,10 +52,6 @@ object Constraint{
     override def toString: String = ".."
   }
 
-  case class RConstraint[X](r1: RCol[X], r2: RCol[X], prop: Propagator[X]) {
-
-  }
-
   case class RelConstraint[X](r1: RelCol[X],r2: RelCol[X],prop: Propagator[X]){
     override def toString = "" + r1 + prop + r2
   }
