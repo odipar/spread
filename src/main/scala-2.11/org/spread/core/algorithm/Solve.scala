@@ -2,6 +2,10 @@ package org.spread.core.algorithm
 
 import org.spread.core.constraint.Constraint._
 import org.spread.core.relation.Relation._
+import org.spread.core.annotation.Annotation._
+import org.spread.core.sequence.Sequence.LongBSeq
+import org.spread.core.sequence.Sequence.createLongBSeq
+import org.spread.core.sequence.Sequence.emptyLongBSeq
 
 import scala.language.{existentials, implicitConversions}
 
@@ -11,17 +15,17 @@ import scala.language.{existentials, implicitConversions}
 // Copyright 2017: Robbert van Dalen
 //
 
-object Algorithms {
+object Solve {
 
   case class RelDomain[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
   (rel: BinRel[X,Y],from: Long,to: Long,leftDomain: Domain[X],rightDomain: Domain[Y]) {
     implicit def xc = rel.xc
     implicit def yc = rel.yc
-    implicit def xord = rel.xc.ordering
-    implicit def yord = rel.yc.ordering
+    implicit def xord = xc.ordering
+    implicit def yord = yc.ordering
 
     def isValid = leftDomain.isValid && rightDomain.isValid
-    def size = (to - from + 1)
+    def size = to - from + 1
     def split: (RelDomain[X,Y],RelDomain[X,Y]) = {
       val r = (from + to + 1) / 2
       (RelDomain(rel,from,r-1,leftDomain,rightDomain).propagate,RelDomain(rel,r,to,leftDomain,rightDomain).propagate)
@@ -31,12 +35,12 @@ object Algorithms {
       else yord
     }
     def getDomain(column: ColumnPos): Domain[_] = {
-        if (column == LeftCol) leftDomain
-        else rightDomain
+      if (column == LeftCol) leftDomain
+      else rightDomain
     }
     def setDomain(d: Domain[_],column: ColumnPos): RelDomain[X,Y] = {
       if (column == LeftCol) RelDomain(rel,from,to,d.asInstanceOf[Domain[X]],rightDomain)
-      else RelDomain(rel,from,to,leftDomain,d.asInstanceOf[Domain[Y]]).propagate
+      else RelDomain(rel,from,to,leftDomain,d.asInstanceOf[Domain[Y]])
     }
     def propagate: RelDomain[X,Y] = {
       if (isValid) {
@@ -49,17 +53,7 @@ object Algorithms {
       else this
     }
     def empty: BinRel[_,_] = rel.empty
-    def applyRange: BinRel[_,_] = {
-      // TODO: implement optimized range selection
-      if (isValid) {
-        val ll = rel.split(from)
-        val rr = ll._2.split(to-from+1)
-        rr._1
-      }
-      else empty
-    }
-    def merge(o: RelDomain[X,Y]) = createRelDomain(rel.append(o.rel))
-    def mergeAny(o: RelDomain[_,_]) = merge(o.asInstanceOf[RelDomain[X,Y]])
+    def applyRange: LongBSeq = createLongBSeq(from,to)
   }
 
   def createRelDomain[X,Y](rel: BinRel[X,Y]) = {
@@ -73,7 +67,7 @@ object Algorithms {
   type CTRS = Set[RelConstraint[_]]
   type DOMS = Map[Symbol,RelDomain[_,_]]
 
-  def createModel: Model = Model(Map(),Map(),Set(),Map(),true)
+  def createModel: Model = Model(Map(),Map(),Set(),Map(),isValid = true)
 
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,doms: DOMS,isValid: Boolean) {
     def addRelation[X,Y](s: Symbol, rel: BinRel[X,Y]): Model = {
@@ -85,9 +79,7 @@ object Algorithms {
       val c = RelConstraint(r1.withID(id1),r2.withID(id2),cc)
       Model(rels,relsInv,ctrs + c,doms,isValid)
     }
-    def setRelDomain[X,Y](id: Symbol, rel: RelDomain[X,Y]) = {
-      Model(rels,relsInv,ctrs,doms + (id->rel),rel.isValid)
-    }
+    def setRelDomain[X,Y](id: Symbol, rel: RelDomain[X,Y]) = Model(rels,relsInv,ctrs,doms + (id->rel),rel.isValid)
     def propagateConstraints = propagateModelConstraints(this)
     def split = splitModel(this)
     def solve = solveModel(this)
@@ -119,8 +111,8 @@ object Algorithms {
 
           isValid = rd1.isValid && rd2.isValid
 
-          if ((dd1 != rd1) && (dd2 != rd2)) {
-            fixpoint = false // The domains have been propagated to something different
+          if ((dd1 != rd1) || (dd2 != rd2)) {
+            fixpoint = false // Either one of the domains have been propagated to something different
             domains = domains + (r1.id -> d1.setDomain(rd1,r1.column))
             domains = domains + (r2.id -> d2.setDomain(rd2,r2.column))
           }
@@ -152,10 +144,10 @@ object Algorithms {
     (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
   }
 
-  def solveModel(mm: Model): (Map[Symbol,BinRel[_,_]]) = {
+  def solveModel(mm: Model): (Map[Symbol,LongBSeq]) = {
     val m = mm.propagateConstraints
 
-    if (!m.isValid) m.doms.mapValues(_.empty) // not valid - empty
+    if (!m.isValid) m.doms.mapValues(x => emptyLongBSeq) // not valid - empty
     else if (m.isSolved && m.isValid) m.doms.mapValues(_.applyRange) // valid and solved, apply range
     else {
       val (m1,m2) = m.split
@@ -163,7 +155,7 @@ object Algorithms {
       val mm1 = solveModel(m1)
       val mm2 = solveModel(m2)
 
-      mm1.transform((k,v) => v.appendAny(mm2(k)))
+      mm1.transform((k,v) => v.append(mm2(k)))
     }
   }
 
@@ -175,17 +167,28 @@ object Algorithms {
   implicit def toColSyntax[X,Y](id: BinRel[X,Y]): ColSyntax[X,Y] = ColSyntax(id)
 
   final def main(args: Array[String]): Unit = {
-    var a = createRel(Array(0,1,3,4,5),Array(2,3,6,1,2))
-    var b = createRel(Array(1,2,3,5,6),Array(3,5,6,2,3))
 
-    // select * from a,b where a.R = b.L and b.R = a.L
+    val a = createRel(
+      (0.toLong until 100000).toArray,
+      (0.toLong until 100000).toArray
+    )
+
+    val b = createRel(
+      (501.toLong until 601).toArray,
+      (500.toLong until 600).toArray
+    )
+
+    println("start")
+
     var m = createModel.
       addRelation('a, a).
       addRelation('b, b).
-      addConstraint(EqualP(),a.R,b.L).
-      addConstraint(EqualP(),b.R,a.L)
+      addConstraint(EqualP(),b.R,a.L).
+      addConstraint(EqualP(),a.R,b.L)
 
     val s = m.solve
+
+    //println("m: " + m.doms)
     println("s: " + s)
   }
 

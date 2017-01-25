@@ -2,7 +2,6 @@ package org.spread.core.relation
 
 import org.spread.core.sequence.Sequence._
 import org.spread.core.annotation.Annotation._
-import org.spread.core.constraint.Constraint._
 import scala.reflect.ClassTag
 import scala.language.{existentials, implicitConversions}
 
@@ -42,7 +41,7 @@ object Relation {
   }
 
   type ST[@specialized(Int,Long,Double) X] = Statistics[X]
-  type DC[@specialized(Int,Long,Double) X] = DefaultContext[X,ST[X]]
+  type DC[@specialized(Int,Long,Double) X] = ContextImpl[X,ST[X]]
   type RR[@specialized(Int,Long,Double) X] = BSeq[X,Statistics[X],DC[X]]
   type ORD[@specialized(Int,Long,Double) X] = Ordering[X]
 
@@ -62,9 +61,14 @@ object Relation {
 
   def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
   (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC[X],yc: DC[Y]) = {
-    val xx = seqArray(x)
-    val yy = seqArray(y)
+    val xx = seqArray[X,Statistics[X],DC[X]](x)
+    val yy = seqArray[Y,Statistics[Y],DC[Y]](y)
     BinRel(xx,yy,xc,yc)
+  }
+
+  def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
+  (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC[X],yc: DC[Y]): BinRel[X,Y] = {
+    createRel(x.map(_._1).toArray,x.map(_._2).toArray)
   }
 
   sealed trait ColumnPos
@@ -105,13 +109,27 @@ object Relation {
   }
 
   final def main(args: Array[String]): Unit = {
-    val a = createRel(
-      Array(2,3,4,5,6,7,8,9),
-      Array(7.0,6,5,4,3,2,1,0))
+    val a = createRel(Seq(
+      (2,7),
+      (3,6),
+      (4,5),
+      (5,4),
+      (6,3),
+      (7,2),
+      (8,1),
+      (9,0)
+    ))
 
-    val b = createRel(
-      Array(2,3,4,5,6,7,8,9),
-      Array(7.0,6,5,4,3,2,1,0))
+    val b = createRel(Seq(
+      (2,7),
+      (3,6),
+      (4,5),
+      (5,4),
+      (6,3),
+      (7,2),
+      (8,1),
+      (9,0)
+    ))
 
     val c = a.append(b)
 

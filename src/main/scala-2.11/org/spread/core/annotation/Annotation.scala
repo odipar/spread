@@ -29,15 +29,45 @@ object Annotation {
     def append(a1: NoAnnotation, a2: NoAnnotation): NoAnnotation = NoAnnotation
   }
 
-  case class Statistics[@specialized(Int,Long,Double) X]
-  (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean) extends Domain[X] {
+  trait Statistics[@specialized(Int,Long,Double) X] extends Domain[X]  {
+    def lowerBound: X
+    def upperBound: X
+    def first: X
+    def last: X
+    def sorted: Boolean
     def isValid = true
-    override def toString: String = "<" + first + "," + lowerBound + "," + sorted + "," + upperBound + "," + last + ">"
+    override def toString: String = "<" + first + "," + lowerBound + "," + "sorted=" +sorted + "," + upperBound + "," + last + ">"
+  }
+
+  case class StatisticsImpl3[@specialized(Int,Long,Double) X]
+  (lowerBound: X) extends Statistics[X] {
+    def upperBound = lowerBound
+    def first = lowerBound
+    def last = upperBound
+    def sorted = true
+  }
+
+  case class StatisticsImpl2[@specialized(Int,Long,Double) X]
+  (lowerBound: X,upperBound: X) extends Statistics[X] {
+    def first = lowerBound
+    def last = upperBound
+    def sorted = true
+  }
+
+  case class StatisticsImpl[@specialized(Int,Long,Double) X]
+  (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean) extends Statistics[X]
+
+  def createStats[@specialized(Int,Long,Double) X](lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean): Statistics[X] = {
+    if ((lowerBound == first) && (upperBound == last) && sorted) {
+      if (lowerBound == upperBound) StatisticsImpl3(lowerBound)
+      else StatisticsImpl2(lowerBound,upperBound)
+    }
+    else StatisticsImpl(lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean)
   }
 
   case class StatisticsAnnotator[@specialized(Int,Long,Double) X](implicit ord: Ordering[X]) extends Annotator[X,Statistics[X]]{
     def none: Statistics[X] = sys.error("no stats")
-    def one(x: X) = Statistics(x,x,x,x,true)
+    def one(x: X) = StatisticsImpl2(x,x)
     def manyX(a: Array[X]): Statistics[X] ={
       var lower = a(0)
       var upper = a(0)
@@ -48,24 +78,24 @@ object Annotation {
         upper = ord.max(upper,x)
         msorted = msorted && ord.lteq(a(i - 1),x)
       }
-      Statistics(lower,upper,a(0),a(a.length-1),msorted)
+      createStats(lower,upper,a(0),a(a.length-1),msorted)
     }
     // Some duplication of code for performance reasons
     def manyA(a: Array[Statistics[X]]): Statistics[X] ={
       var s = a(0)
       var lower = s.lowerBound
       var upper = s.upperBound
-      var msorted = true
+      var msorted = s.sorted
       for (i <- 1 until a.length) {
         val x = a(i)
         lower = ord.min(lower,x.lowerBound)
         upper = ord.max(upper,x.upperBound)
-        msorted = msorted && ord.lteq(a(i - 1).last,x.first)
+        msorted = msorted && x.sorted && ord.lteq(a(i - 1).last,x.first)
       }
-      Statistics(lower,upper,s.first,a(a.length-1).last,msorted)
+      createStats(lower,upper,s.first,a(a.length-1).last,msorted)
     }
     def append(s1: Statistics[X],s2: Statistics[X]): Statistics[X] ={
-      Statistics(
+      StatisticsImpl(
         ord.min(s1.lowerBound,s2.lowerBound),
         ord.max(s1.upperBound,s2.upperBound),
         s1.first,s2.last,
