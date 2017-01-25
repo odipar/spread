@@ -141,6 +141,12 @@ object Combine {
       val ord = cc.ordering
       if (ord.lt(ann1.last,ann2.first)) op.append(s1,s2)
       else if (ord.lt(ann2.last,ann1.first)) op.append(s2,s1)
+      else if (s1.size == 1 && s2.size == 1) {
+        val c = ord.compare(ann1.first,ann2.first)
+        if (c == 0) op.equal(s1)
+        if (c < 0) op.append(s1,s2)
+        else op.append(s2,s1)
+      }
       else {
         if (s1.size >= s2.size) {
           val (smaller1,same1,bigger1) = splitMiddle(s1)

@@ -227,15 +227,20 @@ object Sequence {
     }
   }
 
+  def createRange(lowerBound: Long,upperBound: Long)(implicit c: ContextImpl[Long,Statistics[Long]]) = {
+    if (lowerBound > upperBound) c.empty
+    else LongLeafRange(lowerBound,upperBound)
+  }
   case class LongLeafRange(lowerBound: Long,upperBound: Long)
     extends BSeqLeaf[Long,Statistics[Long],ContextImpl[Long,Statistics[Long]]] with Statistics[Long] {
-    {assert(lowerBound <= upperBound)}
+    {
+      assert(lowerBound <= upperBound)}
     def split(i: Long)(implicit c: ContextImpl[Long,Statistics[Long]]) = {
       if (i < 0) (c.empty,this)
       else if (i >= size) (this,c.empty)
       else {
-        val l = LongLeafRange(lowerBound,lowerBound + i)
-        val r = LongLeafRange(lowerBound + i + 1,upperBound)
+        val l = createRange(lowerBound,lowerBound + i - 1)
+        val r = createRange(lowerBound + i,upperBound)
         (l,r)
       }
     }
@@ -311,8 +316,8 @@ object Sequence {
 
   final def main(args: Array[String]): Unit = {
     val s = 10
-    //var r: BSeq[Long,Statistics[Long],ContextImpl[Long,Statistics[Long]]]= seqArray(Array())
-    var r: BSeq[Int,Statistics[Int],ContextImpl[Int,Statistics[Int]]] = seqArray(Array())
+    var r: BSeq[Long,Statistics[Long],ContextImpl[Long,Statistics[Long]]]= seqArray(Array())
+    //var r: BSeq[Int,Statistics[Int],ContextImpl[Int,Statistics[Int]]] = seqArray(Array())
     var rr = r
 
     for (i <- 0 until s) {
@@ -320,7 +325,7 @@ object Sequence {
       rr = rr.append(seq(i*2))
     }
 
-    println("rr: " + Combine.union(r,rr))
+    println("rr: " + Combine.difference(r,rr))
   }
 
 
