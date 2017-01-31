@@ -1,7 +1,8 @@
 package org.spread.core.relation
 
-import org.spread.core.sequence.Sequence._
+import org.spread.core.sequence.Sequence.{Context, _}
 import org.spread.core.annotation.Annotation._
+
 import scala.reflect.ClassTag
 import scala.language.{existentials, implicitConversions}
 
@@ -17,17 +18,14 @@ object Relation {
   @specialized(Int,Long,Double) XA,
   @specialized(Int,Long,Double) Y,
   @specialized(Int,Long,Double) YA,
-  XC <: Context[X,XA,XC],
-  YC <: Context[Y,YA,YC]] {
+  XC <: OrderingContext[X,XA,XC],
+  YC <: OrderingContext[Y,YA,YC]] {
     type R <: BRel[X,XA,Y,YA,XC,YC]
 
-    implicit def xcontext: XC
-    implicit def ycontext: YC
-    def create(left: BSeq[X,XA,XC],right: BSeq[Y,YA,YC]): R
+    def left: SSeq[X,XA,XC]
+    def right: SSeq[Y,YA,YC]
 
-    def left: BSeq[X,XA,XC]
-    def right: BSeq[Y,YA,YC]
-
+    def create(left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC]): R
     def size = left.size
     def append(r: R): R = create(left.append(r.left),right.append(r.right))
     def split(i: Long): (R,R) = {
@@ -35,15 +33,36 @@ object Relation {
       val (rl,rr) = right.split(i)
       (create(ll,rl),create(lr,rr))
     }
-    def empty = create(xcontext.empty,ycontext.empty)
+    def empty = create(left.empty,right.empty)
     def annotationRange(s: Long, e: Long): (XA,YA) = (left.annotationRange(s,e),right.annotationRange(s,e))
-    override def toString = left.toString + "||" + right.toString
+
+    /*def toSeq: SSeq[(X,Y),(XA,YA),CombinedContext[X,XA,Y,YA,XC,YC]] = {
+     null
+    } */
+    override def toString = left.toString + "_" + right.toString
   }
 
+  trait CombinedContext[@specialized(Int,Long,Double) X,
+  @specialized(Int,Long,Double) XA,
+  @specialized(Int,Long,Double) Y,
+  @specialized(Int,Long,Double) YA,
+  XC <: OrderingContext[X,XA,XC],
+  YC <: OrderingContext[Y,YA,YC]] extends Context[(X,Y),(XA,YA),CombinedContext[X,XA,Y,YA,XC,YC]]
+
+/*  case class BSeqRel[@specialized(Int,Long,Double) X,
+  @specialized(Int,Long,Double) XA,
+  @specialized(Int,Long,Double) Y,
+  @specialized(Int,Long,Double) YA,
+  XC <: Context[X,XA,XC],
+  YC <: Context[Y,YA,YC]](rel: BRel[X,XA,Y,YA,XC,YC]) extends SSeq[(X,Y),(XA,YA),(XC,YC)] {
+    def seq = sys.error("no")
+  }  */
+
   type ST[@specialized(Int,Long,Double) X] = Statistics[X]
-  type DC[@specialized(Int,Long,Double) X] = ContextImpl[X,ST[X]]
-  type RR[@specialized(Int,Long,Double) X] = BSeq[X,Statistics[X],DC[X]]
+  type DC[@specialized(Int,Long,Double) X] = OrderingTreeContext[X,ST[X]]
+  type RR[@specialized(Int,Long,Double) X] = SSeq[X,Statistics[X],DC[X]]
   type ORD[@specialized(Int,Long,Double) X] = Ordering[X]
+
 
   case class BinRel[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
   (left: RR[X],right: RR[Y],xc: DC[X],yc: DC[Y])
@@ -55,14 +74,13 @@ object Relation {
     implicit def xcontext = xc
     implicit def ycontext = yc
     def create(left: RR[X],right: RR[Y]): R = BinRel(left,right,xc,yc)
-
     def appendAny(r: BinRel[_,_]) = append(r.asInstanceOf[BinRel[X,Y]])
   }
 
   def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
   (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC[X],yc: DC[Y]) = {
-    val xx = seqArray[X,Statistics[X],DC[X]](x)
-    val yy = seqArray[Y,Statistics[Y],DC[Y]](y)
+    val xx = seqArray2[X,Statistics[X],DC[X]](x)
+    val yy = seqArray2[Y,Statistics[Y],DC[Y]](y)
     BinRel(xx,yy,xc,yc)
   }
 

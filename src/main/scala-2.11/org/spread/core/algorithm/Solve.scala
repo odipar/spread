@@ -3,7 +3,7 @@ package org.spread.core.algorithm
 import org.spread.core.constraint.Constraint._
 import org.spread.core.relation.Relation._
 import org.spread.core.annotation.Annotation._
-import org.spread.core.sequence.Sequence.LongBSeq
+import org.spread.core.sequence.Sequence.LSSEQ
 import org.spread.core.sequence.Sequence.createLongBSeq
 import org.spread.core.sequence.Sequence.emptyLongBSeq
 
@@ -53,7 +53,7 @@ object Solve {
       else this
     }
     def empty: BinRel[_,_] = rel.empty
-    def applyRange: LongBSeq = createLongBSeq(from,to)
+    def applyRange: LSSEQ = createLongBSeq(from,to)
   }
 
   def createRelDomain[X,Y](rel: BinRel[X,Y]) = {
@@ -144,7 +144,7 @@ object Solve {
     (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
   }
 
-  def solveModel(mm: Model): (Map[Symbol,LongBSeq]) = {
+  def solveModel(mm: Model): (Map[Symbol,LSSEQ]) = {
     val m = mm.propagateConstraints
 
     if (!m.isValid) m.doms.mapValues(x => emptyLongBSeq) // not valid - empty
@@ -174,7 +174,7 @@ object Solve {
     )
 
     val b = createRel(
-      (501.toLong until 601).toArray,
+      (500.toLong until 600).toArray,
       (500.toLong until 600).toArray
     )
 

@@ -2,14 +2,13 @@ package org.spread.core
 
 import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen.{sized, listOfN}
 import org.scalacheck.Prop.forAll
 import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.Sequence._
 import org.scalacheck.Prop.BooleanOperators
 
 object BSeqSpecification extends Properties("BSeq") {
-  type BSEQ[X] = BSeq[X,Statistics[X],ContextImpl[X,Statistics[X]]]
+  type BSEQ[X] = SSeq[X,Statistics[X],OrderingTreeContext[X,Statistics[X]]]
 
   implicit def arbitraryIntSeq: Arbitrary[BSEQ[Long]] = Arbitrary(longSeq)
 
@@ -30,19 +29,35 @@ object BSeqSpecification extends Properties("BSeq") {
 
   property("statsBounds") = forAll { (p1: BSEQ[Long], p2: BSEQ[Long]) =>
     val c = p1.append(p2)
+    val ca = c.annotation
+    val a1 = c.annotation
 
-      ((p1.size > 0) ==> (p1.annotation.first == c.annotation.first)) &&
-        ((p2.size > 0) ==>  (p2.annotation.last == c.annotation.last))
+      ((p1.size > 0) ==> (a1.first == ca.first)) &&
+        ((p1.size > 0) ==>  (a1.last == ca.last))
   }
 
   property("statsMinMax") = forAll { (p1: BSEQ[Long], p2: BSEQ[Long]) =>
-    val c = p1.append(p2)
-
     if ((p1.size > 0) && (p2.size > 0)) {
-      val l = p1.annotation.lowerBound min p2.annotation.lowerBound
-      val h = p1.annotation.upperBound max p2.annotation.upperBound
-      (l == c.annotation.lowerBound) && (h == c.annotation.upperBound)
+      val c = p1.append(p2)
+
+      val ca = c.annotation
+      val a1 = p1.annotation
+      val a2 = p2.annotation
+
+      val l = a1.lowerBound min a2.lowerBound
+      val h = a1.upperBound max a2.upperBound
+      (l == ca.lowerBound) && (h == ca.upperBound)
     }
     else true
+  }
+
+  property("multiSet") = forAll { (p: BSEQ[Long]) =>
+    import org.spread.core.algorithm.Combine._
+
+    val s = sort(p)
+    val u = union(s,s)
+    val d = difference(s,u)
+
+    s.equalTo(d)
   }
 }
