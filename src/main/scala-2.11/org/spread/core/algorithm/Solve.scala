@@ -15,11 +15,10 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  type CORD[X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
-  type AnyRel = BinRel[_,_,_,_]
-  type AnyRelDomain = RelDomain[_,_,_,_]
+  // existentially typed RelDomain, similar to RelDomain[_,_,_,_]
+  type RELDOM = RelDomain[X,Y,XC,YC] forSome { type X ; type Y; type XC <: CORD[X,XC] ; type YC <: CORD[Y,YC] }
 
-  case class RelDomain[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  case class RelDomain[X,Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
   (rel: BinRel[X,Y,XC,YC],from: Long,to: Long,leftDomain: Domain[X],rightDomain: Domain[Y]) {
     implicit def xc = rel.xc
     implicit def yc = rel.yc
@@ -32,7 +31,6 @@ object Solve {
       val r = (from + to + 1) / 2
       (RelDomain(rel,from,r-1,leftDomain,rightDomain).propagate,RelDomain(rel,r,to,leftDomain,rightDomain).propagate)
     }
-    def anySplit: (Any,Any) = split
     def getOrdering(column: ColumnPos): Ordering[_] = {
       if (column == LeftCol) xord
       else yord
@@ -58,7 +56,7 @@ object Solve {
       }
       else this
     }
-    def empty: AnyRel = rel.empty
+    def empty: EREL = rel.empty
     def applyRange: LSSEQ = createLongBSeq(from,to)
   }
 
@@ -69,15 +67,14 @@ object Solve {
     RelDomain(rel,0,rel.size-1,createDomain(l.lowerBound,l.upperBound),createDomain(r.lowerBound,r.upperBound))
   }
 
-  type RELS = Map[Symbol,AnyRel]
-  type RELSI = Map[AnyRel,Symbol]
+  type RELS = Map[Symbol,EREL]
+  type RELSI = Map[EREL,Symbol]
   type CTRS = Set[RelConstraint[_]]
-  type DOMS = Map[Symbol,Any]  // We would rather have Map[Symbol,AnyRelDomain] but this doesn't work
+  type DOMS = Map[Symbol,RELDOM]
 
   def createModel: Model = Model(Map(),Map(),Set(),Map(),isValid = true)
 
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
-    def typedDomains: Map[Symbol,AnyRelDomain] = domains.asInstanceOf[Map[Symbol,AnyRelDomain]]
     def addRelation[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
     (s: Symbol, rel: BinRel[X,Y,XC,YC]): Model = {
       Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
@@ -88,8 +85,8 @@ object Solve {
       val c = RelConstraint(r1.withID(id1),r2.withID(id2),cc)
       Model(rels,relsInv,ctrs + c,domains,isValid)
     }
-    def setRelDomain(id: Symbol, rel: AnyRelDomain): Model = {
-      Model(rels,relsInv,ctrs,domains + (id -> rel.asInstanceOf[Any]),rel.isValid)
+    def setRelDomain(id: Symbol, rel: RELDOM): Model = {
+      Model(rels,relsInv,ctrs,domains + (id -> rel),rel.isValid)
     }
 
     def propagateConstraints = propagateModelConstraints(this)
@@ -98,7 +95,7 @@ object Solve {
     def isSolved = isModelSolved(this)
   }
 
-  def propagateModelConstraints[RC <: RelCol[_], RD <: AnyRelDomain](m: Model): Model = {
+  def propagateModelConstraints(m: Model): Model = {
     if (!m.isValid) m
     else {
       var fixpoint = false
@@ -112,8 +109,8 @@ object Solve {
         while(iter.hasNext && isValid) {
           val c = iter.next
 
-          val d1 = domains(c.r1.id).asInstanceOf[AnyRelDomain]
-          val d2 = domains(c.r2.id).asInstanceOf[AnyRelDomain]
+          val d1 = domains(c.r1.id)
+          val d2 = domains(c.r2.id)
 
           val dd1 = d1.getDomain(c.r1.column)
           val dd2 = d2.getDomain(c.r2.column)
@@ -128,8 +125,8 @@ object Solve {
             val dd1 = d1.setAnyDomain(rd1,c.r1.column)
             val dd2 = d2.setAnyDomain(rd2,c.r2.column)
 
-            domains = domains + (c.r1.id -> dd1.asInstanceOf[Any])
-            domains = domains + (c.r2.id -> dd2.asInstanceOf[Any])
+            domains = domains + (c.r1.id -> dd1)
+            domains = domains + (c.r2.id -> dd2)
           }
         }
       }
@@ -137,8 +134,8 @@ object Solve {
     }
   }
 
-  def selectBestSplitCandidate(m: Model): (Symbol,AnyRelDomain) = {
-    val doms = m.typedDomains
+  def selectBestSplitCandidate(m: Model): (Symbol,RELDOM) = {
+    val doms = m.domains
     var bestCandidate = doms.last
 
     for (d <- doms) {
@@ -151,20 +148,20 @@ object Solve {
     bestCandidate
   }
 
-  def isModelSolved(m: Model): Boolean = m.typedDomains.values.foldLeft(true)((x,y) => x && (y.size == 1))
+  def isModelSolved(m: Model): Boolean = m.domains.values.foldLeft(true)((x,y) => x && (y.size == 1))
 
   def splitModel(m: Model): (Model,Model) = {
     val s = selectBestSplitCandidate(m)
-    val (l,r) = s._2.anySplit
+    val (l: RELDOM,r: RELDOM) = s._2.split
 
-    (m.setRelDomain(s._1,l.asInstanceOf[AnyRelDomain]),m.setRelDomain(s._1,r.asInstanceOf[AnyRelDomain]))
+    (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
   }
 
   def solveModel(mm: Model): (Map[Symbol,LSSEQ]) = {
     val m = mm.propagateConstraints
 
-    if (!m.isValid) m.typedDomains.mapValues(x => emptyLongBSeq) // not valid - empty
-    else if (m.isSolved && m.isValid) m.typedDomains.mapValues(_.applyRange) // valid and solved, apply range
+    if (!m.isValid) m.domains.mapValues(x => emptyLongBSeq) // not valid - empty
+    else if (m.isSolved && m.isValid) m.domains.mapValues(_.applyRange) // valid and solved, apply range
     else {
       val (m1,m2) = m.split
 
@@ -181,7 +178,8 @@ object Solve {
     def R: RCol[Y] = RightRCol[X,Y,XC,YC](rel)
   }
 
-  implicit def toColSyntax[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](id: BinRel[X,Y,XC,YC]): ColSyntax[X,Y,XC,YC] = ColSyntax(id)
+  implicit def toColSyntax[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  (id: BinRel[X,Y,XC,YC]): ColSyntax[X,Y,XC,YC] = ColSyntax(id)
 
   final def main(args: Array[String]): Unit = {
 
