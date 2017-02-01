@@ -12,7 +12,7 @@ object Constraint{
 
   trait Propagator[@specialized(Int,Long,Double) X] {
     def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X])
-    def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[X],Domain[X]) = {
+    def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[_],Domain[_]) = {
       propagate(o1.asInstanceOf[Domain[X]],o2.asInstanceOf[Domain[X]])(ord.asInstanceOf[Ordering[X]])
     }
   }

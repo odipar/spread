@@ -3,9 +3,7 @@ package org.spread.core.algorithm
 import org.spread.core.constraint.Constraint._
 import org.spread.core.relation.Relation._
 import org.spread.core.annotation.Annotation._
-import org.spread.core.sequence.Sequence.LSSEQ
-import org.spread.core.sequence.Sequence.createLongBSeq
-import org.spread.core.sequence.Sequence.emptyLongBSeq
+import org.spread.core.sequence.Sequence.{LSSEQ, OrderingContext, createLongBSeq, emptyLongBSeq}
 
 import scala.language.{existentials, implicitConversions}
 
@@ -17,8 +15,12 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  case class RelDomain[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
-  (rel: BinRel[X,Y],from: Long,to: Long,leftDomain: Domain[X],rightDomain: Domain[Y]) {
+  type CORD[X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
+  type AnyRel = BinRel[_,_,_,_]
+  type AnyRelDomain = RelDomain[_,_,_,_]
+
+  case class RelDomain[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  (rel: BinRel[X,Y,XC,YC],from: Long,to: Long,leftDomain: Domain[X],rightDomain: Domain[Y]) {
     implicit def xc = rel.xc
     implicit def yc = rel.yc
     implicit def xord = xc.ordering
@@ -26,10 +28,11 @@ object Solve {
 
     def isValid = leftDomain.isValid && rightDomain.isValid
     def size = to - from + 1
-    def split: (RelDomain[X,Y],RelDomain[X,Y]) = {
+    def split: (RelDomain[X,Y,XC,YC],RelDomain[X,Y,XC,YC]) = {
       val r = (from + to + 1) / 2
       (RelDomain(rel,from,r-1,leftDomain,rightDomain).propagate,RelDomain(rel,r,to,leftDomain,rightDomain).propagate)
     }
+    def anySplit: (Any,Any) = split
     def getOrdering(column: ColumnPos): Ordering[_] = {
       if (column == LeftCol) xord
       else yord
@@ -38,11 +41,14 @@ object Solve {
       if (column == LeftCol) leftDomain
       else rightDomain
     }
-    def setDomain(d: Domain[_],column: ColumnPos): RelDomain[X,Y] = {
+    def setDomain(d: Domain[_],column: ColumnPos): RelDomain[X,Y,XC,YC] = {
       if (column == LeftCol) RelDomain(rel,from,to,d.asInstanceOf[Domain[X]],rightDomain)
       else RelDomain(rel,from,to,leftDomain,d.asInstanceOf[Domain[Y]])
     }
-    def propagate: RelDomain[X,Y] = {
+    def setAnyDomain(d: Domain[_],column: ColumnPos) = {
+      setDomain(d,column)
+    }
+    def propagate: RelDomain[X,Y,XC,YC] = {
       if (isValid) {
         val l = rel.left.annotationRange(from,to)
         val r = rel.right.annotationRange(from,to)
@@ -52,52 +58,52 @@ object Solve {
       }
       else this
     }
-    def empty: BinRel[_,_] = rel.empty
+    def empty: AnyRel = rel.empty
     def applyRange: LSSEQ = createLongBSeq(from,to)
   }
 
-  def createRelDomain[X,Y](rel: BinRel[X,Y]) = {
+  def createRelDomain[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  (rel: BinRel[X,Y,XC,YC]) = {
     val l = rel.left.annotation
     val r = rel.right.annotation
     RelDomain(rel,0,rel.size-1,createDomain(l.lowerBound,l.upperBound),createDomain(r.lowerBound,r.upperBound))
   }
 
-  type RELS = Map[Symbol,BinRel[_,_]]
-  type RELSI = Map[BinRel[_,_],Symbol]
+  type RELS = Map[Symbol,AnyRel]
+  type RELSI = Map[AnyRel,Symbol]
   type CTRS = Set[RelConstraint[_]]
-  type DOMS = Map[Symbol,RelDomain[_,_]]
+  type DOMS = Map[Symbol,Any]  // We would rather have Map[Symbol,AnyRelDomain] but this doesn't work
 
   def createModel: Model = Model(Map(),Map(),Set(),Map(),isValid = true)
 
-  case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,doms: DOMS,isValid: Boolean) {
-    def addRelation[X,Y](s: Symbol, rel: BinRel[X,Y]): Model = {
-      Model(rels + (s->rel),relsInv + (rel->s),ctrs,doms + (s->createRelDomain(rel)),isValid)
+  case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
+    def typedDomains: Map[Symbol,AnyRelDomain] = domains.asInstanceOf[Map[Symbol,AnyRelDomain]]
+    def addRelation[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+    (s: Symbol, rel: BinRel[X,Y,XC,YC]): Model = {
+      Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
     }
     def addConstraint[X](cc: Propagator[X], r1: RCol[X],r2: RCol[X]): Model = {
       val id1 = relsInv(r1.rel)
       val id2 = relsInv(r2.rel)
       val c = RelConstraint(r1.withID(id1),r2.withID(id2),cc)
-      Model(rels,relsInv,ctrs + c,doms,isValid)
+      Model(rels,relsInv,ctrs + c,domains,isValid)
     }
-    def setRelDomain[X,Y](id: Symbol, rel: RelDomain[X,Y]) = Model(rels,relsInv,ctrs,doms + (id->rel),rel.isValid)
+    def setRelDomain(id: Symbol, rel: AnyRelDomain): Model = {
+      Model(rels,relsInv,ctrs,domains + (id -> rel.asInstanceOf[Any]),rel.isValid)
+    }
+
     def propagateConstraints = propagateModelConstraints(this)
     def split = splitModel(this)
     def solve = solveModel(this)
     def isSolved = isModelSolved(this)
   }
 
-  def getDomainProperties(col: RelCol[_], doms: DOMS) = {
-    val d = doms(col.id)
-    val dd = d.getDomain(col.column)
-    (col,d,dd)
-  }
-
-  def propagateModelConstraints(m: Model): Model = {
+  def propagateModelConstraints[RC <: RelCol[_], RD <: AnyRelDomain](m: Model): Model = {
     if (!m.isValid) m
     else {
       var fixpoint = false
       var isValid = true
-      var domains = m.doms
+      var domains = m.domains
 
       while(!fixpoint && isValid) { // Loop until fixpoint (no domains have changed)
         fixpoint = true
@@ -105,16 +111,25 @@ object Solve {
         val iter = m.ctrs.iterator
         while(iter.hasNext && isValid) {
           val c = iter.next
-          val (r1,d1,dd1) = getDomainProperties(c.r1,domains)
-          val (r2,d2,dd2) = getDomainProperties(c.r2,domains)
-          val (rd1: Domain[_],rd2: Domain[_]) = c.prop.propagateAny(dd1,dd2)(d1.getOrdering(r1.column))
+
+          val d1 = domains(c.r1.id).asInstanceOf[AnyRelDomain]
+          val d2 = domains(c.r2.id).asInstanceOf[AnyRelDomain]
+
+          val dd1 = d1.getDomain(c.r1.column)
+          val dd2 = d2.getDomain(c.r2.column)
+
+          val ord = d1.getOrdering(c.r1.column)
+          val (rd1,rd2) = c.prop.propagateAny(dd1,dd2)(ord)
 
           isValid = rd1.isValid && rd2.isValid
 
           if ((dd1 != rd1) || (dd2 != rd2)) {
             fixpoint = false // Either one of the domains have been propagated to something different
-            domains = domains + (r1.id -> d1.setDomain(rd1,r1.column))
-            domains = domains + (r2.id -> d2.setDomain(rd2,r2.column))
+            val dd1 = d1.setAnyDomain(rd1,c.r1.column)
+            val dd2 = d2.setAnyDomain(rd2,c.r2.column)
+
+            domains = domains + (c.r1.id -> dd1.asInstanceOf[Any])
+            domains = domains + (c.r2.id -> dd2.asInstanceOf[Any])
           }
         }
       }
@@ -122,10 +137,11 @@ object Solve {
     }
   }
 
-  def selectBestSplitCandidate(m: Model): (Symbol,RelDomain[_,_]) = {
-    var bestCandidate = m.doms.last
+  def selectBestSplitCandidate(m: Model): (Symbol,AnyRelDomain) = {
+    val doms = m.typedDomains
+    var bestCandidate = doms.last
 
-    for (d <- m.doms) {
+    for (d <- doms) {
       if (d._2.size > bestCandidate._2.size) {
         // We found a RelDomain with a bigger size
         // TODO: select most restrictive left/right domain?
@@ -135,20 +151,20 @@ object Solve {
     bestCandidate
   }
 
-  def isModelSolved(m: Model): Boolean = m.doms.values.foldLeft(true)((x,y) => x && (y.size == 1))
+  def isModelSolved(m: Model): Boolean = m.typedDomains.values.foldLeft(true)((x,y) => x && (y.size == 1))
 
   def splitModel(m: Model): (Model,Model) = {
     val s = selectBestSplitCandidate(m)
-    val (l: RelDomain[_,_],r: RelDomain[_,_]) = selectBestSplitCandidate(m)._2.split
+    val (l,r) = s._2.anySplit
 
-    (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
+    (m.setRelDomain(s._1,l.asInstanceOf[AnyRelDomain]),m.setRelDomain(s._1,r.asInstanceOf[AnyRelDomain]))
   }
 
   def solveModel(mm: Model): (Map[Symbol,LSSEQ]) = {
     val m = mm.propagateConstraints
 
-    if (!m.isValid) m.doms.mapValues(x => emptyLongBSeq) // not valid - empty
-    else if (m.isSolved && m.isValid) m.doms.mapValues(_.applyRange) // valid and solved, apply range
+    if (!m.isValid) m.typedDomains.mapValues(x => emptyLongBSeq) // not valid - empty
+    else if (m.isSolved && m.isValid) m.typedDomains.mapValues(_.applyRange) // valid and solved, apply range
     else {
       val (m1,m2) = m.split
 
@@ -159,12 +175,13 @@ object Solve {
     }
   }
 
-  case class ColSyntax[X,Y](rel: BinRel[X,Y]){
-    def L: RCol[X] = LeftRCol[X](rel)
-    def R: RCol[Y] = RightRCol[Y](rel)
+  case class ColSyntax[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  (rel: BinRel[X,Y,XC,YC]){
+    def L: RCol[X] = LeftRCol[X,Y,XC,YC](rel)
+    def R: RCol[Y] = RightRCol[X,Y,XC,YC](rel)
   }
 
-  implicit def toColSyntax[X,Y](id: BinRel[X,Y]): ColSyntax[X,Y] = ColSyntax(id)
+  implicit def toColSyntax[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](id: BinRel[X,Y,XC,YC]): ColSyntax[X,Y,XC,YC] = ColSyntax(id)
 
   final def main(args: Array[String]): Unit = {
 
@@ -188,7 +205,6 @@ object Solve {
 
     val s = m.solve
 
-    //println("m: " + m.doms)
     println("s: " + s)
   }
 

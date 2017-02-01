@@ -38,6 +38,8 @@ object Sequence {
   trait OrderingContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, C <: OrderingContext[X,A,C]]
     extends Context[X,A,C] {
     implicit def ordering: Ordering[X]
+    // Cache the equality constraint propagator
+    implicit val equalProp: EqualP[X] = EqualP[X]()
   }
 
   trait TreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,C <: TreeContext[X,A,C]] extends Context[X,A,C] {
@@ -227,8 +229,6 @@ object Sequence {
         else {val (l,r) = merged.splitAt((merged.length + 1) >> 1); createPair(createLeaf(l),createLeaf(r))}
       }
     }
-    // Cache the equality constraint propagator
-    implicit val equalProp: EqualP[X] = EqualP[X]()
   }
 
   case class DefaultOrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]

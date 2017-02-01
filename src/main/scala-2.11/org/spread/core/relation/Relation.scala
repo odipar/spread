@@ -1,6 +1,6 @@
 package org.spread.core.relation
 
-import org.spread.core.sequence.Sequence.{Context, _}
+import org.spread.core.sequence.Sequence.{Context, OrderingContext, _}
 import org.spread.core.annotation.Annotation._
 
 import scala.reflect.ClassTag
@@ -59,33 +59,36 @@ object Relation {
   }  */
 
   type ST[@specialized(Int,Long,Double) X] = Statistics[X]
-  type DC[@specialized(Int,Long,Double) X] = OrderingTreeContext[X,ST[X]]
-  type RR[@specialized(Int,Long,Double) X] = SSeq[X,Statistics[X],DC[X]]
+  type DC[@specialized(Int,Long,Double) X, C <: OrderingContext[X,ST[X],C]] = OrderingContext[X,ST[X],C]
+  type DC2[@specialized(Int,Long,Double) X] = OrderingTreeContext[X,ST[X]]
+  type RR[@specialized(Int,Long,Double) X, C <: OrderingContext[X,ST[X],C]] = SSeq[X,ST[X],C]
   type ORD[@specialized(Int,Long,Double) X] = Ordering[X]
+  type CORD[X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
 
+  /* WRAP BRel */
 
-  case class BinRel[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
-  (left: RR[X],right: RR[Y],xc: DC[X],yc: DC[Y])
-    extends BRel[X,ST[X],Y,ST[Y],DC[X],DC[Y]] {
-    type R = BinRel[X,Y]
+  case class BinRel[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
+  (left: RR[X,XC],right: RR[Y,YC],xc: DC[X,XC],yc: DC[Y,YC])
+    extends BRel[X,ST[X],Y,ST[Y],XC,YC] {
+    type R = BinRel[X,Y,XC,YC]
 
     { assert(left.size == right.size) }
 
     implicit def xcontext = xc
     implicit def ycontext = yc
-    def create(left: RR[X],right: RR[Y]): R = BinRel(left,right,xc,yc)
-    def appendAny(r: BinRel[_,_]) = append(r.asInstanceOf[BinRel[X,Y]])
+    def create(left: RR[X,XC],right: RR[Y,YC]): R = BinRel(left,right,xc,yc)
+    def appendAny(r: BinRel[_,_,_,_]) = append(r.asInstanceOf[BinRel[X,Y,XC,YC]])
   }
 
   def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
-  (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC[X],yc: DC[Y]) = {
-    val xx = seqArray2[X,Statistics[X],DC[X]](x)
-    val yy = seqArray2[Y,Statistics[Y],DC[Y]](y)
+  (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC2[X],yc: DC2[Y]): BinRel[X,Y,DC2[X],DC2[Y]]  = {
+    val xx = seqArray2[X,Statistics[X],DC2[X]](x)
+    val yy = seqArray2[Y,Statistics[Y],DC2[Y]](y)
     BinRel(xx,yy,xc,yc)
   }
 
   def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
-  (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC[X],yc: DC[Y]): BinRel[X,Y] = {
+  (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: DC2[X],yc: DC2[Y]): BinRel[X,Y,DC2[X],DC2[Y]] = {
     createRel(x.map(_._1).toArray,x.map(_._2).toArray)
   }
 
@@ -109,22 +112,24 @@ object Relation {
   }
 
   sealed trait RCol[X] {
-    def rel: BinRel[_,_]
+    def rel: BinRel[_,_,_,_]
     def column: ColumnPos
     def withID(s: Symbol): RelCol[X]
   }
 
-  case class RightRCol[Y](r: BinRel[_,Y]) extends RCol[Y] {
-    def rel: BinRel[_,_] = r
+  case class RightRCol[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](r: BinRel[X,Y,XC,YC]) extends RCol[Y] {
+    def rel: BinRel[_,_,_,_] = r
     def column = RightCol
     def withID(s: Symbol): RelCol[Y] = RightCol(s)
   }
 
-  case class LeftRCol[X](r: BinRel[X,_]) extends RCol[X] {
-    def rel: BinRel[_,_] = r
+  case class LeftRCol[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](r: BinRel[X,Y,XC,YC]) extends RCol[X] {
+    def rel: BinRel[_,_,_,_] = r
     def column = LeftCol
     def withID(s: Symbol): RelCol[X] = LeftCol(s)
   }
+
+  type AnyRel = BinRel[_,_,_,_]
 
   final def main(args: Array[String]): Unit = {
     val a = createRel(Seq(
