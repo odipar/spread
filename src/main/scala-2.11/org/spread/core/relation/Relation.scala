@@ -45,67 +45,74 @@ object Relation {
   type CORD[@specialized(Int,Long,Double) X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
 
   // type wizardry: correct existentially typed BinRel, similar to BinRel[_,_,_,_]
-  type EREL = BinRel[X,Y,XC,YC] forSome { type X ; type Y; type XC <: CORD[X,XC] ; type YC <: CORD[Y,YC] }
 
-  case class BinRel[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]]
-  (left: SSEQ[X,XC],right: SSEQ[Y,YC],xc: CORD[X,XC],yc: CORD[Y,YC])
-    extends BRel[X,ST[X],Y,ST[Y],XC,YC] {
-    type R = BinRel[X,Y,XC,YC]
+  type EREL = BinRel[X,XA,Y,YA,XC,YC] forSome {
+    type X ; type XA; type Y; type YA; type XC <: OrderingContext[X,XA,XC] ; type YC <: OrderingContext[Y,YA,YC]
+  }
+
+  case class BinRel[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
+  (left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC],xc: XC,yc: YC)
+  extends BRel[X,XA,Y,YA,XC,YC] {
+    type R = BinRel[X,XA,Y,YA,XC,YC]
 
     { assert(left.size == right.size) }
 
     implicit def xcontext = xc
     implicit def ycontext = yc
-    def create(left: SSEQ[X,XC],right: SSEQ[Y,YC]): R = BinRel(left,right,xc,yc)
+    implicit def xord = xc.ordering
+    implicit def yord = yc.ordering
+    def create(left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC]): R = BinRel(left,right,xc,yc)
   }
 
-  def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
-  (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y]): BinRel[X,Y,OTC[X],OTC[Y]]  = {
+  def createRelArray[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
+  (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y])  = {
     val xx = seqArray2[X,Statistics[X],OTC[X]](x)
     val yy = seqArray2[Y,Statistics[Y],OTC[Y]](y)
     BinRel(xx,yy,xc,yc)
   }
 
   def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
-  (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y]): BinRel[X,Y,OTC[X],OTC[Y]] = {
-    createRel(x.map(_._1).toArray,x.map(_._2).toArray)
+  (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y]) = {
+    createRelArray(x.map(_._1).toArray,x.map(_._2).toArray)
   }
 
   sealed trait ColumnPos
   object LeftCol extends ColumnPos
   object RightCol extends ColumnPos
 
-  sealed trait RelCol[X] {
+  sealed trait RelCol[X,XA] {
     def id: Symbol
     def column: ColumnPos
   }
 
-  case class LeftCol[Y](id: Symbol) extends RelCol[Y] {
+  case class LeftCol[Y,YA](id: Symbol) extends RelCol[Y,YA] {
     def column = LeftCol
     override def toString: String = id + ".L"
   }
 
-  case class RightCol[X](id: Symbol) extends RelCol[X] {
+  case class RightCol[X,XA](id: Symbol) extends RelCol[X,XA] {
     def column = RightCol
     override def toString: String = id + ".R"
   }
 
-  sealed trait RCol[X] {
+  sealed trait RCol[X,XA] {
     def rel: EREL
     def column: ColumnPos
-    def withID(s: Symbol): RelCol[X]
+    def withID(s: Symbol): RelCol[X,XA]
   }
 
-  case class RightRCol[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](r: BinRel[X,Y,XC,YC]) extends RCol[Y] {
+  case class RightRCol[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
+  (r: BinRel[X,XA,Y,YA,XC,YC]) extends RCol[Y,YA] {
     def rel: EREL = r
     def column = RightCol
-    def withID(s: Symbol): RelCol[Y] = RightCol(s)
+    def withID(s: Symbol): RelCol[Y,YA] = RightCol(s)
   }
 
-  case class LeftRCol[X, Y, XC <: CORD[X,XC], YC <: CORD[Y,YC]](r: BinRel[X,Y,XC,YC]) extends RCol[X] {
+  case class LeftRCol[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
+  (r: BinRel[X,XA,Y,YA,XC,YC]) extends RCol[X,XA] {
     def rel: EREL = r
     def column = LeftCol
-    def withID(s: Symbol): RelCol[X] = LeftCol(s)
+    def withID(s: Symbol): RelCol[X,XA] = LeftCol(s)
   }
 
   final def main(args: Array[String]): Unit = {

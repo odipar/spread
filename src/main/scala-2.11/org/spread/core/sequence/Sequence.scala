@@ -2,7 +2,7 @@ package org.spread.core.sequence
 
 import org.spread.core.algorithm.Combine
 import org.spread.core.annotation.Annotation._
-import org.spread.core.constraint.Constraint.EqualP
+import org.spread.core.constraint.Constraint.{EqualProp, EqualStatP}
 
 import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
@@ -38,8 +38,7 @@ object Sequence {
   trait OrderingContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, C <: OrderingContext[X,A,C]]
     extends Context[X,A,C] {
     implicit def ordering: Ordering[X]
-    // Cache the equality constraint propagator
-    implicit val equalProp: EqualP[X] = EqualP[X]()
+    implicit def equal: EqualProp[A]
   }
 
   trait TreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,C <: TreeContext[X,A,C]] extends Context[X,A,C] {
@@ -48,6 +47,7 @@ object Sequence {
 
     def minWidth = 16
     def maxWidth = 64
+
     implicit def context: C
     implicit def annotator: Annotator[X,A]
     // constructors
@@ -232,7 +232,7 @@ object Sequence {
   }
 
   case class DefaultOrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-  (implicit ordering: Ordering[X],ann: Annotator[X,A],xTag: ClassTag[X],aTag: ClassTag[A]) extends OrderingTreeContext[X,A] {
+  (implicit ordering: Ordering[X], equal: EqualProp[A], ann: Annotator[X,A],xTag: ClassTag[X],aTag: ClassTag[A]) extends OrderingTreeContext[X,A] {
     implicit def annotator = ann
     implicit def context = this
     def createLeaf(a: Array[X]) = {
@@ -281,10 +281,11 @@ object Sequence {
     def annotation = this
     def first = lowerBound
     def last = upperBound
+    def isValid = true
     override def toString = lowerBound + ".." + upperBound
   }
 
-  case class LongTreeContext(implicit ordering: Ordering[Long],xTag: ClassTag[Long],aTag: ClassTag[Statistics[Long]])
+  case class LongTreeContext(implicit ordering: Ordering[Long],equal: EqualProp[Statistics[Long]], xTag: ClassTag[Long],aTag: ClassTag[Statistics[Long]])
     extends OrderingTreeContext[Long,Statistics[Long]] {
     implicit def annotator = StatisticsAnnotator[Long]
     implicit def context = this
@@ -301,9 +302,10 @@ object Sequence {
   }
 
   def defaultContext[@specialized(Int,Long,Double) X]
-  (implicit ord: Ordering[X],xTag: ClassTag[X],aTag: ClassTag[Statistics[X]]): DefaultOrderingTreeContext[X,Statistics[X]] = {
-    DefaultOrderingTreeContext()(ord,StatisticsAnnotator[X](),xTag,aTag)
+  (implicit ord: Ordering[X], equal: EqualProp[Statistics[X]], xTag: ClassTag[X],aTag: ClassTag[Statistics[X]]): DefaultOrderingTreeContext[X,Statistics[X]] = {
+    DefaultOrderingTreeContext()(ord,equal,StatisticsAnnotator[X](),xTag,aTag)
   }
+  implicit def equalStaticProp[X](implicit o: Ordering[X]): EqualProp[Statistics[X]] = EqualStatP[X]()(StatisticsAnnotator[X]())
   implicit val intContext: DefaultOrderingTreeContext[Int,Statistics[Int]] = defaultContext[Int]
   implicit val longContext: LongTreeContext = LongTreeContext()
   implicit val doubleContext: DefaultOrderingTreeContext[Double,Statistics[Double]] = defaultContext[Double]
@@ -352,7 +354,8 @@ object Sequence {
     override def toString = "[" + seq + "]"
   }
 
-  implicit def sseq[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]](s: BSeq[X,A,C])(implicit context: C): SSeq[X,A,C] = SSeqImpl(s,context)
+  implicit def sseq[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  (s: BSeq[X,A,C])(implicit context: C): SSeq[X,A,C] = SSeqImpl(s,context)
 
   final def seq[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
   (x: X)(implicit c: C): SSeq[X,A,C] = sseq(seq2(x))

@@ -1,5 +1,6 @@
 package org.spread.core.constraint
 
+import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
 import org.spread.core.relation.Relation._
 
 //
@@ -10,49 +11,42 @@ import org.spread.core.relation.Relation._
 
 object Constraint{
 
-  trait Propagator[@specialized(Int,Long,Double) X] {
-    def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X])
-    def propagateAny(o1: Domain[_], o2: Domain[_])(implicit ord: Ordering[_]): (Domain[_],Domain[_]) = {
-      propagate(o1.asInstanceOf[Domain[X]],o2.asInstanceOf[Domain[X]])(ord.asInstanceOf[Ordering[X]])
-    }
-  }
-
-  case class EqualP[@specialized(Int,Long,Double) X]() extends Propagator[X] {
-    def propagate[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): (Domain[X],Domain[X]) = {
-      val one = propagateOne(o1,o2)
-      (one,one)
-    }
-    def propagateOne[X](o1: Domain[X], o2: Domain[X])(implicit ord: Ordering[X]): Domain[X] = {
-      if (ord.gt(o1.lowerBound,o2.upperBound)) EmptyDomain()
-      else if (ord.lt(o1.upperBound,o2.lowerBound)) EmptyDomain()
-      else DomainImpl(ord.max(o1.lowerBound,o2.lowerBound),ord.min(o1.upperBound,o2.upperBound))
-    }
-    override def toString = "EqualP"
-  }
-
-  trait Domain[@specialized(Int,Long,Double) X]{
+  trait PropValue {
     def isValid: Boolean
-    def lowerBound: X
-    def upperBound: X
   }
 
-  def createDomain[@specialized(Int,Long,Double) X](l: X, u: X) = DomainImpl(l,u)
-
-  case class DomainImpl[@specialized(Int,Long,Double) X](lowerBound: X,upperBound: X) extends Domain[X] {
-    def isValid = true
-    override def toString: String = lowerBound + "..." + upperBound
+  trait Prop[X] {
+    def propagate(o1: X, o2: X): (X,X)
+    def propagateAny(o1: Any, o2: Any): (X,X) = propagate(o1.asInstanceOf[X],o2.asInstanceOf[X])
   }
 
-  case class EmptyDomain[X]() extends Domain[X]{
-    def isValid = false
-    def error = sys.error("domain is empty")
-    def ord = error
-    def lowerBound: X = error
-    def upperBound: X = error
-    override def toString: String = ".."
+  trait EqualProp[X] extends Prop[X]
+
+  trait StatisticsProp[X] extends Prop[Statistics[X]]
+
+  case class EqualStatP[X](implicit ann: StatisticsAnnotator[X]) extends StatisticsProp[X] with EqualProp[Statistics[X]] {
+    def ord = ann.ordering
+    def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
+      val left = propagateOne(o1,o2)
+      val right = propagateOne(o2,o1)
+      (left,right)
+    }
+    def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
+      if (!o1.isValid || !o1.isValid) ann.none
+      if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
+      else if (ord.lt(o1.upperBound,o2.lowerBound)) ann.none
+      else {
+        // TODO: more tight bounds on first and last, we now set first=lower and last=upper
+        val lower = ord.max(o1.lowerBound,o2.lowerBound)
+        val upper = ord.min(o1.upperBound,o2.upperBound)
+        val sorted = o1.sorted && o2.sorted
+        createStats(lower,upper,lower,upper,sorted)
+      }
+    }
+    override def toString = "EqualStatP"
   }
 
-  case class RelConstraint[X](r1: RelCol[X],r2: RelCol[X],prop: Propagator[X]){
+  case class RelConstraint[X,XA](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
     override def toString = "" + r1 + prop + r2
   }
 

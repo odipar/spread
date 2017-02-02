@@ -1,6 +1,6 @@
 package org.spread.core.annotation
 
-import org.spread.core.constraint.Constraint.{Domain, EqualP}
+import org.spread.core.constraint.Constraint.{PropValue}
 
 //
 // Sequence Annotators, most notably StatisticsAnnotator
@@ -19,7 +19,10 @@ object Annotation {
   }
 
   trait NoAnnotation
-  object NoAnnotation extends NoAnnotation { override def toString = "'" }
+  object NoAnnotation extends NoAnnotation {
+    def isValid = false
+    override def toString = "'"
+  }
 
   case class NoAnnotator[@specialized(Int,Long,Double) X]() extends Annotator[X,NoAnnotation] {
     def none: NoAnnotation = NoAnnotation
@@ -27,16 +30,27 @@ object Annotation {
     def manyX(d: Array[X]): NoAnnotation = NoAnnotation
     def manyA(d: Array[NoAnnotation]): NoAnnotation = NoAnnotation
     def append(a1: NoAnnotation, a2: NoAnnotation): NoAnnotation = NoAnnotation
+    def isNone(a: NoAnnotation) = true
   }
 
-  trait Statistics[@specialized(Int,Long,Double) X] extends Domain[X]  {
+
+  trait Statistics[@specialized(Int,Long,Double) X] extends PropValue {
     def lowerBound: X
     def upperBound: X
     def first: X
     def last: X
     def sorted: Boolean
-    def isValid = true
     override def toString: String = "<" + first + "," + lowerBound + "," + "sorted=" +sorted + "," + upperBound + "," + last + ">"
+  }
+
+  case class InvalidStatistics[@specialized(Int,Long,Double) X]() extends Statistics[X] {
+    def error = sys.error("invalid statistics")
+    def lowerBound = error
+    def upperBound = error
+    def first = error
+    def last = error
+    def sorted = error
+    def isValid = false
   }
 
   case class StatisticsImpl3[@specialized(Int,Long,Double) X]
@@ -45,6 +59,7 @@ object Annotation {
     def first = lowerBound
     def last = upperBound
     def sorted = true
+    def isValid = true
   }
 
   case class StatisticsImpl2[@specialized(Int,Long,Double) X]
@@ -52,10 +67,13 @@ object Annotation {
     def first = lowerBound
     def last = upperBound
     def sorted = true
+    def isValid = true
   }
 
   case class StatisticsImpl[@specialized(Int,Long,Double) X]
-  (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean) extends Statistics[X]
+  (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean) extends Statistics[X] {
+    def isValid = true
+  }
 
   def createStats[@specialized(Int,Long,Double) X](lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean): Statistics[X] = {
     if ((lowerBound == first) && (upperBound == last) && sorted) {
@@ -66,7 +84,8 @@ object Annotation {
   }
 
   case class StatisticsAnnotator[@specialized(Int,Long,Double) X](implicit ord: Ordering[X]) extends Annotator[X,Statistics[X]]{
-    def none: Statistics[X] = sys.error("no stats")
+    def ordering = ord
+    def none: Statistics[X] = InvalidStatistics()
     def one(x: X) = StatisticsImpl2(x,x)
     def manyX(a: Array[X]): Statistics[X] ={
       var lower = a(0)
