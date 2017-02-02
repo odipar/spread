@@ -14,12 +14,7 @@ import scala.language.{existentials, implicitConversions}
 
 object Relation {
 
-  trait BRel[@specialized(Int,Long,Double) X,
-  @specialized(Int,Long,Double) XA,
-  @specialized(Int,Long,Double) Y,
-  @specialized(Int,Long,Double) YA,
-  XC <: OrderingContext[X,XA,XC],
-  YC <: OrderingContext[Y,YA,YC]] {
+  trait BRel[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]] {
     type R <: BRel[X,XA,Y,YA,XC,YC]
 
     def left: SSeq[X,XA,XC]
@@ -35,14 +30,15 @@ object Relation {
     }
     def empty = create(left.empty,right.empty)
     def annotationRange(s: Long, e: Long): (XA,YA) = (left.annotationRange(s,e),right.annotationRange(s,e))
+    def annotation: (XA,YA) = (left.annotation,right.annotation)
     override def toString = left.toString + "_" + right.toString
   }
 
-  type ST[@specialized(Int,Long,Double) X] = Statistics[X]
-  type OTC[@specialized(Int,Long,Double) X] = OrderingTreeContext[X,ST[X]]
-  type SSEQ[@specialized(Int,Long,Double) X, C <: OrderingContext[X,ST[X],C]] = SSeq[X,ST[X],C]
-  type ORD[@specialized(Int,Long,Double) X] = Ordering[X]
-  type CORD[@specialized(Int,Long,Double) X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
+  type ST[ X] = Statistics[X]
+  type OTC[ X] = OrderingTreeContext[X,ST[X]]
+  type SSEQ[ X, C <: OrderingContext[X,ST[X],C]] = SSeq[X,ST[X],C]
+  type ORD[ X] = Ordering[X]
+  type CORD[ X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
 
   // type wizardry: correct existentially typed BinRel, similar to BinRel[_,_,_,_]
 
@@ -64,14 +60,14 @@ object Relation {
     def create(left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC]): R = BinRel(left,right,xc,yc)
   }
 
-  def createRelArray[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
+  def createRelArray[ X: ClassTag, Y: ClassTag]
   (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y])  = {
     val xx = seqArray2[X,Statistics[X],OTC[X]](x)
     val yy = seqArray2[Y,Statistics[Y],OTC[Y]](y)
     BinRel(xx,yy,xc,yc)
   }
 
-  def createRel[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) Y: ClassTag]
+  def createRel[ X: ClassTag, Y: ClassTag]
   (x: Seq[(X,Y)])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y]) = {
     createRelArray(x.map(_._1).toArray,x.map(_._2).toArray)
   }

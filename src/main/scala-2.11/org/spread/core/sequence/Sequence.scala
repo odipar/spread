@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
 
 object Sequence {
 
-  trait BSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,C <: Context[X,A,C]] {
+  trait BSeq[X,A,C <: Context[X,A,C]] {
     type S = BSeq[X,A,C]
     def append(o: S)(implicit c: C): S
     def split(i: Long)(implicit c: C): (S,S)
@@ -23,10 +23,10 @@ object Sequence {
     def equalTo(o: S)(implicit c: C): Boolean
     def size: Long
     def height: Int
-    def annotation: A
+    def annotation(implicit c: C): A
   }
 
-  trait Context[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,C <: Context[X,A,C]] {
+  trait Context[X,A,C <: Context[X,A,C]] {
     type S = BSeq[X,A,C]
 
     implicit def annotator: Annotator[X,A]
@@ -35,13 +35,13 @@ object Sequence {
     def create(x: Array[X]): S
   }
 
-  trait OrderingContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, C <: OrderingContext[X,A,C]]
+  trait OrderingContext[X,A, C <: OrderingContext[X,A,C]]
     extends Context[X,A,C] {
     implicit def ordering: Ordering[X]
     implicit def equal: EqualProp[A]
   }
 
-  trait TreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,C <: TreeContext[X,A,C]] extends Context[X,A,C] {
+  trait TreeContext[X,A,C <: TreeContext[X,A,C]] extends Context[X,A,C] {
     type BTREE = BSeqTree[X,A,C]
     type BLEAF = BSeqLeaf[X,A,C]
 
@@ -154,7 +154,7 @@ object Sequence {
   }
 
   case class EmptySeq[X,A,C <: Context[X,A,C]](annotator: Annotator[X,A]) extends BSeq[X,A,C] {
-    def annotation = annotator.none
+    def annotation(implicit c: C) = annotator.none
     def size = 0.toLong
     def height = -1
     def split(i: Long)(implicit c: C) = (this,this)
@@ -164,7 +164,7 @@ object Sequence {
     override def toString = "<>"
   }
 
-  trait BSeqLeaf[@specialized(Int,Long,Double) X,A,C <: Context[X,A,C]] extends BSeq[X,A,C] {
+  trait BSeqLeaf[X,A,C <: Context[X,A,C]] extends BSeq[X,A,C] {
     def toArray: Array[X]
     def height = 0
     def first: X
@@ -172,7 +172,8 @@ object Sequence {
     override def toString = toArray.foldLeft("<")((x,y) => x + " " + y) + " >"
   }
 
-  case class BSeqLeafImpl[X,A,C <: TreeContext[X,A,C]](array: Array[X],annotation: A) extends BSeqLeaf[X,A,C] {
+  case class BSeqLeafImpl[X,A,C <: TreeContext[X,A,C]](array: Array[X],ann: A) extends BSeqLeaf[X,A,C] {
+    def annotation(implicit c: C) = ann
     def toArray = array
     def size = array.length
     def split(i: Long)(implicit c: C) = {
@@ -194,10 +195,12 @@ object Sequence {
     def append(o: S)(implicit c: C): S = c.append(this,o)
   }
 
-  case class BSeqTreeImpl[X,A,C <: TreeContext[X,A,C]](childs: Array[BSeq[X,A,C]],sizes: Array[Long],annotation: A)
-    extends BSeqTree[X,A,C]
+  case class BSeqTreeImpl[X,A,C <: TreeContext[X,A,C]](childs: Array[BSeq[X,A,C]],sizes: Array[Long],ann: A)
+    extends BSeqTree[X,A,C] {
+    def annotation(implicit c: C) = ann
+  }
 
-  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
+  trait OrderingTreeContext[X,A]
     extends TreeContext[X,A,OrderingTreeContext[X,A]] with OrderingContext[X,A,OrderingTreeContext[X,A]] {
     type C = OrderingTreeContext[X,A]
     implicit def xTag: ClassTag[X]
@@ -231,7 +234,7 @@ object Sequence {
     }
   }
 
-  case class DefaultOrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
+  case class DefaultOrderingTreeContext[X,A]
   (implicit ordering: Ordering[X], equal: EqualProp[A], ann: Annotator[X,A],xTag: ClassTag[X],aTag: ClassTag[A]) extends OrderingTreeContext[X,A] {
     implicit def annotator = ann
     implicit def context = this
@@ -278,7 +281,7 @@ object Sequence {
     def sorted = true
     def size = upperBound - lowerBound + 1
     def toArray = (lowerBound to upperBound).toArray
-    def annotation = this
+    def annotation(implicit c: OrderingTreeContext[Long,Statistics[Long]]) = this
     def first = lowerBound
     def last = upperBound
     def isValid = true
@@ -301,7 +304,7 @@ object Sequence {
     }
   }
 
-  def defaultContext[@specialized(Int,Long,Double) X]
+  def defaultContext[X]
   (implicit ord: Ordering[X], equal: EqualProp[Statistics[X]], xTag: ClassTag[X],aTag: ClassTag[Statistics[X]]): DefaultOrderingTreeContext[X,Statistics[X]] = {
     DefaultOrderingTreeContext()(ord,equal,StatisticsAnnotator[X](),xTag,aTag)
   }
@@ -328,7 +331,51 @@ object Sequence {
     override def toString = "L:" + seq.toString
   }
 
-  trait SSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, C <: OrderingContext[X,A,C]] {
+  case class DualOrdering[X,Y](x: Ordering[X], y: Ordering[Y]) extends Ordering[(X,Y)] {
+    def compare(o1: (X,Y), o2: (X,Y)): Int = {
+      val c = x.compare(o1._1,o2._1)
+      if (c == 0) y.compare(o1._2,o2._2)
+      else c
+    }
+  }
+  case class BinContext[X,XA,Y,YA,AA,XC <: OrderingContext[X,XA,XC], YC <: OrderingContext[Y,YA,YC]]
+  (left: XC, right: YC, f: (XA,YA) => AA) extends OrderingContext[(X,Y),AA, BinContext[X,XA,Y,YA,AA,XC,YC]] {
+    val ordering = DualOrdering(left.ordering,right.ordering)
+    def equal = sys.error("not yet")
+    def empty = BBSeq(left.empty,right.empty)
+    implicit def annotator: Annotator[(X,Y),AA] = sys.error("not yet")
+    def create(a: Array[(X,Y)]) = sys.error("not yet")
+  }
+
+  case class BBSeq[X,XA,Y,YA,AA,XC <: OrderingContext[X,XA,XC], YC <: OrderingContext[Y,YA,YC]]
+  (left: BSeq[X,XA,XC], right: BSeq[Y,YA,YC])
+    extends BSeq[(X,Y),AA,BinContext[X,XA,Y,YA,AA,XC,YC]] {
+
+    type C = BinContext[X,XA,Y,YA,AA,XC,YC]
+
+    def append(o: S)(implicit c: C): S = {
+      val oo = o.asInstanceOf[BBSeq[X,XA,Y,YA,AA,XC,YC]]
+      BBSeq(left.append(oo.left)(c.left),right.append(oo.right)(c.right))
+    }
+    def split(i: Long)(implicit c: C): (S,S) = {
+      val (ll,lr) = left.split(i)(c.left)
+      val (rl,rr) = right.split(i)(c.right)
+      (BBSeq(ll,rl),BBSeq(lr,rr))
+    }
+    def annotationRange(start: Long,end: Long)(implicit c: C) = {
+      c.f(left.annotationRange(start,end)(c.left),right.annotationRange(start,end)(c.right))
+    }
+    def equalTo(o: S)(implicit c: C) = {
+      val oo = o.asInstanceOf[BBSeq[X,XA,Y,YA,AA,XC,YC]]
+      left.equalTo(oo.left)(c.left) && right.equalTo(oo.right)(c.right)
+    }
+
+    def height: Int = left.height max right.height
+    def size = left.size
+    def annotation(implicit c: C): AA = c.f(left.annotation(c.left),right.annotation(c.right))
+  }
+
+  trait SSeq[X,A, C <: OrderingContext[X,A,C]] {
     implicit def context: C
     def seq: BSeq[X,A,C]
     def append(o: SSeq[X,A,C]): SSeq[X,A,C]
@@ -339,6 +386,9 @@ object Sequence {
     def height: Int = seq.height
     def annotation: A = seq.annotation
     def empty: SSeq[X,A,C]
+    def combine[Y,YA,AA,CY <: OrderingContext[Y,YA,CY]](o: SSeq[Y,YA,CY])(implicit c: BinContext[X,A,Y,YA,AA,C,CY]) = {
+      SSeqImpl(BBSeq[X,A,Y,YA,AA,C,CY](this.seq,o.seq),c)
+    }
     final def ordering: Ordering[X] = context.ordering
   }
 
@@ -354,19 +404,19 @@ object Sequence {
     override def toString = "[" + seq + "]"
   }
 
-  implicit def sseq[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  implicit def sseq[X: ClassTag,A,C <: OrderingContext[X,A,C]]
   (s: BSeq[X,A,C])(implicit context: C): SSeq[X,A,C] = SSeqImpl(s,context)
 
-  final def seq[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  final def seq[X: ClassTag,A,C <: OrderingContext[X,A,C]]
   (x: X)(implicit c: C): SSeq[X,A,C] = sseq(seq2(x))
 
-  final def seq2[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  final def seq2[X: ClassTag,A,C <: OrderingContext[X,A,C]]
   (x: X)(implicit c: C): BSeq[X,A,C] = c.create(Array[X](x))
 
-  final def seqArray[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  final def seqArray[X: ClassTag,A,C <: OrderingContext[X,A,C]]
   (x: Array[X])(implicit c: C): SSeq[X,A,C] = sseq(seqArray2(x))
 
-  final def seqArray2[@specialized(Int,Long,Double) X: ClassTag,@specialized(Int,Long,Double) A,C <: OrderingContext[X,A,C]]
+  final def seqArray2[X: ClassTag,A,C <: OrderingContext[X,A,C]]
   (x: Array[X])(implicit c: C): BSeq[X,A,C] = {
     if (x.length <= 0) c.empty
     else if (x.length <= 32) c.create(x)
@@ -376,6 +426,18 @@ object Sequence {
     }
   }
 
+  implicit def toBinContext[X,XA,Y,YA,AA,XC <: OrderingContext[X,XA,XC], YC <: OrderingContext[Y,YA,YC]](implicit xc: XC, yc: YC, f: (XA,YA) => AA): BinContext[X,XA,Y,YA,AA,XC,YC] = BinContext(xc,yc,f)
+
+  implicit def dualStats[X,Y]: (Statistics[X],Statistics[Y]) => Statistics[(X,Y)] = {
+    (x: Statistics[X],y: Statistics[Y]) => createStats(
+      (x.lowerBound,y.lowerBound),
+      (x.upperBound,y.upperBound),
+      (x.first,y.first),
+      (x.last,y.last),
+      x.sorted && y.sorted
+    )
+  }
+
   final def main(args: Array[String]): Unit = {
     val s = 10
     //var r: BSeq[Long,Statistics[Long],ContextImpl[Long,Statistics[Long]]]= seqArray(Array())
@@ -383,11 +445,12 @@ object Sequence {
     var rr = r
 
     for (i <- 0 until s) {
-      r = r.append(seq(1))
-      rr = rr.append(seq(i*2))
+      r = r.append(seq(i/2))
+      rr = rr.append(seq(80-i))
     }
 
-    println(rr)
+    val k = r.combine(rr)
+    println("k:" + Combine.sort(k))
   }
 
 
