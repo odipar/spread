@@ -8,7 +8,7 @@ import org.spread.core.sequence.Sequence._
 import org.scalacheck.Prop.BooleanOperators
 
 object BSeqSpecification extends Properties("BSeq") {
-  type BSEQ[X] = SSeq[X,Statistics[X],OrderingTreeContext[X,Statistics[X]]]
+  /*type BSEQ[X] = SSeq[X,Statistics[X],OrderingTreeContext[X,Statistics[X]]]
 
   implicit def arbitraryIntSeq: Arbitrary[BSEQ[Long]] = Arbitrary(longSeq)
 
@@ -59,5 +59,5 @@ object BSeqSpecification extends Properties("BSeq") {
     val d = difference(s,u)
 
     s.equalTo(d)
-  }
+  } */
 }

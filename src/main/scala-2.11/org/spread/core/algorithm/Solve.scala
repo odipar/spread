@@ -3,7 +3,9 @@ package org.spread.core.algorithm
 import org.spread.core.constraint.Constraint._
 import org.spread.core.relation.Relation._
 import org.spread.core.annotation.Annotation._
-import org.spread.core.sequence.Sequence.{LSSEQ, OrderingContext, createLongBSeq, emptyLongBSeq}
+
+import scala.reflect.ClassTag
+import org.spread.core.sequence.Sequence.{createRelArray, OrderingContext}
 
 import scala.language.{existentials, implicitConversions}
 
@@ -15,7 +17,7 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  type CREL = ConstrainedRel[X,XA,Y,YA,XC,YC] forSome {
+  /*type CREL = ConstrainedRel[X,XA,Y,YA,XC,YC] forSome {
     type X ; type XA <: PropValue; type Y; type YA <: PropValue
     type XC <: OrderingContext[X,XA,XC] ; type YC <: OrderingContext[Y,YA,YC]
   }
@@ -187,10 +189,12 @@ object Solve {
     def R: RCol[Y,YA] = RightRCol[X,XA,Y,YA,XC,YC](rel)
   }
 
+
   implicit def toColSyntax[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
   (id: BinRel[X,XA,Y,YA,XC,YC]): ColSyntax[X,XA,Y,YA,XC,YC] = ColSyntax(id)
 
   implicit def annotator[X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
+   */
 
   final def main(args: Array[String]): Unit = {
 
@@ -209,9 +213,9 @@ object Solve {
       (500.toLong until 510).toArray
     )
 
-    println("start")
+    println("start: " + c)
 
-    var m = createModel.
+   /* var m = createModel.
       addRelation('a, a).
       addRelation('b, b).
       addRelation('c, c).
@@ -222,7 +226,7 @@ object Solve {
     val s = m.solve
 
     println("s: " + Combine.sort(s('c)))
-
+           */
 
   }
 

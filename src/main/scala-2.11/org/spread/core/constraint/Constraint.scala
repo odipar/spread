@@ -46,8 +46,8 @@ object Constraint{
     override def toString = "EqualStatP"
   }
 
-  case class RelConstraint[X,XA](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
+  /*case class RelConstraint[X,XA](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
     override def toString = "" + r1 + prop + r2
-  }
+  } */
 
 }

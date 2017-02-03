@@ -14,53 +14,9 @@ import scala.language.{existentials, implicitConversions}
 
 object Relation {
 
-  trait BRel[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]] {
-    type R <: BRel[X,XA,Y,YA,XC,YC]
 
-    def left: SSeq[X,XA,XC]
-    def right: SSeq[Y,YA,YC]
 
-    def create(left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC]): R
-    def size = left.size
-    def append(r: R): R = create(left.append(r.left),right.append(r.right))
-    def split(i: Long): (R,R) = {
-      val (ll,lr) = left.split(i)
-      val (rl,rr) = right.split(i)
-      (create(ll,rl),create(lr,rr))
-    }
-    def empty = create(left.empty,right.empty)
-    def annotationRange(s: Long, e: Long): (XA,YA) = (left.annotationRange(s,e),right.annotationRange(s,e))
-    def annotation: (XA,YA) = (left.annotation,right.annotation)
-    override def toString = left.toString + "_" + right.toString
-  }
-
-  type ST[ X] = Statistics[X]
-  type OTC[ X] = OrderingTreeContext[X,ST[X]]
-  type SSEQ[ X, C <: OrderingContext[X,ST[X],C]] = SSeq[X,ST[X],C]
-  type ORD[ X] = Ordering[X]
-  type CORD[ X,C <: CORD[X,C]] = OrderingContext[X,Statistics[X],C]
-
-  // type wizardry: correct existentially typed BinRel, similar to BinRel[_,_,_,_]
-
-  type EREL = BinRel[X,XA,Y,YA,XC,YC] forSome {
-    type X ; type XA; type Y; type YA; type XC <: OrderingContext[X,XA,XC] ; type YC <: OrderingContext[Y,YA,YC]
-  }
-
-  case class BinRel[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-  (left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC],xc: XC,yc: YC)
-  extends BRel[X,XA,Y,YA,XC,YC] {
-    type R = BinRel[X,XA,Y,YA,XC,YC]
-
-    { assert(left.size == right.size) }
-
-    implicit def xcontext = xc
-    implicit def ycontext = yc
-    implicit def xord = xc.ordering
-    implicit def yord = yc.ordering
-    def create(left: SSeq[X,XA,XC],right: SSeq[Y,YA,YC]): R = BinRel(left,right,xc,yc)
-  }
-
-  def createRelArray[ X: ClassTag, Y: ClassTag]
+  /*def createRelArray[ X: ClassTag, Y: ClassTag]
   (x: Array[X],y: Array[Y])(implicit ordx: ORD[X],ordy: ORD[Y],xc: OTC[X],yc: OTC[Y])  = {
     val xx = seqArray2[X,Statistics[X],OTC[X]](x)
     val yy = seqArray2[Y,Statistics[Y],OTC[Y]](y)
@@ -137,5 +93,5 @@ object Relation {
     val c = a.append(b)
 
     println("c: " + c)
-  }
+  }    */
 }
