@@ -35,8 +35,6 @@ object Combine {
     Combiner[X,SQ,S,C]().intersect(s1.asInstanceOf[SQ],s2.asInstanceOf[SQ])
   }
 
-
-
   case class Combiner[X,SQ <: SSeq[X,Statistics[X],SQ,S,C],S <: BSEQ[X,S,C], C <: CORD[X,S,C]]() {
 
     def sort(r: SQ): SQ = {
@@ -55,6 +53,7 @@ object Combine {
       left.annotation.last
     }
 
+    // TODO: do a range search, and than split (also for bigger and same)
     def smaller(s: SQ,elem: X): SQ = {
       val ord = s.ordering
       val ann = s.annotation
@@ -144,9 +143,10 @@ object Combine {
     def combine(s1: SQ,s2: SQ,op: MergeOperator): SQ = combine_(sort(s1),sort(s2),op)
 
     def combine_(s1: SQ,s2: SQ,op: MergeOperator): SQ = {
+      comb = comb + 1
       if (s1.size == 0) op.append(s1,s2)
       else if (s2.size == 0) op.append(s1,s2)
-      else if (s1.equalTo(s2)) op.equal(s1)
+      else if (s1.equalTo(s2)) {op.equal(s1)}
       else {
         val ann1 = s1.annotation
         val ann2 = s2.annotation

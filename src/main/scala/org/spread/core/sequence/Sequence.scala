@@ -289,7 +289,7 @@ object Sequence {
     def first = lowerBound
     def last = upperBound
     def isValid = true
-    override def toString = lowerBound + ".." + upperBound
+    override def toString = lowerBound + "src/test" + upperBound
   }
 
   case class LongTreeContext(implicit ordering: Ordering[Long],equal: EqualProp[Statistics[Long]], xTag: ClassTag[Long],aTag: ClassTag[Statistics[Long]])
@@ -455,7 +455,7 @@ object Sequence {
   }
 
   final def main(args: Array[String]): Unit = {
-    val s = 10000
+    val s = 100000
 
     var r = seqstat[Int](Array())  // empty sequence with statistics
     var rr = seqstat[Int](Array())
@@ -471,10 +471,10 @@ object Sequence {
     val zzzz = zzz.combine(zzz)
     /*val zzzzz = zzzz.combine(zzzz)
     val zzzzzz = zzzzz.combine(zzzzz)
-    val zzzzzzz = zzzzzz.combine(zzzzzz)*/
+    val zzzzzzz = zzzzzz.combine(zzzzzz) */
 
     println("start")
-    println("zzzz: " + Combine.sort(zzzz).size)
+    println("zzzz: " + Combine.sort(z).size)
     println("end")
   }
 
