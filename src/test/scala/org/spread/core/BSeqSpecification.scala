@@ -6,11 +6,11 @@ import org.scalacheck.Prop.forAll
 import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.Sequence._
 import org.scalacheck.Prop.BooleanOperators
-import org.spread.core.sequence.AnnotatedTree._
-import org.spread.core.sequence.RangeSequence._
+import org.spread.core.sequence.AnnotatedTreeSequence._
+import org.spread.core.sequence.RangedSequence._
 
 object BSeqSpecification extends Properties("BSeq") {
-  type SSEQ = AnnotatedTreeSeq[Long,Statistics[Long]]
+  type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
 
   val factory = EmptyLongTreeSeq()
   implicit def arbitraryIntSeq: Arbitrary[SSEQ] = Arbitrary(longSeq)

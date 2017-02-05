@@ -1,18 +1,18 @@
 package org.spread.core.sequence
 
 import org.spread.core.annotation.Annotation.{Statistics, StatisticsImpl2}
-import org.spread.core.sequence.AnnotatedTree._
+import org.spread.core.sequence.AnnotatedTreeSequence._
 
-object RangeSequence {
+object RangedSequence {
 
   type SL = Statistics[Long]
   
   trait LongTreeSeqImpl
-    extends AnnotatedTreeSeq[Long,SL] {
+    extends AnnTreeSeq[Long,SL] {
 
     type TC = OrderingTreeContext[Long,SL]
     
-    def create(s: AnnotatedTreeSeq[Long,SL]#AS) = FullLongTreeSeq(s)(context)
+    def create(s: AnnTreeSeq[Long,SL]#AS) = FullLongTreeSeq(s)(context)
     def create(lowerBound: Long,upperBound: Long) = FullLongTreeSeq(createRange(lowerBound,upperBound)(self))(context)
     
     def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS) = {
@@ -39,13 +39,13 @@ object RangeSequence {
   }
 
   case class FullLongTreeSeq
-  (sequence: AnnotatedTreeSeq[Long,SL]#AS)(implicit c: OrderingTreeContext[Long,SL]) extends LongTreeSeqImpl {
+  (sequence: AnnTreeSeq[Long,SL]#AS)(implicit c: OrderingTreeContext[Long,SL]) extends LongTreeSeqImpl {
 
     def context = c
   }
   
   case class LongLeafRange(lowerBound: Long,upperBound: Long)
-    extends BSeqLeaf[Long,Statistics[Long]] with Statistics[Long] {
+    extends BSeqLeaf[Long,SL] with Statistics[Long] {
     { assert(lowerBound <= upperBound) }
 
     def annotation(implicit c: SS) = this
@@ -63,7 +63,7 @@ object RangeSequence {
         (l,r)
       }
     }
-    def annotationRange(start: Long,end: Long)(implicit c: SS): Statistics[Long] = {
+    def annotationRange(start: Long,end: Long)(implicit c: SS): SL = {
       if (end >= size) annotationRange(start,size - 1)
       else if (start < 0) annotationRange(0,end)
       else StatisticsImpl2(lowerBound + start,lowerBound + end)
@@ -83,7 +83,7 @@ object RangeSequence {
     def sorted = true
     def size = upperBound - lowerBound + 1
     def toArray = (lowerBound to upperBound).toArray
-    def annotation(implicit c: OrderingTreeContext[Long,Statistics[Long]]) = this
+    def annotation(implicit c: OrderingTreeContext[Long,SL]) = this
     def first = lowerBound
     def last = upperBound
     def isValid = true

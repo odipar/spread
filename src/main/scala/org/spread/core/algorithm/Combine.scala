@@ -4,20 +4,21 @@ import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.Sequence._
 
 object Combine {
-  type OAS[@specialized(Int,Long,Double) X,S <: OrderedAnnotatedSeq[X,Statistics[X],S]] =
-    OrderedAnnotatedSeq[X,Statistics[X],S]
-
-  def sort[@specialized(Int,Long,Double) X,S <: OAS[X,S]](x: OAS[X,S]) = Combiner[X,S]().sort(x.asInstanceOf[S])
-  def union[@specialized(Int,Long,Double) X,S <: OAS[X,S]](s1: OAS[X,S],s2: OAS[X,S]) = {
+  type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
+  
+  def sort[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
+    Combiner[X,S]().sort(x.asInstanceOf[S])
+  }
+  def union[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().union(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  def difference[@specialized(Int,Long,Double) X,S <: OAS[X,S]](s1: OAS[X,S],s2: OAS[X,S]) = {
+  def difference[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  def intersect[@specialized(Int,Long,Double) X,S <: OAS[X,S]](s1: OAS[X,S],s2: OAS[X,S]) = {
-    Combiner[X,S]().intersect(s1.asInstanceOf[S],s2.asInstanceOf[S])
+  def intersect[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+    Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  case class Combiner[@specialized(Int,Long,Double) X,S <: OAS[X,S]]() {
+  case class Combiner[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]]() {
     type SQ = S
     
     def sort(r: SQ): SQ = {
@@ -39,7 +40,7 @@ object Combine {
 
     // TODO: do a range search, and than split (also for bigger and same)
     def smaller[SQQ <: SQ](s: SQQ,elem: X): SQ = {
-      val ord = s.ordering
+      val ord = s.context.ord
       val ann = s.annotation
       if (s.size == 0) s
       else if (ord.lt(ann.last,elem)) s
@@ -51,7 +52,7 @@ object Combine {
     }
 
     def bigger(s: SQ,elem: X): SQ = {
-      val ord = s.ordering
+      val ord = s.context.ord
       val ann = s.annotation
       if (s.size == 0) s
       else if (ord.gt(ann.first,elem)) s
@@ -63,7 +64,7 @@ object Combine {
     }
 
     def same(s: SQ,elem: X): SQ = {
-      val ord = s.ordering
+      val ord = s.context.ord
       val ann = s.annotation
       if (s.size == 0) s
       else if (ord.equiv(ann.first,elem) && ord.equiv(ann.last,elem)) s
@@ -133,7 +134,7 @@ object Combine {
       else {
         val ann1 = s1.annotation
         val ann2 = s2.annotation
-        val ord = s1.ordering
+        val ord = s1.context.ord
         if (ord.lt(ann1.last,ann2.first)) op.append(s1,s2)
         else if (ord.lt(ann2.last,ann1.first)) op.append(s2,s1)
         else if (s1.size == 1 && s2.size == 1) {

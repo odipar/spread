@@ -6,20 +6,21 @@ import org.spread.core.annotation.Annotation._
 import scala.reflect.ClassTag
 import org.spread.core.algorithm.Combine._
 
-object AnnotatedTree {
+object AnnotatedTreeSequence {
 
-  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingContext[X] {
+  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingContext[X]
+  {
     def annotator: Annotator[X,A]
     def xTag: ClassTag[X]
     def aTag: ClassTag[A]
   }
 
-  trait AnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-    extends OrderedAnnotatedSeq[X,A,AnnotatedTreeSeq[X,A]]  {
+  trait AnnTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
+    extends OrderedAnnSeq[X,A,AnnTreeSeq[X,A]]  {
 
     type TC <: OrderingTreeContext[X,A]
     type AS = BSeqTr[X,A]
-    type SS = AnnotatedTreeSeq[X,A]
+    type SS = AnnTreeSeq[X,A]
     type SAS = SS#AS
 
     def self = this
@@ -111,10 +112,10 @@ object AnnotatedTree {
     }
   }
 
-  trait BSeqTr[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends ASeq[X,A,AnnotatedTreeSeq[X,A]]
+  trait BSeqTr[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends ASeq[X,A,AnnTreeSeq[X,A]]
   {
     type AS = BSeqTr[X,A]
-    type SS = AnnotatedTreeSeq[X,A]
+    type SS = AnnTreeSeq[X,A]
     type SAS = SS#AS
     def height: Int
   }
@@ -222,12 +223,12 @@ object AnnotatedTree {
   }
 
   case class BSeqTreeImpl
-  [@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, ARR <: Array[AnnotatedTreeSeq[X,A]#AS]]
+  [@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, ARR <: Array[AnnTreeSeq[X,A]#AS]]
   (childs: ARR,sizes: Array[Long],ann: A) extends BSeqTree[X,A] {
+
     def annotation(implicit c: SS) = ann
-    
   }
-  
+
   case class DefaultTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
   ()(implicit o: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A]) extends OrderingTreeContext[X,A] {
     def ord = o
@@ -237,10 +238,10 @@ object AnnotatedTree {
   }
 
   trait AnnotatedTreeSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-    extends AnnotatedTreeSeq[X,A] {
+    extends AnnTreeSeq[X,A] {
 
     type TC = OrderingTreeContext[X,A]
-    def create(s: AnnotatedTreeSeq[X,A]#AS) = FullAnnotatedTreeSeq(s)(context)
+    def create(s: AnnTreeSeq[X,A]#AS) = FullAnnotatedTreeSeq(s)(context)
   }
 
   case class EmptyAnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
@@ -251,8 +252,8 @@ object AnnotatedTree {
   }
 
   case class FullAnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-  (sequence: AnnotatedTreeSeq[X,A]#AS)(implicit c: OrderingTreeContext[X,A]) extends AnnotatedTreeSeqImpl[X,A] {
-    
+  (sequence: AnnTreeSeq[X,A]#AS)(implicit c: OrderingTreeContext[X,A]) extends AnnotatedTreeSeqImpl[X,A] {
+
     def context = c
   }
 
@@ -270,10 +271,13 @@ object AnnotatedTree {
 
     val factory = EmptyAnnotatedTreeSeq[Int,Statistics[Int]]()
     var b = factory.emptySeq
+    var b2 = factory.emptySeq
 
-    for (i <- 0 until 100) { b = b :+ (i) }
+    for (i <- 0 until 100) { b = b :+ -i }
+    for (i <- 0 until 100) { b2 = b2 :+ i }
 
-    println(union(b,b).size)
-
+    val p = b.combine(b2)
+    println("p: " + p)
+    println("sort(p): " + sort(p))
   }
 }
