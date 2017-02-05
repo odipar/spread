@@ -1,12 +1,5 @@
 package org.spread.core.algorithm
 
-import org.spread.core.constraint.Constraint._
-import org.spread.core.relation.Relation._
-import org.spread.core.annotation.Annotation._
-
-import scala.reflect.ClassTag
-import org.spread.core.sequence.Sequence.{createRelArray, OrderingContext}
-
 import scala.language.{existentials, implicitConversions}
 
 //
@@ -198,7 +191,7 @@ object Solve {
 
   final def main(args: Array[String]): Unit = {
 
-    val a = createRelArray(
+    /*val a = createRelArray(
       (0.toLong until 100000).toArray,
       (0.toLong until 100000).toArray
     )
@@ -213,7 +206,7 @@ object Solve {
       (500.toLong until 510).toArray
     )
 
-    println("start: " + c)
+    println("start: " + c)*/
 
    /* var m = createModel.
       addRelation('a, a).

@@ -1,7 +1,6 @@
 package org.spread.core.constraint
 
 import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
-import org.spread.core.relation.Relation._
 
 //
 // Standard constraint propagation objects
@@ -9,7 +8,7 @@ import org.spread.core.relation.Relation._
 // Copyright 2017: Robbert van Dalen
 //
 
-object Constraint{
+object Constraint {
 
   trait PropValue {
     def isValid: Boolean
