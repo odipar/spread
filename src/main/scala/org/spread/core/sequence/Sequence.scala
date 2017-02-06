@@ -31,4 +31,5 @@ object Sequence {
   trait NoContext extends Context[Nothing]
   object NoContext extends NoContext
   trait OrderingContext[@specialized(Int,Long,Double) X] extends Context[X] { def ord: Ordering[X] }
+
 }

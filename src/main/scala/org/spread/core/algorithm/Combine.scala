@@ -6,20 +6,35 @@ import org.spread.core.sequence.AnnotatedSequence._
 object Combine {
   type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
   
-  def sort[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
+  private def sort2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
     Combiner[X,S]().sort(x.asInstanceOf[S])
   }
-  def union[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def union2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().union(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  def difference[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def difference2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  def intersect[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def intersect2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
+  }
+  
+  case class CombineSyntax[X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]) {
+    def sort = sort2(s)
+    def union(o: SEQSTAT[X,S]) = union2(s,o)
+    def difference(o: SEQSTAT[X,S]) = difference2(s,o)
+    def intersect(o: SEQSTAT[X,S]) = intersect2(s,o)
+
+    def ∪(o: SEQSTAT[X,S]) = union(o)
+    def ∩(o: SEQSTAT[X,S]) = intersect(o)
+    def ⊕(o: SEQSTAT[X,S]) = difference(o)
   }
 
-  case class Combiner[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]]() {
+  implicit def syntax[@specialized(Int,Long,Double) X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]): CombineSyntax[X,S] = {
+    CombineSyntax(s)
+  }
+
+  private case class Combiner[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]]() {
     type SQ = S
     
     def sort(r: SQ): SQ = {
@@ -40,7 +55,7 @@ object Combine {
 
 
     // TODO: do a range search, and than split (also for bigger and same)
-    def smaller[SQQ <: SQ](s: SQQ,elem: X): SQ = {
+    def smaller(s: SQ,elem: X): SQ = {
       val ord = s.context.ord
       val ann = s.annotation
       if (s.size == 0) s

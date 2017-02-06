@@ -4,7 +4,6 @@ import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.forAll
 import org.spread.core.annotation.Annotation.Statistics
-import org.spread.core.sequence.Sequence._
 import org.scalacheck.Prop.BooleanOperators
 import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.RangedSequence._
@@ -57,9 +56,9 @@ object BSeqSpecification extends Properties("BSeq") {
   property("multiSet") = forAll { (p: SSEQ) =>
     import org.spread.core.algorithm.Combine._
 
-    val s = sort(p)
-    val u = union(s,s)
-    val d = difference(s,u)
+    val s = p.sort
+    val u = s.union(s)
+    val d = s.difference(u)
 
     s.equalTo(d)
   }
