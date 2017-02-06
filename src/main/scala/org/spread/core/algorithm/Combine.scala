@@ -1,7 +1,7 @@
 package org.spread.core.algorithm
 
 import org.spread.core.annotation.Annotation.Statistics
-import org.spread.core.sequence.Sequence._
+import org.spread.core.sequence.AnnotatedSequence._
 
 object Combine {
   type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
@@ -18,6 +18,7 @@ object Combine {
   def intersect[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
+
   case class Combiner[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]]() {
     type SQ = S
     

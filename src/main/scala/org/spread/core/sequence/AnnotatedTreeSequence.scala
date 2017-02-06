@@ -2,6 +2,7 @@ package org.spread.core.sequence
 
 
 import Sequence._
+import AnnotatedSequence._
 import org.spread.core.annotation.Annotation._
 import scala.reflect.ClassTag
 import org.spread.core.algorithm.Combine._
@@ -265,19 +266,5 @@ object AnnotatedTreeSequence {
     (implicit ord: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A]) = {
     
     DefaultTreeContext()(ord,xt,at,ann)
-  }
-
-  final def main(args: Array[String]): Unit = {
-
-    val factory = EmptyAnnotatedTreeSeq[Int,Statistics[Int]]()
-    var b = factory.emptySeq
-    var b2 = factory.emptySeq
-
-    for (i <- 0 until 100) { b = b :+ -i }
-    for (i <- 0 until 100) { b2 = b2 :+ i }
-
-    val p = b.combine(b2)
-    println("p: " + p)
-    println("sort(p): " + sort(p))
   }
 }
