@@ -34,7 +34,6 @@ object AnnotatedTreeSequence {
     def minWidth = 16
     final def maxWidth = minWidth*4
 
-    def height = sequence.height
     def annotator: Annotator[X,A] = context.annotator
     def empty: SAS = EmptySeq()
 
@@ -118,7 +117,6 @@ object AnnotatedTreeSequence {
     type AS = BSeqTr[X,A]
     type SS = AnnTreeSeq[X,A]
     type SAS = SS#AS
-    def height: Int
   }
 
   trait BSeqTree[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends BSeqTr[X,A] {
@@ -184,6 +182,7 @@ object AnnotatedTreeSequence {
     def annotation(implicit c: SS) = c.annotator.none
     def size = 0.toLong
     def height = -1
+    def some = sys.error("Empty sequence")
     def split(i: Long)(implicit c: SS) = (this,this)
     def append[AAS <: SAS](o: AAS)(implicit c: SS): SAS = o
     def annotationRange(start: Long,end: Long)(implicit c: SS) = c.annotator.none
@@ -204,6 +203,7 @@ object AnnotatedTreeSequence {
     def annotation(implicit c: SS) = ann
     def toArray = array
     def size = array.length
+    def some = array(array.length/2)
     def split(i: Long)(implicit c: SS) = {
       if (i >= size) (this,c.empty)
       else if (i < 0) (c.empty,this)
@@ -226,7 +226,7 @@ object AnnotatedTreeSequence {
   case class BSeqTreeImpl
   [@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, ARR <: Array[AnnTreeSeq[X,A]#AS]]
   (childs: ARR,sizes: Array[Long],ann: A) extends BSeqTree[X,A] {
-
+    def some = childs(childs.length/2).some
     def annotation(implicit c: SS) = ann
   }
 

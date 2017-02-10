@@ -48,6 +48,7 @@ object RangedSequence {
     extends BSeqLeaf[Long,SL] with Statistics[Long] {
     { assert(lowerBound <= upperBound) }
 
+    def some = (lowerBound + upperBound)/2
     def annotation(implicit c: SS) = this
     def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS) = {
       if (lowerBound > upperBound) c.empty

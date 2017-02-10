@@ -1,5 +1,10 @@
 package org.spread.core.algorithm
 
+import org.spread.core.constraint.Constraint.PropValue
+import org.spread.core.sequence.AnnotatedSequence.AnnotatedSeq
+//import org.spread.core.sequence.PairedSequence.PairedSeq
+import org.spread.core.sequence.Sequence.{OrderingContext, Seq}
+
 import scala.language.{existentials, implicitConversions}
 
 //
@@ -10,7 +15,10 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  /*type CREL = ConstrainedRel[X,XA,Y,YA,XC,YC] forSome {
+  /*type OSEQ[X,XA,S <: AnnotatedSeq[X,XA,S]] = AnnotatedSeq[X,XA,S] { type TC <: OrderingContext[X] }
+  type BinRel[X,XA <: PropValue,Y,YA <: PropValue,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2],S <: PairedSeq[X,Y,S1,S2,S]] = PairedSeq[X,Y,S1,S2,S]
+
+  type CREL = ConstrainedRel[X,XA,Y,YA,XC,YC] forSome {
     type X ; type XA <: PropValue; type Y; type YA <: PropValue
     type XC <: OrderingContext[X,XA,XC] ; type YC <: OrderingContext[Y,YA,YC]
   }

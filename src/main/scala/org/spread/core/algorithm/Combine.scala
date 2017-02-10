@@ -2,6 +2,7 @@ package org.spread.core.algorithm
 
 import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.AnnotatedSequence._
+import org.spread.core.sequence.Sequence._
 
 object Combine {
   type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
@@ -21,13 +22,14 @@ object Combine {
   
   case class CombineSyntax[X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]) {
     def sort = sort2(s)
+    
     def union(o: SEQSTAT[X,S]) = union2(s,o)
     def difference(o: SEQSTAT[X,S]) = difference2(s,o)
     def intersect(o: SEQSTAT[X,S]) = intersect2(s,o)
 
-    def ∪(o: SEQSTAT[X,S]) = union(o)
-    def ∩(o: SEQSTAT[X,S]) = intersect(o)
-    def ⊕(o: SEQSTAT[X,S]) = difference(o)
+    def :+:(o: SEQSTAT[X,S]) = union(o)
+    def :*:(o: SEQSTAT[X,S]) = intersect(o)
+    def :^:(o: SEQSTAT[X,S]) = difference(o)
   }
 
   implicit def syntax[@specialized(Int,Long,Double) X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]): CombineSyntax[X,S] = {
@@ -45,14 +47,6 @@ object Combine {
         combine_(sort(left),sort(right),Union)
       }
     }
-
-    def pick(s: SQ): X = {
-      {assert(s.size > 0)}
-      // TODO: implement this more efficiently (BSeq internal implementation)
-      val (left,right) = s.split(s.size / 2)
-      left.annotation.last
-    }
-
 
     // TODO: do a range search, and than split (also for bigger and same)
     def smaller(s: SQ,elem: X): SQ = {
@@ -146,7 +140,7 @@ object Combine {
     def combine_(s1: SQ,s2: SQ,op: MergeOperator): SQ = {
       if (s1.size == 0) op.append(s1,s2)
       else if (s2.size == 0) op.append(s1,s2)
-      //else if (s1.equalTo(s2)) {op.equal(s1)}
+      else if (s1.equalTo(s2)) op.equal(s1)
       else {
         val ann1 = s1.annotation
         val ann2 = s2.annotation
@@ -161,7 +155,7 @@ object Combine {
         }
         else {
           if (s1.size >= s2.size) {
-            val elem = pick(s1)
+            val elem = s1.some
             val smaller1 = smaller(s1,elem)
             val same1 = same(s1,elem)
             val bigger1 = bigger(s1,elem)
