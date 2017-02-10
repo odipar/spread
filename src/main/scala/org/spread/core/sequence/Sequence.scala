@@ -13,8 +13,8 @@ object Sequence {
     def some: X
   }
 
-  trait EmptyValue extends ValueOption[Nothing] { def isEmpty = false }
-  trait SomeValue[X] extends ValueOption[X] { def isEmpty = true }
+  trait EmptyValue extends ValueOption[Nothing] { def isEmpty = true }
+  trait SomeValue[X] extends ValueOption[X] { def isEmpty = false }
 
   trait Seq[@specialized(Int,Long,Double) +X,S <: Seq[X,S]] extends ValueOption[X] {
     type TC <: Context[X]
