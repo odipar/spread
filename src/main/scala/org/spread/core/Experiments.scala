@@ -3,7 +3,7 @@ package org.spread.core
 /**
   * Created by rapido on 10/02/17.
   */
-object Expiriments {
+object Experiments {
 
   trait MyContext[+X]
   trait MyContextImpl[+X] extends MyContext[X]
