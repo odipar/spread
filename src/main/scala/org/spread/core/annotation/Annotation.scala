@@ -51,6 +51,7 @@ object Annotation {
     def last = error
     def sorted = error
     def isValid = false
+    override def toString = ".."
   }
 
   case class StatisticsImpl3[@specialized(Int,Long,Double) X]

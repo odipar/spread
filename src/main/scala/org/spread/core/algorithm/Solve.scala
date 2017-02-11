@@ -1,9 +1,10 @@
 package org.spread.core.algorithm
 
-import org.spread.core.constraint.Constraint.PropValue
-import org.spread.core.sequence.AnnotatedSequence.AnnotatedSeq
-//import org.spread.core.sequence.PairedSequence.PairedSeq
-import org.spread.core.sequence.Sequence.{OrderingContext, Seq}
+import org.spread.core.annotation.Annotation._
+import org.spread.core.constraint.Constraint._
+import org.spread.core.sequence.AnnotatedTreeSequence._
+import org.spread.core.sequence.PairedSequence._
+import org.spread.core.sequence.RangedSequence._
 
 import scala.language.{existentials, implicitConversions}
 
@@ -15,22 +16,19 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  /*type OSEQ[X,XA,S <: AnnotatedSeq[X,XA,S]] = AnnotatedSeq[X,XA,S] { type TC <: OrderingContext[X] }
-  type BinRel[X,XA <: PropValue,Y,YA <: PropValue,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2],S <: PairedSeq[X,Y,S1,S2,S]] = PairedSeq[X,Y,S1,S2,S]
-
-  type CREL = ConstrainedRel[X,XA,Y,YA,XC,YC] forSome {
-    type X ; type XA <: PropValue; type Y; type YA <: PropValue
-    type XC <: OrderingContext[X,XA,XC] ; type YC <: OrderingContext[Y,YA,YC]
+  type CREL = ConstrainedRel[X,Y,XA,YA,AA,S1,S2] forSome {
+    type X ;  type XA <: PropValue ; type Y ; type YA <: PropValue ; type AA
+    type S1 <: OSEQ[X,XA,S1] ; type S2 <: OSEQ[Y,YA,S2] ; type S <: AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
   }
 
-  case class ConstrainedRel[X,XA <: PropValue,Y,YA <: PropValue,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-  (rel: BinRel[X,XA,Y,YA,XC,YC],from: Long,to: Long,leftAnnotation: XA,rightAnnotation: YA) {
-    type CR = ConstrainedRel[X,XA,Y,YA,XC,YC]
+  case class ConstrainedRel[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (rel: BinRel[X,Y,XA,YA,AA,S1,S2],from: Long,to: Long,leftAnnotation: XA,rightAnnotation: YA) {
+    type CR = ConstrainedRel[X,Y,XA,YA,AA,S1,S2]
 
-    implicit def xc = rel.xc
-    implicit def yc = rel.yc
-    implicit def xord = rel.xord
-    implicit def yord = rel.yord
+    implicit def xc = rel.left.context
+    implicit def yc = rel.right.context
+    implicit def xord = xc.ord
+    implicit def yord = yc.ord
 
     def isValid = leftAnnotation.isValid && rightAnnotation.isValid
     def size = to - from + 1
@@ -65,16 +63,17 @@ object Solve {
       }
       else this
     }
-    def empty: EREL = rel.empty
-    def applyRange: LSSEQ = createLongBSeq(from,to)
+    def empty: EREL = rel.emptySeq
+    def applyRange: LSEQ = createRange(from,to)
   }
 
-  def createRelDomain[X,XA <: PropValue,Y,YA <: PropValue,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-  (rel: BinRel[X,XA,Y,YA,XC,YC]) = {
+  def createRelDomain[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (rel: BinRel[X,Y,XA,YA,AA,S1,S2]) = {
     val l = rel.left.annotation
     val r = rel.right.annotation
     ConstrainedRel(rel,0,rel.size-1,l,r)
   }
+
 
   type RCSTR = RelConstraint[X,Y] forSome { type X ; type Y <: PropValue }
   type RELS = Map[Symbol,EREL]
@@ -84,9 +83,12 @@ object Solve {
 
   def createModel: Model = Model(Map(),Map(),Set(),Map(),isValid = true)
 
+  var mm: Long = 0
+  
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
-    def addRelation[X,XA <: PropValue,Y,YA <: PropValue,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-    (s: Symbol, rel: BinRel[X,XA,Y,YA,XC,YC]): Model = {
+    { mm = mm + 1; println("m: " + mm)}
+    def addRelation[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+    (s: Symbol, rel: BinRel[X,Y,XA,YA,AA,S1,S2]): Model = {
       Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
     }
     def addConstraint[X,XA <: PropValue](cc: Prop[XA], r1: RCol[X,XA], r2: RCol[X,XA]): Model = {
@@ -104,6 +106,7 @@ object Solve {
     def solve = solveModel(this)
     def isSolved = isModelSolved(this)
   }
+
 
   def propagateModelConstraints(m: Model): Model = {
     if (!m.isValid) m
@@ -169,10 +172,10 @@ object Solve {
     (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
   }
 
-  def solveModel(mm: Model): (Map[Symbol,LSSEQ]) = {
+  def solveModel(mm: Model): (Map[Symbol,LSEQ]) = {
     val m = mm.propagateConstraints
 
-    if (!m.isValid) m.domains.mapValues(x => emptyLongBSeq) // not valid - empty
+    if (!m.isValid) m.domains.mapValues(x => emptyLSEQ) // not valid - empty
     else if (m.isSolved && m.isValid) m.domains.mapValues(_.applyRange) // valid and solved, apply range
     else {
       val (m1,m2) = m.split
@@ -184,51 +187,54 @@ object Solve {
     }
   }
 
-  case class ColSyntax[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-  (rel: BinRel[X,XA,Y,YA,XC,YC]){
-    def L: RCol[X,XA] = LeftRCol[X,XA,Y,YA,XC,YC](rel)
-    def R: RCol[Y,YA] = RightRCol[X,XA,Y,YA,XC,YC](rel)
+  case class ColSyntax[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (rel: BinRel[X,Y,XA,YA,AA,S1,S2]){
+    def L: RCol[X,XA] = LeftRCol[X,Y,XA,YA,AA,S1,S2](rel)
+    def R: RCol[Y,YA] = RightRCol[X,Y,XA,YA,AA,S1,S2](rel)
   }
 
-
-  implicit def toColSyntax[X,XA,Y,YA,XC <: OrderingContext[X,XA,XC],YC <: OrderingContext[Y,YA,YC]]
-  (id: BinRel[X,XA,Y,YA,XC,YC]): ColSyntax[X,XA,Y,YA,XC,YC] = ColSyntax(id)
+  implicit def toColSyntax[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (id: BinRel[X,Y,XA,YA,AA,S1,S2]): ColSyntax[X,Y,XA,YA,AA,S1,S2] = ColSyntax(id)
 
   implicit def annotator[X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
-   */
+
+
+  def createPaired[X,Y]
+  (x: Array[X], y: Array[Y])(implicit xc: OrderingTreeContext[X,Statistics[X]], yc: OrderingTreeContext[Y,Statistics[Y]], oc: OrderingBinContext[X,Y], f:(Statistics[X],Statistics[Y])=>Statistics[(X,Y)]) = {
+    val xx = EmptyAnnotatedTreeSeq[X,Statistics[X]]().createSeq(x)
+    val yy = EmptyAnnotatedTreeSeq[Y,Statistics[Y]]().createSeq(y)
+    xx && yy
+  }
 
   final def main(args: Array[String]): Unit = {
-
-    /*val a = createRelArray(
-      (0.toLong until 100000).toArray,
-      (0.toLong until 100000).toArray
+    
+    val a = createPaired(
+      (505.toLong until 100000).toArray,
+      (505.toLong until 100000).toArray
     )
 
-    val b = createRelArray(
-      (500.toLong until 600).toArray,
-      (500.toLong until 600).toArray
+    val b = createPaired(
+      (500.toLong until 6000).toArray,
+      (500.toLong until 6000).toArray
     )
 
-    val c = createRelArray(
+    val c = createPaired(
       (500.toLong until 510).toArray,
       (500.toLong until 510).toArray
     )
 
-    println("start: " + c)*/
 
-   /* var m = createModel.
-      addRelation('a, a).
-      addRelation('b, b).
-      addRelation('c, c).
-      addConstraint(EqualStatP[Long](),b.R,a.L).
-      addConstraint(EqualStatP[Long](),b.R,b.L).
-      addConstraint(EqualStatP[Long](),c.R,c.L)
-
+     var m = createModel.
+    addRelation('a, a).
+    addRelation('b, b).
+    addRelation('c, c).
+    addConstraint(EqualStatP[Long](),b.R,a.L).
+    addConstraint(EqualStatP[Long](),b.R,b.L).
+    addConstraint(EqualStatP[Long](),c.R,b.L)
+    
     val s = m.solve
 
-    println("s: " + Combine.sort(s('c)))
-           */
-
+    println("s: "  + s)
   }
 
 }

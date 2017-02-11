@@ -4,12 +4,14 @@ package org.spread.core.sequence
 import Sequence._
 import AnnotatedSequence._
 import org.spread.core.annotation.Annotation._
+
 import scala.reflect.ClassTag
 import org.spread.core.algorithm.Combine._
+import org.spread.core.constraint.Constraint.EqualProp
 
 object AnnotatedTreeSequence {
-
-  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingContext[X]
+  
+  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingAnnContext[X,A]
   {
     def annotator: Annotator[X,A]
     def xTag: ClassTag[X]
@@ -37,7 +39,14 @@ object AnnotatedTreeSequence {
     def annotator: Annotator[X,A] = context.annotator
     def empty: SAS = EmptySeq()
 
-    def createSeq(a: Array[X]) = create(createLeaf(a)(this))
+    def createSeq(a: Array[X]): SS = {
+      if (a.length <= maxWidth) create(createLeaf(a)(this))
+      else {
+        val (l,r) = a.splitAt(a.length/2)
+        createSeq(l).append(createSeq(r))
+      }
+    }
+    
     def emptySeq = create(empty)
     def :+ (x: X) = append(createSeq(Array(x)))
 
@@ -231,11 +240,12 @@ object AnnotatedTreeSequence {
   }
 
   case class DefaultTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-  ()(implicit o: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A]) extends OrderingTreeContext[X,A] {
+  ()(implicit o: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A], eq: EqualProp[A]) extends OrderingTreeContext[X,A] {
     def ord = o
     def annotator = ann
     def xTag = xt
     def aTag = at
+    def equal = eq
   }
 
   trait AnnotatedTreeSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
@@ -263,8 +273,8 @@ object AnnotatedTreeSequence {
   }
 
   implicit def treeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-    (implicit ord: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A]) = {
+    (implicit ord: Ordering[X], xt: ClassTag[X], at: ClassTag[A], ann: Annotator[X,A], eq: EqualProp[A]) = {
     
-    DefaultTreeContext()(ord,xt,at,ann)
+    DefaultTreeContext()(ord,xt,at,ann,eq)
   }
 }

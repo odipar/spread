@@ -1,6 +1,7 @@
 package org.spread.core.sequence
 
 import org.spread.core.annotation.Annotation._
+import org.spread.core.constraint.Constraint.EqualProp
 
 import scala.reflect.ClassTag
 
@@ -15,7 +16,7 @@ object Sequence {
 
   trait EmptyValue extends ValueOption[Nothing] { def isEmpty = true }
   trait SomeValue[X] extends ValueOption[X] { def isEmpty = false }
-
+  
   trait Seq[@specialized(Int,Long,Double) +X,S <: Seq[X,S]] extends ValueOption[X] {
     type TC <: Context[X]
 
@@ -29,7 +30,6 @@ object Sequence {
     def append[SS <: S](o: SS): S
     def split(o: Long): (S,S)
     def equalTo[SS <: S](o: SS): Boolean
-
     final def isEmpty = (size == 0)
     final def ++[SS <: S](o: SS): S = append(o)
   }
@@ -43,6 +43,8 @@ object Sequence {
 
   trait NoContext extends Context[Nothing]
   object NoContext extends NoContext
-  trait OrderingContext[@specialized(Int,Long,Double) X] extends Context[X] { def ord: Ordering[X] }
+  trait OrderingContext[@specialized(Int,Long,Double) X] extends Context[X] {
+    def ord: Ordering[X]
+  }
 
 }

@@ -1,6 +1,7 @@
 package org.spread.core.constraint
 
 import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
+import org.spread.core.sequence.PairedSequence.RelCol
 
 //
 // Standard constraint propagation objects
@@ -32,7 +33,7 @@ object Constraint {
     }
     def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
       if (!o1.isValid || !o1.isValid) ann.none
-      if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
+      else if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
       else if (ord.lt(o1.upperBound,o2.lowerBound)) ann.none
       else {
         // TODO: more tight bounds on first and last, we now set first=lower and last=upper
@@ -45,8 +46,10 @@ object Constraint {
     override def toString = "EqualStatP"
   }
 
-  /*case class RelConstraint[X,XA](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
+  implicit def equalStatProp[X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = EqualStatP[X]()
+
+  case class RelConstraint[X,XA <: PropValue](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
     override def toString = "" + r1 + prop + r2
-  } */
+  }
 
 }

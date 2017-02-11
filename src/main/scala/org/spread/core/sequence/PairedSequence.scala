@@ -1,7 +1,8 @@
 package org.spread.core.sequence
 
 import org.spread.core.algorithm.Combine._
-import org.spread.core.annotation.Annotation.{Statistics, createStats}
+import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
+import org.spread.core.constraint.Constraint.{EqualProp, EqualStatP, PropValue}
 import org.spread.core.sequence.Sequence._
 import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.AnnotatedTreeSequence._
@@ -82,9 +83,58 @@ object PairedSequence {
     )
   }
 
+  type OSEQ[X,XA,S <: AnnotatedSeq[X,XA,S]] = AnnotatedSeq[X,XA,S] { type TC <: OrderingAnnContext[X,XA] }
+  type BinRel[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]] = AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
+  type EREL = BinRel[X,Y,XA,YA,AA,S1,S2] forSome {
+    type X ;  type XA <: PropValue ; type Y ; type YA <: PropValue ; type AA
+    type S1 <: OSEQ[X,XA,S1] ; type S2 <: OSEQ[Y,YA,S2] ; type S <: AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
+  }
+  
+  sealed trait ColumnPos
+
+  object LeftCol extends ColumnPos
+
+  object RightCol extends ColumnPos
+
+  sealed trait RelCol[X,XA] {
+    def id: Symbol
+    def column: ColumnPos
+  }
+
+  case class LeftCol[Y,YA](id: Symbol) extends RelCol[Y,YA] {
+    def column = LeftCol
+    override def toString: String = id + ".L"
+  }
+
+  case class RightCol[X,XA](id: Symbol) extends RelCol[X,XA] {
+    def column = RightCol
+    override def toString: String = id + ".R"
+  }
+
+  sealed trait RCol[X,XA <: PropValue] {
+    def rel: EREL
+    def column: ColumnPos
+    def withID(s: Symbol): RelCol[X,XA]
+  }
+
+  case class RightRCol[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (r: BinRel[X,Y,XA,YA,AA,S1,S2]) extends RCol[Y,YA] {
+    def rel: EREL = r
+    def column = RightCol
+    def withID(s: Symbol): RelCol[Y,YA] = RightCol(s)
+  }
+
+  case class LeftRCol[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+  (r: BinRel[X,Y,XA,YA,AA,S1,S2]) extends RCol[X,XA] {
+    def rel: EREL = r
+    def column = LeftCol
+    def withID(s: Symbol): RelCol[X,XA] = LeftCol(s)
+  }
+
   final def main(args: Array[String]): Unit = {
-    val factory = EmptyAnnotatedTreeSeq[Int,Statistics[Int]]()
-    val factory2 = EmptyAnnotatedTreeSeq[Double,Statistics[Double]]()
+    val factory: AnnTreeSeq[Int,Statistics[Int]] = EmptyAnnotatedTreeSeq[Int,Statistics[Int]]()
+    val factory2: AnnTreeSeq[Double,Statistics[Double]] = EmptyAnnotatedTreeSeq[Double,Statistics[Double]]()
+
     var b = factory.emptySeq
     var b2 = factory2.emptySeq
 
@@ -93,8 +143,8 @@ object PairedSequence {
 
     val p = b && b2    // combine
     val p2 = p ++ p    // append
-    //val p3 = p2 :+: p2 // union
-    //println("p3: " + sort3(p3))
+    val p3 = p2 :+: p2 // union
+    println("p3: " + p3.sort)
   }
 
 }

@@ -1,11 +1,16 @@
 package org.spread.core.sequence
 import Sequence._
 import org.spread.core.algorithm.Combine
+import org.spread.core.constraint.Constraint.EqualProp
 import org.spread.core.sequence.PairedSequence.OrderingBinContext
 
 object AnnotatedSequence {
   type ASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
 
+  trait OrderingAnnContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingContext[X] {
+    def equal: EqualProp[A]
+  }
+  
   trait AnnotatedSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: ASEQ[X,A,S]]
     extends SeqImpl[X,S] {
     def annotation: A

@@ -90,6 +90,12 @@ object RangedSequence {
     def isValid = true
     override def toString = "L"+lowerBound + ":" + upperBound
   }
+
+  type LSEQ = AnnTreeSeq[Long,Statistics[Long]]
+
+  val emptyLSEQ: LSEQ = EmptyLongTreeSeq()
+  def createRange(lb: Long, ub: Long): LSEQ = EmptyLongTreeSeq().create(lb,ub)
+  
   final def main(args: Array[String]): Unit = {
     val factory = EmptyAnnotatedTreeSeq[Long,Statistics[Long]]()
     val factory2 = EmptyLongTreeSeq()
