@@ -1,7 +1,6 @@
 package org.spread.core.sequence
 
 import org.spread.core.sequence.Sequence._
-
 import scala.reflect.ClassTag
 
 object VectorSequence {

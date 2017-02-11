@@ -1,9 +1,6 @@
 package org.spread.core.sequence
 
-import org.spread.core.annotation.Annotation._
-import org.spread.core.constraint.Constraint.EqualProp
-
-import scala.reflect.ClassTag
+import scala.language.{existentials, implicitConversions}
 
 object Sequence {
   

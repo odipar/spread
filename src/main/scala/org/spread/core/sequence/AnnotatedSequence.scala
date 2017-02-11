@@ -1,8 +1,8 @@
 package org.spread.core.sequence
 import Sequence._
-import org.spread.core.algorithm.Combine
 import org.spread.core.constraint.Constraint.EqualProp
 import org.spread.core.sequence.PairedSequence.OrderingBinContext
+import scala.language.{existentials, implicitConversions}
 
 object AnnotatedSequence {
   type ASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]

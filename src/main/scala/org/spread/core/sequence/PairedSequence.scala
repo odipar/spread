@@ -1,11 +1,12 @@
 package org.spread.core.sequence
 
 import org.spread.core.algorithm.Combine._
-import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
-import org.spread.core.constraint.Constraint.{EqualProp, EqualStatP, PropValue}
+import org.spread.core.annotation.Annotation._
+import org.spread.core.constraint.Constraint._
 import org.spread.core.sequence.Sequence._
 import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.AnnotatedTreeSequence._
+import scala.language.{existentials, implicitConversions}
 
 object PairedSequence {
 

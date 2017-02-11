@@ -1,13 +1,11 @@
 package org.spread.core.sequence
 
 
-import Sequence._
 import AnnotatedSequence._
 import org.spread.core.annotation.Annotation._
-
 import scala.reflect.ClassTag
-import org.spread.core.algorithm.Combine._
 import org.spread.core.constraint.Constraint.EqualProp
+import scala.language.{existentials, implicitConversions}
 
 object AnnotatedTreeSequence {
   

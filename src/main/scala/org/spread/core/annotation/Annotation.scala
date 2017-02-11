@@ -1,6 +1,7 @@
 package org.spread.core.annotation
 
 import org.spread.core.constraint.Constraint.{PropValue}
+import scala.language.{existentials, implicitConversions}
 
 //
 // Sequence Annotators, most notably StatisticsAnnotator

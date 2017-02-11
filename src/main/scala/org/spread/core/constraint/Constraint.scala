@@ -2,6 +2,7 @@ package org.spread.core.constraint
 
 import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
 import org.spread.core.sequence.PairedSequence.RelCol
+import scala.language.{existentials, implicitConversions}
 
 //
 // Standard constraint propagation objects
