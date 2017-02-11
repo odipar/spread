@@ -9,7 +9,6 @@ import scala.language.{existentials, implicitConversions}
 //
 // Copyright 2017: Robbert van Dalen
 //
-
 object Constraint {
 
   trait PropValue {

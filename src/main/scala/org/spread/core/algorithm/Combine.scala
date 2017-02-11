@@ -4,6 +4,13 @@ import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.AnnotatedSequence._
 import scala.language.{existentials, implicitConversions}
 
+//
+// Generic sort, union, difference, intersection
+//
+// Improved version of Enchilada semantics
+//
+// Copyright 2017: Robbert van Dalen
+//
 object Combine {
   type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
   

@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.splithash
 
 object Hashing {
   import Reference._

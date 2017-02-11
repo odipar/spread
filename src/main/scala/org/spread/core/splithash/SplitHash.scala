@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.splithash
 
 object SplitHash {
   //
@@ -16,7 +16,7 @@ object SplitHash {
   // Copyright 2016: Robbert van Dalen.
   //
 
-  import Hashing._
+  import org.spread.core.splithash.Hashing._
 
   trait SplitHash[X, SH <: SplitHash[X,SH]] extends Hashable {
     def size: Int                         // O(1)

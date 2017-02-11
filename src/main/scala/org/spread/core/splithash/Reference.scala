@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.splithash
 
 /**
   * Created by rapido on 31/01/16.

@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.expression
 
 //  SPREAD: Incremental Authenticated Computations
 //
@@ -11,9 +11,11 @@ package org.spread.core
 //  Copyright 2016: Robbert van Dalen
 //
 
+import SpreadLogic._
+import org.spread.core.splithash.Hashing._
+import org.spread.core.splithash.SplitHash._
+
 import scala.collection.immutable.Map
-import SplitHash._
-import Hashing._
 import scala.collection.mutable
 import scala.language.existentials
 import scala.reflect.runtime.universe.TypeTag

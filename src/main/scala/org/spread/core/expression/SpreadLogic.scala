@@ -1,7 +1,8 @@
-package org.spread.core
+package org.spread.core.expression
 
-import org.spread.core.Spread._
-import org.spread.core.Hashing._
+import org.spread.core.expression.Spread._
+import org.spread.core.splithash.Hashing._
+
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.TypeTag
 

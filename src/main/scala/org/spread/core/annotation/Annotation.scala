@@ -8,7 +8,6 @@ import scala.language.{existentials, implicitConversions}
 //
 // Copyright 2017: Robbert van Dalen
 //
-
 object Annotation {
 
   trait Annotator[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] {
@@ -41,7 +40,9 @@ object Annotation {
     def first: X
     def last: X
     def sorted: Boolean
-    override def toString: String = "<" + first + "," + lowerBound + "," + "sorted=" +sorted + "," + upperBound + "," + last + ">"
+    override def toString: String = {
+      "<" + first + "," + lowerBound + "," + "sorted=" +sorted + "," + upperBound + "," + last + ">"
+    }
   }
 
   case class InvalidStatistics[@specialized(Int,Long,Double) X]() extends Statistics[X] {
@@ -77,7 +78,9 @@ object Annotation {
     def isValid = true
   }
 
-  def createStats[@specialized(Int,Long,Double) X](lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean): Statistics[X] = {
+  def createStats[@specialized(Int,Long,Double) X]
+  (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean): Statistics[X] = {
+
     if ((lowerBound == first) && (upperBound == last) && sorted) {
       if (lowerBound == upperBound) StatisticsImpl3(lowerBound)
       else StatisticsImpl2(lowerBound,upperBound)
@@ -85,7 +88,9 @@ object Annotation {
     else StatisticsImpl(lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean)
   }
 
-  case class StatisticsAnnotator[@specialized(Int,Long,Double) X](implicit ord: Ordering[X]) extends Annotator[X,Statistics[X]]{
+  case class StatisticsAnnotator[@specialized(Int,Long,Double) X](implicit ord: Ordering[X])
+    extends Annotator[X,Statistics[X]]{
+
     def ordering = ord
     def none: Statistics[X] = InvalidStatistics()
     def one(x: X) = StatisticsImpl2(x,x)

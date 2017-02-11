@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.splithash
 
 import java.io._
 

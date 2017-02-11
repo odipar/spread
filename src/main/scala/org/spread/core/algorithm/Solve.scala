@@ -86,8 +86,8 @@ object Solve {
   var mm: Long = 0
   
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
-    { mm = mm + 1; println("m: " + mm)}
-    def addRelation[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
+    { mm = mm + 1 }
+    def addSequence[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
     (s: Symbol, rel: BinRel[X,Y,XA,YA,AA,S1,S2]): Model = {
       Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
     }
@@ -207,7 +207,7 @@ object Solve {
   }
 
   final def main(args: Array[String]): Unit = {
-    
+
     val a = createPaired(
       (505.toLong until 100000).toArray,
       (505.toLong until 100000).toArray
@@ -224,13 +224,13 @@ object Solve {
     )
 
 
-     var m = createModel.
-    addRelation('a, a).
-    addRelation('b, b).
-    addRelation('c, c).
-    addConstraint(EqualStatP[Long](),b.R,a.L).
-    addConstraint(EqualStatP[Long](),b.R,b.L).
-    addConstraint(EqualStatP[Long](),c.R,b.L)
+    var m = createModel.
+      addSequence('a, a).
+      addSequence('b, b).
+      addSequence('c, c).
+      addConstraint(EqualStatP[Long](),b.R,a.L).
+      addConstraint(EqualStatP[Long](),b.R,b.L).
+      addConstraint(EqualStatP[Long](),c.R,b.L)
     
     val s = m.solve
 

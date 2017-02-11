@@ -1,4 +1,4 @@
-package org.spread.core
+package org.spread.core.splithash
 
 //
 // Bagwell's Ideal Hash Tree with 'infinite' hashes (nibble based)
@@ -7,8 +7,7 @@ package org.spread.core
 //
 
 object SetHash {
-  import Hashing._
-  import Reference._
+  import org.spread.core.splithash.Hashing._
 
   trait SetHash[SH <: SetHash[SH]] extends Hashable {
     def put(e: Hashable): SH
@@ -109,7 +108,7 @@ object SetHash {
       else a(i)
     }
 
-    import Hashing._
+    import org.spread.core.splithash.Hashing._
 
     // 64 bit hashes
     var lHash1: Long = 0
