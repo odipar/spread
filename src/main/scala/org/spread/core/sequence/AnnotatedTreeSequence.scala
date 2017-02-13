@@ -3,35 +3,38 @@ package org.spread.core.sequence
 
 import AnnotatedSequence._
 import org.spread.core.annotation.Annotation._
+
 import scala.reflect.ClassTag
 import org.spread.core.constraint.Constraint.EqualProp
+import org.spread.core.sequence.Sequence.Context
+
 import scala.language.{existentials, implicitConversions}
 
 object AnnotatedTreeSequence {
-  
-  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingAnnContext[X,A]
-  {
-    def annotator: Annotator[X,A]
+
+  trait AnnTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends AnnotationContext[X,A] {
     def xTag: ClassTag[X]
     def aTag: ClassTag[A]
+    def annotator: Annotator[X,A]
   }
+  
+  trait OrderingTreeContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
+    extends OrderingAnnContext[X,A] with AnnTreeContext[X,A]
 
-  trait AnnTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-    extends OrderedAnnSeq[X,A,AnnTreeSeq[X,A]]  {
+  trait AnnTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+    extends AnnotatedSeqImpl[X,A,AnnTreeSeq[X,A,TC],TC]  {
 
-    type TC <: OrderingTreeContext[X,A]
-    type AS = BSeqTr[X,A]
-    type SS = AnnTreeSeq[X,A]
+    type AS = BSeqTr[X,A,TC]
+    type SS = AnnTreeSeq[X,A,TC]
     type SAS = SS#AS
 
     def self = this
     def context: TC
 
-    implicit def ord: Ordering[X] = context.ord
     implicit def xTag: ClassTag[X] = context.xTag
     implicit def aTag: ClassTag[A] = context.aTag
 
-    def minWidth = 16
+    def minWidth = 8
     final def maxWidth = minWidth*4
 
     def annotator: Annotator[X,A] = context.annotator
@@ -59,11 +62,11 @@ object AnnotatedTreeSequence {
     def createPair[AA1 <: SAS, AA2 <: SAS](ss1: AA1,ss2: AA2)(implicit c: SS): SAS = {
       createTree(Array(ss1,ss2)) // TODO: create specialized Pair
     }
-    def createLeaf(a: Array[X])(implicit c: SS) = {
+    def createLeaf(a: Array[X])(implicit c: SS): SAS = {
       if (a.length == 0) empty
       else BSeqLeafImpl(a,annotator.manyX(a))
     }
-    def appendTrees(o1: BSeqTree[X,A],o2: BSeqTree[X,A])(implicit c: SS): SAS = {
+    def appendTrees(o1: BSeqTree[X,A,TC],o2: BSeqTree[X,A,TC])(implicit c: SS): SAS = {
       assert(o1.height == o2.height) // only append trees with same height
       if (o1.childCount >= minWidth && o2.childCount >= minWidth) createPair(o1,o2)
       else {
@@ -72,7 +75,7 @@ object AnnotatedTreeSequence {
         else {val (l,r) = merged.splitAt((merged.length + 1) >> 1); createPair(createTree(l),createTree(r))}
       }
     }
-    def appendLeafs(o1: BSeqLeaf[X,A],o2: BSeqLeaf[X,A])(implicit c: SS): SAS = {
+    def appendLeafs(o1: BSeqLeaf[X,A,TC],o2: BSeqLeaf[X,A,TC])(implicit c: SS): SAS = {
       assert((o1.height == 0) && (o2.height == 0))
       if (o1.size >= minWidth && o2.size >= minWidth) createPair(o1,o2)
       else {
@@ -81,8 +84,8 @@ object AnnotatedTreeSequence {
         else {val (l,r) = merged.splitAt((merged.length + 1) >> 1); createPair(createLeaf(l),createLeaf(r))}
       }
     }
-    def asTree(t: SAS): BSeqTree[X,A] = t.asInstanceOf[BSeqTree[X,A]]
-    def asLeaf(l: SAS): BSeqLeaf[X,A] = l.asInstanceOf[BSeqLeaf[X,A]]
+    def asTree(t: SAS): BSeqTree[X,A,TC] = t.asInstanceOf[BSeqTree[X,A,TC]]
+    def asLeaf(l: SAS): BSeqLeaf[X,A,TC] = l.asInstanceOf[BSeqLeaf[X,A,TC]]
 
     def append[AA1 <: SAS, AA2 <: SAS](ss1: AA1,ss2: AA2)(implicit c: SS): SAS = {
       if (ss2.size == 0) ss1
@@ -119,14 +122,16 @@ object AnnotatedTreeSequence {
     }
   }
 
-  trait BSeqTr[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends ASeq[X,A,AnnTreeSeq[X,A]]
+  trait BSeqTr[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+    extends ASeq[X,A,AnnTreeSeq[X,A,TC],TC]
   {
-    type AS = BSeqTr[X,A]
-    type SS = AnnTreeSeq[X,A]
+    type AS = BSeqTr[X,A,TC]
+    type SS = AnnTreeSeq[X,A,TC]
     type SAS = SS#AS
   }
 
-  trait BSeqTree[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends BSeqTr[X,A] {
+  trait BSeqTree[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+    extends BSeqTr[X,A,TC] {
     def childs: Array[SAS]
     def sizes: Array[Long]
     val height = childs(0).height + 1
@@ -185,7 +190,8 @@ object AnnotatedTreeSequence {
     override def toString = childs.foldLeft("<")((x,y) => x + " " + y) + " >"
   }
 
-  case class EmptySeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]() extends BSeqTr[X,A] {
+  case class EmptySeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]()
+    extends BSeqTr[X,A,TC] {
     def annotation(implicit c: SS) = c.annotator.none
     def size = 0.toLong
     def height = -1
@@ -197,7 +203,8 @@ object AnnotatedTreeSequence {
     override def toString = "<>"
   }
 
-  trait BSeqLeaf[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends BSeqTr[X,A]  {
+  trait BSeqLeaf[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+    extends BSeqTr[X,A,TC]  {
     def toArray: Array[X]
     def height = 0
     def first: X
@@ -205,8 +212,8 @@ object AnnotatedTreeSequence {
     override def toString = toArray.foldLeft("<")((x,y) => x + " " + y) + " >"
   }
 
-  case class BSeqLeafImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A](array: Array[X],ann: A)
-    extends BSeqLeaf[X,A] {
+  case class BSeqLeafImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+  (array: Array[X],ann: A) extends BSeqLeaf[X,A,TC] {
     def annotation(implicit c: SS) = ann
     def toArray = array
     def size = array.length
@@ -231,8 +238,8 @@ object AnnotatedTreeSequence {
   }
 
   case class BSeqTreeImpl
-  [@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, ARR <: Array[AnnTreeSeq[X,A]#AS]]
-  (childs: ARR,sizes: Array[Long],ann: A) extends BSeqTree[X,A] {
+  [@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, ARR <: Array[AnnTreeSeq[X,A,TC]#AS], TC <: AnnTreeContext[X,A]]
+  (childs: ARR,sizes: Array[Long],ann: A) extends BSeqTree[X,A,TC] {
     def some = childs(childs.length/2).some
     def annotation(implicit c: SS) = ann
   }
@@ -246,24 +253,34 @@ object AnnotatedTreeSequence {
     def equal = eq
   }
 
-  trait AnnotatedTreeSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-    extends AnnTreeSeq[X,A] {
+  trait AnnotatedTreeSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+    extends AnnTreeSeq[X,A,TC] {
 
-    type TC = OrderingTreeContext[X,A]
-    def create(s: AnnTreeSeq[X,A]#AS) = FullAnnotatedTreeSeq(s)(context)
+    def create(s: AnnTreeSeq[X,A,TC]#AS) = FullAnnotatedTreeSeq(s)(context)
   }
 
-  case class EmptyAnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-  ()(implicit c: OrderingTreeContext[X,A]) extends AnnotatedTreeSeqImpl[X,A] {
+  case class EmptyAnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A, TC <: AnnTreeContext[X,A]]
+  ()(implicit c: TC) extends AnnotatedTreeSeqImpl[X,A,TC] {
 
     def context = c
     def sequence = empty
   }
 
-  case class FullAnnotatedTreeSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
-  (sequence: AnnTreeSeq[X,A]#AS)(implicit c: OrderingTreeContext[X,A]) extends AnnotatedTreeSeqImpl[X,A] {
+  case class FullAnnotatedTreeSeq[X,A,TC <: AnnTreeContext[X,A]]
+  (sequence: AnnTreeSeq[X,A,TC]#AS)(implicit c: TC) extends AnnotatedTreeSeqImpl[X,A,TC] {
 
     def context = c
+  }
+  
+  case class DefaultAnnTreeContext[X,A](ann: Annotator[X,A], cx: ClassTag[X], ca: ClassTag[A], eq: EqualProp[A]) extends AnnTreeContext[X,A] {
+    def xTag = cx
+    def aTag = ca
+    def annotator = ann
+    def equal = eq
+  }
+
+  implicit def defaultAnnTreeContext[X,A](implicit ann: Annotator[X,A], cx: ClassTag[X], xa: ClassTag[A], eq: EqualProp[A]): AnnTreeContext[X,A] = {
+    DefaultAnnTreeContext(ann,cx,xa,eq)
   }
 
   implicit def annotator[@specialized(Int,Long,Double) X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = {

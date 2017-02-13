@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 
 object ArraySequence {
 
-  case class ArraySeq[@specialized(Int,Long,Double) X: ClassTag](x: Array[X]) extends SeqImpl[X,ArraySeq[X]] {
+  case class ArraySeq[@specialized(Int,Long,Double) X: ClassTag](x: Array[X]) extends SeqImpl[X,ArraySeq[X],NoContext] {
     type S = ArraySeq[X]
     type TC = NoContext
 

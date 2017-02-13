@@ -18,6 +18,16 @@ object Annotation {
     def append(r1: A,r2: A): A
   }
 
+  trait UniqinessAnnotation {
+    def unique: Boolean
+    def duplicate = !unique
+  }
+
+  trait SortedAnnotation {
+    def ascending: Boolean
+    def descending = !ascending
+  }
+
   trait NoAnnotation
   object NoAnnotation extends NoAnnotation {
     def isValid = false
@@ -33,6 +43,7 @@ object Annotation {
     def isNone(a: NoAnnotation) = true
   }
 
+  implicit def noAnnotator[X] = NoAnnotator[X]()
 
   trait Statistics[@specialized(Int,Long,Double) X] extends PropValue {
     def lowerBound: X

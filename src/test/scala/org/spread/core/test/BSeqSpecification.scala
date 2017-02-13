@@ -8,7 +8,7 @@ import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.RangedSequence._
 
 object BSeqSpecification extends Properties("BSeq") {
-  type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
+  /*type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
 
   val factory = EmptyLongTreeSeq()
   implicit def arbitraryIntSeq: Arbitrary[SSEQ] = Arbitrary(longSeq)
@@ -60,5 +60,5 @@ object BSeqSpecification extends Properties("BSeq") {
     val d = s.difference(u)
 
     s.equalTo(d)
-  }
+  }    */
 }

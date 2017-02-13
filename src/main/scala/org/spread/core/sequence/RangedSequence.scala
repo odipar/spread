@@ -7,20 +7,18 @@ object RangedSequence {
 
   type SL = Statistics[Long]
   
-  trait LongTreeSeqImpl
-    extends AnnTreeSeq[Long,SL] {
+  trait LongTreeSeqImpl[TC <: OrderingTreeContext[Long,SL]]
+    extends AnnTreeSeq[Long,SL,TC] {
 
-    type TC = OrderingTreeContext[Long,SL]
-    
-    def create(s: AnnTreeSeq[Long,SL]#AS) = FullLongTreeSeq(s)(context)
+    def create(s: AnnTreeSeq[Long,SL,TC]#AS) = FullLongTreeSeq(s)(context)
     def create(lowerBound: Long,upperBound: Long) = FullLongTreeSeq(createRange(lowerBound,upperBound)(self))(context)
     
-    def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS) = {
+    def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS): SAS = {
       if (lowerBound > upperBound) c.empty
       else LongLeafRange(lowerBound,upperBound)
     }
 
-    override def createLeaf(a: Array[Long])(implicit c: SS) = {
+    override def createLeaf(a: Array[Long])(implicit c: SS): SAS = {
       if (a.length == 0) c.empty
       else {
         var sequential = true
@@ -31,26 +29,26 @@ object RangedSequence {
     }
   }
 
-  case class EmptyLongTreeSeq
-  ()(implicit c: OrderingTreeContext[Long,SL]) extends LongTreeSeqImpl {
+  case class EmptyLongTreeSeq[TC <: OrderingTreeContext[Long,SL]]
+  ()(implicit c: TC) extends LongTreeSeqImpl[TC] {
 
     def context = c
     def sequence = empty
   }
 
-  case class FullLongTreeSeq
-  (sequence: AnnTreeSeq[Long,SL]#AS)(implicit c: OrderingTreeContext[Long,SL]) extends LongTreeSeqImpl {
+  case class FullLongTreeSeq[TC <: OrderingTreeContext[Long,SL]]
+  (sequence: AnnTreeSeq[Long,SL,TC]#AS)(implicit c: TC) extends LongTreeSeqImpl[TC] {
 
     def context = c
   }
   
-  case class LongLeafRange(lowerBound: Long,upperBound: Long)
-    extends BSeqLeaf[Long,SL] with Statistics[Long] {
+  case class LongLeafRange[TC <: OrderingTreeContext[Long,SL]](lowerBound: Long,upperBound: Long)
+    extends BSeqLeaf[Long,SL,TC] with Statistics[Long] {
     { assert(lowerBound <= upperBound) }
 
     def some = (lowerBound + upperBound)/2
     def annotation(implicit c: SS) = this
-    def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS) = {
+    def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS): SAS = {
       if (lowerBound > upperBound) c.empty
       else LongLeafRange(lowerBound,upperBound)
     }
@@ -91,18 +89,18 @@ object RangedSequence {
     override def toString = "L"+lowerBound + ":" + upperBound
   }
 
-  type LSEQ = AnnTreeSeq[Long,Statistics[Long]]
+  type LSEQ = AnnTreeSeq[Long,Statistics[Long],OrderingTreeContext[Long,SL]]
 
   val emptyLSEQ: LSEQ = EmptyLongTreeSeq()
-  def createRange(lb: Long, ub: Long): LSEQ = EmptyLongTreeSeq().create(lb,ub)
-  
+  def createRange(lb: Long, ub: Long): LSEQ = EmptyLongTreeSeq[OrderingTreeContext[Long,SL]]().create(lb,ub)
+
   final def main(args: Array[String]): Unit = {
-    val factory = EmptyAnnotatedTreeSeq[Long,Statistics[Long]]()
-    val factory2 = EmptyLongTreeSeq()
+    val factory = EmptyAnnotatedTreeSeq[Long,Statistics[Long],OrderingTreeContext[Long,SL]]()
+    val factory2 = EmptyLongTreeSeq[OrderingTreeContext[Long,SL]]()
     val a = factory.createSeq(Array(1,2,3))
     val b = factory2.create(10,100)
     val c = factory2.create(101,105)
-    val d = b.append(a).append(c)
-    println("d: " + d)
+    val d = a.append(b)
+    println("d: " + d.annotation)
   }
 }

@@ -5,51 +5,52 @@ import org.spread.core.sequence.PairedSequence.OrderingBinContext
 import scala.language.{existentials, implicitConversions}
 
 object AnnotatedSequence {
-  type ASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
+  type ASEQ[X,A,S <: AnnotatedSeq[X,A,S,TC], TC <: AnnotationContext[X,A]] = AnnotatedSeq[X,A,S,TC]
 
-  trait OrderingAnnContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends OrderingContext[X] {
+  trait AnnotationContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A] extends Context[X] {
     def equal: EqualProp[A]
   }
+  trait OrderingAnnContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A]
+    extends OrderingContext[X] with AnnotationContext[X,A]
   
-  trait AnnotatedSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: ASEQ[X,A,S]]
-    extends SeqImpl[X,S] {
+  trait AnnotatedSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: ASEQ[X,A,S,TC], TC <: AnnotationContext[X,A]]
+    extends SeqImpl[X,S,TC] {
+
     def annotation: A
     def annotationRange(start: Long, end: Long): A
   }
 
-  trait AnnotatedSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: AnnotatedSeqImpl[X,A,S]]
-    extends AnnotatedSeq[X,A,S] {
+  trait AnnotatedSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) XA,SX <: AnnotatedSeqImpl[X,XA,SX,CX], CX <: AnnotationContext[X,XA]]
+    extends AnnotatedSeq[X,XA,SX,CX] {
 
-    type AS <: ASeq[X,A,S]
+    type AS <: ASeq[X,XA,SX,CX]
 
-    def sequence: S#AS
-    def create(s: S#AS): S
+    def sequence: SX#AS
+    def create(s: SX#AS): SX
 
-    def append[S2 <: S](o: S2): S = create(sequence.append(o.sequence)(self))
-    def equalTo[S2 <: S](o: S2): Boolean = sequence.equalToTree(o.sequence)(self)
+    def append[S2 <: SX](o: S2): SX = create(sequence.append(o.sequence)(self))
+    def equalTo[S2 <: SX](o: S2): Boolean = sequence.equalToTree(o.sequence)(self)
     def split(o: Long) = { val (l,r) = sequence.split(o)(self) ; (create(l),create(r)) }
     def some = sequence.some
 
-    def annotation: A = sequence.annotation(self)
+    def annotation: XA = sequence.annotation(self)
     def annotationRange(start: Long, end: Long) = sequence.annotationRange(start,end)(self)
     def size = sequence.size
     def height = sequence.height + 1
-    def combine[@specialized(Int,Long,Double) Y,@specialized(Int,Long,Double) YA,SY <: AnnotatedSeq[Y,YA,SY],AA]
-    (o: AnnotatedSeq[Y,YA,SY])(implicit c: OrderingBinContext[X,Y], f: (A,YA)=>AA) = {
-      PairedSequence.AnnPairedSeq[X,Y,A,YA,AA,S,SY](self,o.asInstanceOf[SY])
+    def combine[@specialized(Int,Long,Double) Y,@specialized(Int,Long,Double) YA,SY <: AnnotatedSeq[Y,YA,SY,CY],AA,CY <: AnnotationContext[Y,YA],C <: AnnotationContext[(X,Y),AA]]
+    (o: AnnotatedSeq[Y,YA,SY,CY])(implicit c: C, f: (XA,YA)=>AA) = {
+      PairedSequence.AnnPairedSeq[X,Y,XA,YA,AA,SX,SY,CX,CY,C](self,o.asInstanceOf[SY])
     }
-    def &&[@specialized(Int,Long,Double) Y,@specialized(Int,Long,Double) YA,SY <: AnnotatedSeq[Y,YA,SY],AA]
-    (o: AnnotatedSeq[Y,YA,SY])(implicit c: OrderingBinContext[X,Y], f: (A,YA)=>AA) = combine(o)
+   /* def &&[@specialized(Int,Long,Double) Y,@specialized(Int,Long,Double) YA,SY <: AnnotatedSeq[Y,YA,SY,TC],AA]
+    (o: AnnotatedSeq[Y,YA,SY,TC])(implicit c: OrderingBinContext[X,Y], f: (A,YA)=>AA) = combine(o) */
   }
 
-  type OASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S] { type TC <: OrderingContext[X] }
+  type OASEQ[X,A,S <: AnnotatedSeq[X,A,S,TC], TC <: OrderingAnnContext[X,A]] = AnnotatedSeq[X,A,S,TC]
 
-  trait OrderedAnnSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: OrderedAnnSeq[X,A,S]]
-    extends AnnotatedSeqImpl[X,A,S] {
-    type TC <: OrderingContext[X]
-  }
+  trait OrderedAnnSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: OrderedAnnSeq[X,A,S,TC], TC <: OrderingAnnContext[X,A]]
+    extends AnnotatedSeqImpl[X,A,S,TC]
 
-  trait ASeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: AnnotatedSeqImpl[X,A,S]] {
+  trait ASeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) A,S <: AnnotatedSeqImpl[X,A,S,TC], TC <: AnnotationContext[X,A]] {
     def size: Long
     def height: Int
     def some: X

@@ -6,13 +6,13 @@ import scala.language.{existentials, implicitConversions}
 
 //
 // Generic sort, union, difference, intersection
-//
+
 // Improved version of Enchilada semantics
 //
 // Copyright 2017: Robbert van Dalen
 //
 object Combine {
-  type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
+  /*type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
   
   private def sort2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
     Combiner[X,S]().sort(x.asInstanceOf[S])
@@ -178,5 +178,5 @@ object Combine {
         }
       }
     } 
-  }
+  }          */
 }

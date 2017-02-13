@@ -1,8 +1,6 @@
 package org.spread.core.algorithm
 
-import org.spread.core.annotation.Annotation._
 import org.spread.core.constraint.Constraint._
-import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.PairedSequence._
 import org.spread.core.sequence.RangedSequence._
 
@@ -16,7 +14,7 @@ import scala.language.{existentials, implicitConversions}
 
 object Solve {
 
-  type CREL = ConstrainedRel[X,Y,XA,YA,AA,S1,S2] forSome {
+  /*type CREL = ConstrainedRel[X,Y,XA,YA,AA,S1,S2] forSome {
     type X ;  type XA <: PropValue ; type Y ; type YA <: PropValue ; type AA
     type S1 <: OSEQ[X,XA,S1] ; type S2 <: OSEQ[Y,YA,S2] ; type S <: AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
   }
@@ -27,8 +25,6 @@ object Solve {
 
     implicit def xc = rel.left.context
     implicit def yc = rel.right.context
-    implicit def xord = xc.ord
-    implicit def yord = yc.ord
 
     def isValid = leftAnnotation.isValid && rightAnnotation.isValid
     def size = to - from + 1
@@ -36,10 +32,6 @@ object Solve {
       val r = (from + to + 1) / 2
       (ConstrainedRel(rel,from,r-1,leftAnnotation,rightAnnotation).propagate,
         ConstrainedRel(rel,r,to,leftAnnotation,rightAnnotation).propagate)
-    }
-    def getOrdering(column: ColumnPos): Ordering[_] = {
-      if (column == LeftCol) xord
-      else yord
     }
     def getAnnotation(column: ColumnPos): PropValue = {
       if (column == LeftCol) leftAnnotation
@@ -115,7 +107,7 @@ object Solve {
       var isValid = true
       var domains = m.domains
 
-      while(!fixpoint && isValid) { // Loop until fixpoint (no annotations have changed)
+      while(!fixpoint && isValid) { // Loop until fixpoint (no annotation has changed)
         fixpoint = true
 
         val iter = m.ctrs.iterator
@@ -128,7 +120,6 @@ object Solve {
           val dd1 = d1.getAnnotation(c.r1.column)
           val dd2 = d2.getAnnotation(c.r2.column)
 
-          val ord = d1.getOrdering(c.r1.column)
           val (rd1,rd2) = c.prop.propagateAny(dd1,dd2)
 
           isValid = rd1.isValid && rd2.isValid
@@ -196,35 +187,25 @@ object Solve {
   implicit def toColSyntax[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
   (id: BinRel[X,Y,XA,YA,AA,S1,S2]): ColSyntax[X,Y,XA,YA,AA,S1,S2] = ColSyntax(id)
 
-  implicit def annotator[X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
-
-
-  def createPaired[X,Y]
-  (x: Array[X], y: Array[Y])(implicit xc: OrderingTreeContext[X,Statistics[X]], yc: OrderingTreeContext[Y,Statistics[Y]], oc: OrderingBinContext[X,Y], f:(Statistics[X],Statistics[Y])=>Statistics[(X,Y)]) = {
-    val xx = EmptyAnnotatedTreeSeq[X,Statistics[X]]().createSeq(x)
-    val yy = EmptyAnnotatedTreeSeq[Y,Statistics[Y]]().createSeq(y)
-    xx && yy
-  }
-
   final def main(args: Array[String]): Unit = {
 
-    val a = createPaired(
+    val a = createPairedSeq(
       (505.toLong until 100000).toArray,
       (505.toLong until 100000).toArray
     )
 
-    val b = createPaired(
+    val b = createPairedSeq(
       (500.toLong until 6000).toArray,
       (500.toLong until 6000).toArray
     )
 
-    val c = createPaired(
+    val c = createPairedSeq(
       (500.toLong until 510).toArray,
       (500.toLong until 510).toArray
     )
 
 
-    var m = createModel.
+    /*var m = createModel.
       addSequence('a, a).
       addSequence('b, b).
       addSequence('c, c).
@@ -232,9 +213,9 @@ object Solve {
       addConstraint(EqualStatP[Long](),b.R,b.L).
       addConstraint(EqualStatP[Long](),c.R,b.L)
     
-    val s = m.solve
+    val s = m.solve  */
 
-    println("s: "  + s)
-  }
+    //println("s: "  + s)
+  }   */
 
 }

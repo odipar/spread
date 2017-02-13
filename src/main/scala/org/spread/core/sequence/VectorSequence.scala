@@ -5,9 +5,8 @@ import scala.reflect.ClassTag
 
 object VectorSequence {
 
-  case class VectorSeq[@specialized(Int,Long,Double) X: ClassTag](x: Vector[X]) extends SeqImpl[X,VectorSeq[X]] {
+  case class VectorSeq[@specialized(Int,Long,Double) X: ClassTag](x: Vector[X]) extends SeqImpl[X,VectorSeq[X], NoContext] {
     type S = VectorSeq[X]
-    type TC = NoContext
 
     def context = NoContext
     def self: S = this
