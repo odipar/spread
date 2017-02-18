@@ -1,7 +1,6 @@
 package org.spread.core.algorithm
 
-import org.spread.core.annotation.Annotation.Statistics
-import org.spread.core.sequence.AnnotatedSequence._
+import org.spread.core.sequence.Sequence._
 import scala.language.{existentials, implicitConversions}
 
 //
@@ -12,22 +11,23 @@ import scala.language.{existentials, implicitConversions}
 // Copyright 2017: Robbert van Dalen
 //
 object Combine {
-  type SEQSTAT[@specialized(Int,Long,Double) X,S <: OASEQ[X,Statistics[X],S]] = OASEQ[X,Statistics[X],S]
-  
-  private def sort2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
+
+  type SEQSTAT[X, S <: OrderingSeq[X,S]] = OrderingSeq[X,S]
+
+  private def sort2[X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
     Combiner[X,S]().sort(x.asInstanceOf[S])
   }
-  private def union2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def union2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().union(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  private def difference2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def difference2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  private def intersect2[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def intersect2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  
-  case class CombineSyntax[X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]) {
+
+  implicit class CombineSyntax[X,S <: SEQSTAT[X,S]](val s: OrderingSeq[X,S]) extends AnyVal {
     def sort = sort2(s)
     
     def union(o: SEQSTAT[X,S]) = union2(s,o)
@@ -38,17 +38,12 @@ object Combine {
     def :*:(o: SEQSTAT[X,S]) = intersect(o)
     def :^:(o: SEQSTAT[X,S]) = difference(o)
   }
-
-  implicit def syntax[@specialized(Int,Long,Double) X, S <: SEQSTAT[X,S]](s: SEQSTAT[X,S]): CombineSyntax[X,S] = {
-    CombineSyntax(s)
-  }
-
-  private case class Combiner[@specialized(Int,Long,Double) X,S <: SEQSTAT[X,S]]() {
+  
+  private case class Combiner[X,S <: SEQSTAT[X,S]]() {
     type SQ = S
-    
+
     def sort(r: SQ): SQ = {
-      if (r.size == 0) r
-      else if (r.annotation.sorted) r
+      if (r.size <= 1) r
       else {
         val (left,right) = r.split(r.size / 2)
         combine_(sort(left),sort(right),Union)
@@ -57,11 +52,10 @@ object Combine {
 
     // TODO: do a range search, and than split (also for bigger and same)
     def smaller(s: SQ,elem: X): SQ = {
-      val ord = s.context.ord
-      val ann = s.annotation
+      val ord = s.ordering
       if (s.size == 0) s
-      else if (ord.lt(ann.last,elem)) s
-      else if (ord.gteq(ann.first,elem)) s.emptySeq
+      else if (ord.lt(s.last,elem)) s
+      else if (ord.gteq(s.first,elem)) s.emptySeq
       else {
         val (l,r) = s.split(s.size / 2)
         smaller(l,elem).append(smaller(r,elem))
@@ -69,11 +63,10 @@ object Combine {
     }
 
     def bigger(s: SQ,elem: X): SQ = {
-      val ord = s.context.ord
-      val ann = s.annotation
+      val ord = s.ordering
       if (s.size == 0) s
-      else if (ord.gt(ann.first,elem)) s
-      else if (ord.lteq(ann.last,elem)) s.emptySeq
+      else if (ord.gt(s.first,elem)) s
+      else if (ord.lteq(s.last,elem)) s.emptySeq
       else {
         val (l,r) = s.split(s.size / 2)
         bigger(l,elem).append(bigger(r,elem))
@@ -81,12 +74,11 @@ object Combine {
     }
 
     def same(s: SQ,elem: X): SQ = {
-      val ord = s.context.ord
-      val ann = s.annotation
+      val ord = s.ordering
       if (s.size == 0) s
-      else if (ord.equiv(ann.first,elem) && ord.equiv(ann.last,elem)) s
-      else if (ord.gt(ann.first,elem)) s.emptySeq
-      else if (ord.lt(ann.last,elem)) s.emptySeq
+      else if (ord.equiv(s.first,elem) && ord.equiv(s.last,elem)) s
+      else if (ord.gt(s.first,elem)) s.emptySeq
+      else if (ord.lt(s.last,elem)) s.emptySeq
       else {
         val (l,r) = s.split(s.size / 2)
         same(l,elem).append(same(r,elem))
@@ -145,24 +137,22 @@ object Combine {
     def combine(s1: SQ,s2: SQ,op: MergeOperator): SQ = combine_(sort(s1),sort(s2),op)
 
     def combine_(s1: SQ,s2: SQ,op: MergeOperator): SQ = {
-      if (s1.size == 0) op.append(s1,s2)
-      else if (s2.size == 0) op.append(s1,s2)
+      if (s1.isEmpty) op.append(s1,s2)
+      else if (s2.isEmpty) op.append(s1,s2)
       else if (s1.equalTo(s2)) op.equal(s1)
       else {
-        val ann1 = s1.annotation
-        val ann2 = s2.annotation
-        val ord = s1.context.ord
-        if (ord.lt(ann1.last,ann2.first)) op.append(s1,s2)
-        else if (ord.lt(ann2.last,ann1.first)) op.append(s2,s1)
+        val ord = s1.ordering
+        if (ord.lt(s1.last,s2.first)) op.append(s1,s2)
+        else if (ord.lt(s2.last,s1.first)) op.append(s2,s1)
         else if (s1.size == 1 && s2.size == 1) {
-          val c = ord.compare(ann1.first,ann2.first)
+          val c = ord.compare(s1.first,s2.first)
           if (c == 0) op.equal(s1)
           if (c < 0) op.append(s1,s2)
           else op.append(s2,s1)
         }
         else {
           if (s1.size >= s2.size) {
-            val elem = s1.some
+            val elem = s1(s1.size/2)
             val smaller1 = smaller(s1,elem)
             val same1 = same(s1,elem)
             val bigger1 = bigger(s1,elem)
@@ -177,6 +167,6 @@ object Combine {
           else combine_(s2,s1,op)
         }
       }
-    } 
+    }
   }
 }

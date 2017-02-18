@@ -1,7 +1,7 @@
 package org.spread.core.constraint
 
 import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
-import org.spread.core.sequence.PairedSequence.RelCol
+import org.spread.core.sequence.PairedSequence._
 import scala.language.{existentials, implicitConversions}
 
 //
@@ -48,7 +48,7 @@ object Constraint {
 
   implicit def equalStatProp[X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = EqualStatP[X]()
 
-  case class RelConstraint[X,XA <: PropValue](r1: RelCol[X,XA],r2: RelCol[X,XA],prop: Prop[XA]){
+  case class RelConstraint[X,A <: PropValue](r1: RelCol[X,A],r2: RelCol[X,A],prop: Prop[A]){
     override def toString = "" + r1 + prop + r2
   }
 

@@ -1,94 +1,92 @@
 package org.spread.core.sequence
 
-import org.spread.core.algorithm.Combine._
-import org.spread.core.annotation.Annotation._
-import org.spread.core.constraint.Constraint._
+import org.spread.core.constraint.Constraint.PropValue
 import org.spread.core.sequence.Sequence._
-import org.spread.core.sequence.AnnotatedSequence._
-import org.spread.core.sequence.AnnotatedTreeSequence._
 import scala.language.{existentials, implicitConversions}
 
 object PairedSequence {
+  case class PairSeqImpl[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]](left: S1, right: S2)
+    extends PairedSeq[X1,X2,S1,S2,PairSeqImpl[X1,X2,S1,S2]] {
 
-  trait PairedSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y,S1 <: Seq[X,S1],S2 <: Seq[Y,S2], S <: PairedSeq[X,Y,S1,S2,S]]
-    extends SeqImpl[(X,Y),S] {
+    type S = PairSeqImpl[X1,X2,S1,S2]
+    def create(l: S1, r: S2): S = PairSeqImpl(l,r)
+    def self = this
+  }
 
-    {assert(left.size == right.size)}
+  case class OrdPairSeqImpl[X1,X2,S1 <: OrderingSeq[X1,S1], S2 <: OrderingSeq[X2,S2]]
+  (left: S1, right: S2)(implicit ord: Ordering[(X1,X2)])
+    extends PairedSeq[X1,X2,S1,S2,OrdPairSeqImpl[X1,X2,S1,S2]] with OrderingSeq[(X1,X2),OrdPairSeqImpl[X1,X2,S1,S2]] {
 
-    def left: S1
-    def right: S2
-    def create(l: S1,r: S2): S
-    def emptySeq: S = create(left.emptySeq,right.emptySeq)
-    def size: Long = left.size
-    def split(o: Long): (S,S) = {
-      val (ll,lr) = left.split(o)
-      val (rl,rr) = right.split(o)
-      (create(ll,rl),create(lr,rr))
+    type S = OrdPairSeqImpl[X1,X2,S1,S2]
+    type ORD = Ordering[(X1,X2)]
+
+    def ordering = ord
+    def create(l: S1, r: S2): S = OrdPairSeqImpl[X1,X2,S1,S2](l,r)(ord)
+    def self = this
+  }
+
+  trait AnnPairSeq[X1,X2,A1,A2,S1 <: AnnotatedSeq[X1,A1,S1], S2 <: AnnotatedSeq[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+    extends PairedSeq[X1,X2,S1,S2,S] with AnnotatedSeq[(X1,X2),(A1,A2),S] {
+    def annotationRange(start: Long, end: Long) = (left.annotationRange(start,end),right.annotationRange(start,end))
+    def equal = ???
+  }
+
+  case class AnnPairSeqImpl[X1,X2,A1,A2,S1 <: AnnotatedSeq[X1,A1,S1], S2 <: AnnotatedSeq[X2,A2,S2]]
+  (left: S1, right: S2) extends AnnPairSeq[X1,X2,A1,A2,S1,S2,AnnPairSeqImpl[X1,X2,A1,A2,S1,S2]] {
+
+    type S = AnnPairSeqImpl[X1,X2,A1,A2,S1,S2]
+
+    def annotation = (left.annotation,right.annotation)
+    def create(l: S1, r: S2): S = AnnPairSeqImpl(left,right)
+    def self = this
+  }
+
+  case class AnnOrdBinSeqImpl[X1,X2,A1,A2,S1 <: AnnotatedSeq[X1,A1,S1], S2 <: AnnotatedSeq[X2,A2,S2]]
+  (left: S1, right: S2)(implicit ord: Ordering[(X1,X2)])
+    extends AnnPairSeq[X1,X2,A1,A2,S1,S2,AnnOrdBinSeqImpl[X1,X2,A1,A2,S1,S2]] with
+      OrderingSeq[(X1,X2),AnnOrdBinSeqImpl[X1,X2,A1,A2,S1,S2]] {
+
+    type S = AnnOrdBinSeqImpl[X1,X2,A1,A2,S1,S2]
+    type ORD = Ordering[(X1,X2)]
+
+    def ordering = ord
+    def annotation = (left.annotation,right.annotation)
+    def create(l: S1, r: S2): S = AnnOrdBinSeqImpl[X1,X2,A1,A2,S1,S2](l,r)(ord)
+    def self = this
+  }
+
+  implicit class Combiner[X1,S1 <: Seq[X1,S1]](val s1: Seq[X1,S1]) extends AnyVal {
+    def combine[X2,S2 <: Seq[X2,S2]](s2: Seq[X2,S2]) = PairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+  }
+
+  implicit class OrdCombiner[X1,S1 <: OrderingSeq[X1,S1]](val s1: OrderingSeq[X1,S1]) extends AnyVal {
+    def combineOrd[X2,S2 <: OrderingSeq[X2,S2]](s2: OrderingSeq[X2,S2])(implicit ord: Ordering[(X1,X2)]) = {
+      OrdPairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
     }
-    def append[SS <: S](o: SS): S = create(left.append(o.left),right.append(o.right))
-    def equalTo[SS <: S](o: SS): Boolean = left.equals(o.left) && right.equals(o.right)
   }
 
-  case class BinSeqImpl[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y, S1 <: Seq[X,S1],S2 <: Seq[Y,S2]]
-  (left: S1, right: S2) extends PairedSeq[X,Y,S1,S2,BinSeqImpl[X,Y,S1,S2]] {
-    type TC = NoContext
-    def context = NoContext
-
-    type S = BinSeqImpl[X,Y,S1,S2]
-    val height = (left.height max right.height) + 1
-    def self: S = this
-    def create(l: S1, r: S2): S = BinSeqImpl(l,r)
-    def some = (left.some,right.some)
-  }
-
-  case class DualOrdering[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
-  (x: Ordering[X], y: Ordering[Y]) extends Ordering[(X,Y)] {
-
-    def compare(o1: (X,Y), o2: (X,Y)): Int = {
-      val c = x.compare(o1._1,o2._1)
-      if (c == 0) y.compare(o1._2,o2._2)
-      else c
+  implicit class AnnCombiner[X1,A1,S1 <: AnnotatedSeq[X1,A1,S1]](val s1: AnnotatedSeq[X1,A1,S1]) extends AnyVal {
+    def combineAnn[X2,A2,S2 <: AnnotatedSeq[X2,A2,S2]](s2: AnnotatedSeq[X2,A2,S2]) = {
+      AnnPairSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
     }
   }
-  
-  case class OrderingBinContext[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y]
-  (o: DualOrdering[X,Y])  extends OrderingContext[(X,Y)]() { def ord = o }
 
-  case class AnnPairedSeq[@specialized(Int,Long,Double) X,@specialized(Int,Long,Double) Y,XA,YA,AA,S1 <: AnnotatedSeq[X,XA,S1],S2 <: AnnotatedSeq[Y,YA,S2]]
-  (left: S1, right: S2)(implicit c: OrderingBinContext[X,Y], f:(XA,YA)=>AA)
-    extends PairedSeq[X,Y,S1,S2,AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]]
-      with AnnotatedSeq[(X,Y),AA,AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]] {
-    type S = AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
-    type TC = OrderingBinContext[X,Y]
-
-    val height = (left.height max right.height) + 1
-    def self: S = this
-    def context = c
-    def some = (left.some,right.some)
-    def create(l: S1, r: S2): S = AnnPairedSeq(l,r)
-    def annotation = f(left.annotation,right.annotation)
-    def annotationRange(start: Long, end: Long) = f(left.annotationRange(start,end),right.annotationRange(start,end))
+  implicit class AnnOrdCombiner[X1,A1,S1 <: AnnOrdSeq[X1,A1,S1]](val s1: AnnOrdSeq[X1,A1,S1]) extends AnyVal {
+    def combineAnnOrd[X2,A2,S2 <: AnnOrdSeq[X2,A2,S2]](s2: AnnOrdSeq[X2,A2,S2])(implicit ord: Ordering[(X1,X2)]) = {
+      AnnOrdBinSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+    }
   }
 
-  implicit def ordBinContext[X,Y](implicit xo: Ordering[X], yo: Ordering[Y]): OrderingBinContext[X,Y] = {
-    OrderingBinContext(DualOrdering(xo,yo))
-  }
-
-  implicit def dualStats[X,Y]: (Statistics[X],Statistics[Y]) => Statistics[(X,Y)] = {
-    (x: Statistics[X],y: Statistics[Y]) => createStats(
-      (x.lowerBound,y.lowerBound),
-      (x.upperBound,y.upperBound),
-      (x.first,y.first),
-      (x.last,y.last),
-      x.sorted && y.sorted
-    )
-  }
-
-  type OSEQ[X,XA,S <: AnnotatedSeq[X,XA,S]] = AnnotatedSeq[X,XA,S] { type TC <: OrderingAnnContext[X,XA] }
-  type BinRel[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]] = AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
-  type EREL = BinRel[X,Y,XA,YA,AA,S1,S2] forSome {
-    type X ;  type XA <: PropValue ; type Y ; type YA <: PropValue ; type AA
-    type S1 <: OSEQ[X,XA,S1] ; type S2 <: OSEQ[Y,YA,S2] ; type S <: AnnPairedSeq[X,Y,XA,YA,AA,S1,S2]
+  type OSEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
+  type BinRel[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2],S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]] = AnnPairSeq[X1,X2,A1,A2,S1,S2,S]
+  type EREL = BinRel[X1,X2,A1,A2,S1,S2,S] forSome {
+    type X1
+    type X2
+    type A1 <: PropValue
+    type A2 <: PropValue
+    type S1 <: OSEQ[X1,A1,S1]
+    type S2 <: OSEQ[X2,A2,S2]
+    type S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]
   }
   
   sealed trait ColumnPos
@@ -102,50 +100,33 @@ object PairedSequence {
     def column: ColumnPos
   }
 
-  case class LeftCol[Y,YA](id: Symbol) extends RelCol[Y,YA] {
+  case class LeftCol[X1,A1](id: Symbol) extends RelCol[X1,A1] {
     def column = LeftCol
     override def toString: String = id + ".L"
   }
 
-  case class RightCol[X,XA](id: Symbol) extends RelCol[X,XA] {
+  case class RightCol[X2,A2](id: Symbol) extends RelCol[X2,A2] {
     def column = RightCol
     override def toString: String = id + ".R"
   }
 
-  sealed trait RCol[X,XA <: PropValue] {
+  sealed trait RCol[X,A <: PropValue] {
     def rel: EREL
     def column: ColumnPos
-    def withID(s: Symbol): RelCol[X,XA]
+    def withID(s: Symbol): RelCol[X,A]
   }
 
-  case class RightRCol[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
-  (r: BinRel[X,Y,XA,YA,AA,S1,S2]) extends RCol[Y,YA] {
+  case class RightRCol[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  (r: BinRel[X1,X2,A1,A2,S1,S2,S]) extends RCol[X2,A2] {
     def rel: EREL = r
     def column = RightCol
-    def withID(s: Symbol): RelCol[Y,YA] = RightCol(s)
+    def withID(s: Symbol): RelCol[X2,A2] = RightCol[X2,A2](s)
   }
 
-  case class LeftRCol[X,Y,XA <: PropValue,YA <: PropValue,AA,S1 <: OSEQ[X,XA,S1],S2 <: OSEQ[Y,YA,S2]]
-  (r: BinRel[X,Y,XA,YA,AA,S1,S2]) extends RCol[X,XA] {
+  case class LeftRCol[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  (r: BinRel[X1,X2,A1,A2,S1,S2,S]) extends RCol[X1,A1] {
     def rel: EREL = r
     def column = LeftCol
-    def withID(s: Symbol): RelCol[X,XA] = LeftCol(s)
+    def withID(s: Symbol): RelCol[X1,A1] = LeftCol[X1,A1](s)
   }
-
-  final def main(args: Array[String]): Unit = {
-    val factory: AnnTreeSeq[Int,Statistics[Int]] = EmptyAnnotatedTreeSeq[Int,Statistics[Int]]()
-    val factory2: AnnTreeSeq[Double,Statistics[Double]] = EmptyAnnotatedTreeSeq[Double,Statistics[Double]]()
-
-    var b = factory.emptySeq
-    var b2 = factory2.emptySeq
-
-    for (i <- 1 to 4) { b = b :+ -i }
-    for (i <- 1 to 4 ) { b2 = b2 :+ i }
-
-    val p = b && b2    // combine
-    val p2 = p ++ p    // append
-    val p3 = p2 :+: p2 // union
-    println("p3: " + p3.sort)
-  }
-
 }

@@ -10,7 +10,7 @@ import org.spread.core.sequence.RangedSequence._
 object BSeqSpecification extends Properties("BSeq") {
   type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
 
-  val factory = EmptyLongTreeSeq()
+  val factory = longSeqFactory
   implicit def arbitraryIntSeq: Arbitrary[SSEQ] = Arbitrary(longSeq)
 
   def longSeq: Gen[SSEQ] = for {
@@ -55,9 +55,9 @@ object BSeqSpecification extends Properties("BSeq") {
   property("multiSet") = forAll { (p: SSEQ) =>
     import org.spread.core.algorithm.Combine._
 
-    val s = p.sort
-    val u = s.union(s)
-    val d = s.difference(u)
+    val s = p sort
+    val u = s union s
+    val d = s difference u
 
     s.equalTo(d)
   }
