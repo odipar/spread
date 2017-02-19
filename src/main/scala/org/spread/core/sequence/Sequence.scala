@@ -4,14 +4,14 @@ import org.spread.core.constraint.Constraint.EqualProp
 import scala.language.{existentials, implicitConversions}
 
 object Sequence {
-  trait Seq[X,S <: Seq[X,S]] {
+  trait Seq[@specialized X,S <: Seq[X,S]] {
 
     def self: S
     def emptySeq: S
     
     def append[S2 <: S](o: S2): S
     def split(o: Long): (S,S)
-    def equalTo[SS <: S](o: SS): Boolean
+    def equalTo[S2 <: S](o: S2): Boolean
 
     def size: Long
     def height: Int
@@ -24,31 +24,33 @@ object Sequence {
     def ++[S2 <: S](o: S2): S = append(o)
   }
 
-  trait OrderingSeq[X,S <: OrderingSeq[X,S]] extends Seq[X,S] {
+  trait OrderingSeq[@specialized X,S <: OrderingSeq[X,S]] extends Seq[X,S] {
     def ordering: Ordering[X]
   }
 
-  trait AnnotatedSeq[X,A,S <: AnnotatedSeq[X,A,S]] extends Seq[X,S] {
+  trait AnnotatedSeq[@specialized X,A,S <: AnnotatedSeq[X,A,S]] extends Seq[X,S] {
     def annotation: A
     def annotationRange(start: Long, end: Long): A
     def equal: EqualProp[A]
   }
 
-  trait AnnOrdSeq[X,A,S <: AnnOrdSeq[X,A,S]] extends AnnotatedSeq[X,A,S] with OrderingSeq[X,S]
+  trait AnnOrdSeq[@specialized X,A,S <: AnnOrdSeq[X,A,S]] extends AnnotatedSeq[X,A,S] with OrderingSeq[X,S]
 
-  trait PairedSeq[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S]] extends Seq[(X1,X2),S] {
+  trait PairedSeq[@specialized X1,@specialized X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S]]
+    extends Seq[(X1,X2),S] {
+
     def left: S1
     def right: S2
 
     def emptySeq = create(left.emptySeq,right.emptySeq)
     def create(l: S1, r: S2): S
-    def append[SS <: S](o: SS): S = create(left append o.left, right append o.right)
+    def append[S2 <: S](o: S2): S = create(left append o.left, right append o.right)
     def split(o: Long) = {
       val (ll,lr) = left.split(o)
       val (rl,rr) = right.split(o)
       (create(ll,rl),create(lr,rr))
     }
-    def equalTo[SS <: S](o: SS): Boolean = left.equals(o.left) && right.equals(o.right)
+    def equalTo[S2 <: S](o: S2): Boolean = left.equals(o.left) && right.equals(o.right)
     def size = left.size
     def height = (left.height max right.height) + 1
     def first = (left.first,right.first)
@@ -57,7 +59,7 @@ object Sequence {
   }
 
   // Annotated Seq with representation
-  trait AnnSeqWithRepr[X,A,S <: AnnSeqWithRepr[X,A,S]] extends AnnotatedSeq[X,A,S] {
+  trait AnnSeqWithRepr[@specialized X,A,S <: AnnSeqWithRepr[X,A,S]] extends AnnotatedSeq[X,A,S] {
     type AS <: AnnSeqRepr[X,A,S]
 
     def repr: S#AS
@@ -65,7 +67,7 @@ object Sequence {
     def create(s: S#AS): S
     def append[S2 <: S](o: S2): S = create(repr.append(o.repr)(self))
     def split(o: Long): (S,S) = { val (l,r) = repr.split(o)(self); (create(l),create(r)) }
-    def equalTo[SS <: S](o: SS): Boolean = repr.equalToTree(o.repr)(self)
+    def equalTo[S2 <: S](o: S2): Boolean = repr.equalToTree(o.repr)(self)
     def annotation = repr.annotation(self)
     def annotationRange(start: Long, end: Long) = repr.annotationRange(start,end)(self)
     def size = repr.size
@@ -75,9 +77,10 @@ object Sequence {
     def apply(i: Long) = repr.apply(i)(self)
   }
 
-  trait AnnOrdSeqWithRepr[X,A,S <: AnnOrdSeqWithRepr[X,A,S]] extends AnnSeqWithRepr[X,A,S] with AnnOrdSeq[X,A,S]
+  trait AnnOrdSeqWithRepr[@specialized X,A,S <: AnnOrdSeqWithRepr[X,A,S]]
+    extends AnnSeqWithRepr[X,A,S] with AnnOrdSeq[X,A,S]
   
-  trait AnnSeqRepr[X,A,S <: AnnSeqWithRepr[X,A,S]] {
+  trait AnnSeqRepr[@specialized X,A,S <: AnnSeqWithRepr[X,A,S]] {
     def size: Long
     def height: Int
     def append[AS <: S#AS](o: AS)(implicit c: S): S#AS

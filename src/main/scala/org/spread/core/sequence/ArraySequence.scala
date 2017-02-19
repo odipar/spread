@@ -4,7 +4,7 @@ import org.spread.core.sequence.Sequence._
 import scala.reflect.ClassTag
 
 object ArraySequence {
-  case class ArraySeq[X: ClassTag](x: Array[X]) extends Seq[X,ArraySeq[X]] {
+  case class ArraySeq[@specialized X: ClassTag](x: Array[X]) extends Seq[X,ArraySeq[X]] {
     type S = ArraySeq[X]
 
     def self: S = this
@@ -12,9 +12,9 @@ object ArraySequence {
     def height = 0
 
     def emptySeq = ArraySeq(Array())
-    def append[SS <: S](o: SS): S = ArraySeq(x ++ o.x)
+    def append[S2 <: S](o: S2): S = ArraySeq(x ++ o.x)
     def split(o: Long) = { val (l,r) = x.splitAt(o.toInt) ; (ArraySeq(l),ArraySeq(r)) }
-    def equalTo[SS <: S](o: SS): Boolean = {
+    def equalTo[S2 <: S](o: S2): Boolean = {
       val s = x.length
       val ox = o.x
 

@@ -6,8 +6,9 @@ import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.spread.core.annotation.Annotation.Statistics
 import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.RangedSequence._
+import scala.language.{existentials, implicitConversions, postfixOps}
 
-object BSeqSpecification extends Properties("BSeq") {
+object SeqSpecification extends Properties("Seq") {
   type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
 
   val factory = longSeqFactory

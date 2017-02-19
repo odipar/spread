@@ -1,5 +1,7 @@
 package org.spread.core.splithash
 
+import scala.language.{existentials, implicitConversions}
+
 object SplitHash {
   //
   // SplitHash is an immutable, uniquely represented Sequence ADS (Authenticated Data Structure).
@@ -807,8 +809,6 @@ object SplitHash {
 
   def emptySH[X]: SHNode[X] = null
   def intNode(i: Int): SHNode[Int] = IntNode(i)
-
-  import scala.language.implicitConversions
 
   implicit def toIntNode(i: Int): SHNode[Int] = intNode(i)
 

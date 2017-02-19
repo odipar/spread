@@ -17,7 +17,7 @@ import org.spread.core.splithash.SplitHash._
 
 import scala.collection.immutable.Map
 import scala.collection.mutable
-import scala.language.existentials
+import scala.language.{existentials, implicitConversions}
 import scala.reflect.runtime.universe.TypeTag
 
 object Spread {

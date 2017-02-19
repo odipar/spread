@@ -22,12 +22,12 @@ object Solve {
     type X2
     type A1 <: PropValue
     type A2 <: PropValue
-    type S1 <: OSEQ[X1,A1,S1]
-    type S2 <: OSEQ[X2,A2,S2]
+    type S1 <: ASEQ[X1,A1,S1]
+    type S2 <: ASEQ[X2,A2,S2]
     type S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]
   }
 
-  case class ConstrainedRel[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  case class ConstrainedRel[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
   (rel: BinRel[X1,X2,A1,A2,S1,S2,S],from: Long,to: Long,leftAnnotation: A1,rightAnnotation: A2) {
     type CR = ConstrainedRel[X1,X2,A1,A2,S1,S2,S]
     
@@ -64,7 +64,7 @@ object Solve {
     def applyRange: LSEQ = createRange(from,to)
   }
 
-  def createRelDomain[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  def createRelDomain[@specialized X1,@specialized X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
   (rel: BinRel[X1,X2,A1,A2,S1,S2,S]) = {
     val l = rel.left.annotation
     val r = rel.right.annotation
@@ -83,7 +83,7 @@ object Solve {
 
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
     { mm = mm + 1 }
-    def addSequence[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+    def addSequence[@specialized X1,@specialized X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
     (s: Symbol, rel: BinRel[X1,X2,A1,A2,S1,S2,S]): Model = {
       Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
     }
@@ -181,22 +181,25 @@ object Solve {
     }
   }
 
-  case class ColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
-  (rel: BinRel[X1,X2,A1,A2,S1,S2,S]) extends AnyVal {
+  case class ColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  (rel: BinRel[X1,X2,A1,A2,S1,S2,S]) {
     def L: RCol[X1,A1] = LeftRCol[X1,X2,A1,A2,S1,S2,S](rel)
     def R: RCol[X2,A2] = RightRCol[X1,X2,A1,A2,S1,S2,S](rel)
   }
 
-  implicit def toColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: OSEQ[X1,A1,S1],S2 <: OSEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  implicit def toColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
   (id: BinRel[X1,X2,A1,A2,S1,S2,S]): ColSyntax[X1,X2,A1,A2,S1,S2,S] = ColSyntax(id)
 
-  def createPaired[X1: ClassTag,X2: ClassTag](x1: Array[X1], x2: Array[X2])(implicit o1: Ordering[X1], o2: Ordering[X2]) = {
-    val xx1 = seqFactory[X1].createSeq(x1)
-    val xx2 = seqFactory[X2].createSeq(x2)
-    xx1 combineAnnOrd xx2
+  def createPaired[@specialized X1: ClassTag,@specialized X2: ClassTag]
+    (x1: Array[X1], x2: Array[X2])(implicit o1: Ordering[X1], o2: Ordering[X2]) = {
+      import Combiner._
+
+      val xx1 = seqFactory[X1].createSeq(x1)
+      val xx2 = seqFactory[X2].createSeq(x2)
+      xx1 && xx2
   }
 
-  implicit def annotator[X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
+  implicit def annotator[@specialized X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
 
   final def main(args: Array[String]): Unit = {
 

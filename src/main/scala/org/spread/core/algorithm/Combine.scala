@@ -12,34 +12,34 @@ import scala.language.{existentials, implicitConversions}
 //
 object Combine {
 
-  type SEQSTAT[X, S <: OrderingSeq[X,S]] = OrderingSeq[X,S]
+  type OSEQ[@specialized X, S <: OrderingSeq[X,S]] = OrderingSeq[X,S]
 
-  private def sort2[X,S <: SEQSTAT[X,S]](x: SEQSTAT[X,S]) = {
+  private def sort2[@specialized X,S <: OSEQ[X,S]](x: OSEQ[X,S]) = {
     Combiner[X,S]().sort(x.asInstanceOf[S])
   }
-  private def union2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def union2[@specialized X,S <: OSEQ[X,S]](s1: OSEQ[X,S],s2: OSEQ[X,S]) = {
     Combiner[X,S]().union(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  private def difference2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def difference2[@specialized X,S <: OSEQ[X,S]](s1: OSEQ[X,S],s2: OSEQ[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
-  private def intersect2[X,S <: SEQSTAT[X,S]](s1: SEQSTAT[X,S],s2: SEQSTAT[X,S]) = {
+  private def intersect2[@specialized X,S <: OSEQ[X,S]](s1: OSEQ[X,S],s2: OSEQ[X,S]) = {
     Combiner[X,S]().difference(s1.asInstanceOf[S],s2.asInstanceOf[S])
   }
 
-  implicit class CombineSyntax[X,S <: SEQSTAT[X,S]](val s: OrderingSeq[X,S]) extends AnyVal {
+  implicit class CombineSyntax[@specialized X,S <: OSEQ[X,S]](val s: OrderingSeq[X,S]) {
     def sort = sort2(s)
-    
-    def union(o: SEQSTAT[X,S]) = union2(s,o)
-    def difference(o: SEQSTAT[X,S]) = difference2(s,o)
-    def intersect(o: SEQSTAT[X,S]) = intersect2(s,o)
 
-    def :+:(o: SEQSTAT[X,S]) = union(o)
-    def :*:(o: SEQSTAT[X,S]) = intersect(o)
-    def :^:(o: SEQSTAT[X,S]) = difference(o)
+    def union(o: OSEQ[X,S]) = union2(s,o)
+    def difference(o: OSEQ[X,S]) = difference2(s,o)
+    def intersect(o: OSEQ[X,S]) = intersect2(s,o)
+
+    def :+:(o: OSEQ[X,S]) = union(o)
+    def :*:(o: OSEQ[X,S]) = intersect(o)
+    def :^:(o: OSEQ[X,S]) = difference(o)
   }
-  
-  private case class Combiner[X,S <: SEQSTAT[X,S]]() {
+
+  private case class Combiner[@specialized X,S <: OSEQ[X,S]]() {
     type SQ = S
 
     def sort(r: SQ): SQ = {

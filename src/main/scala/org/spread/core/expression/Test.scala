@@ -8,6 +8,7 @@ import org.spread.core.splithash.SplitHash._
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.WeakHashMap
+import scala.language.{existentials, implicitConversions}
 
 // EXPOSITION:
 //

@@ -15,16 +15,18 @@ object Constraint {
     def isValid: Boolean
   }
 
-  trait Prop[X] {
+  trait Prop[@specialized X] {
     def propagate(o1: X, o2: X): (X,X)
     def propagateAny(o1: Any, o2: Any): (X,X) = propagate(o1.asInstanceOf[X],o2.asInstanceOf[X])
   }
 
-  trait EqualProp[X] extends Prop[X]
+  trait EqualProp[@specialized X] extends Prop[X]
 
-  trait StatisticsProp[X] extends Prop[Statistics[X]]
+  trait StatisticsProp[@specialized X] extends Prop[Statistics[X]]
 
-  case class EqualStatP[X](implicit ann: StatisticsAnnotator[X]) extends StatisticsProp[X] with EqualProp[Statistics[X]] {
+  case class EqualStatP[@specialized X](implicit ann: StatisticsAnnotator[X])
+    extends StatisticsProp[X] with EqualProp[Statistics[X]] {
+    
     def ord = ann.ordering
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateOne(o1,o2)
@@ -46,9 +48,11 @@ object Constraint {
     override def toString = "EqualStatP"
   }
 
-  implicit def equalStatProp[X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = EqualStatP[X]()
+  implicit def equalStatProp[@specialized X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = {
+    EqualStatP[X]()
+  }
 
-  case class RelConstraint[X,A <: PropValue](r1: RelCol[X,A],r2: RelCol[X,A],prop: Prop[A]){
+  case class RelConstraint[@specialized X,A <: PropValue](r1: RelCol[X,A],r2: RelCol[X,A],prop: Prop[A]) {
     override def toString = "" + r1 + prop + r2
   }
 
