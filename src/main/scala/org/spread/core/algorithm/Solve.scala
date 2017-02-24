@@ -5,6 +5,7 @@ import org.spread.core.constraint.Constraint._
 import org.spread.core.sequence.PairedSequence._
 import org.spread.core.sequence.RangedSequence._
 import org.spread.core.sequence.AnnotatedTreeSequence._
+import org.spread.core.sequence.Sequence._
 
 import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
@@ -17,7 +18,7 @@ import scala.reflect.ClassTag
 
 object Solve {
 
-  type CREL = ConstrainedRel[X1,X2,A1,A2,S1,S2,S] forSome {
+  /*type CREL = ConstrainedRel[X1,X2,A1,A2,S1,S2,S] forSome {
     type X1
     type X2
     type A1 <: PropValue
@@ -38,7 +39,7 @@ object Solve {
       (ConstrainedRel(rel,from,r-1,leftAnnotation,rightAnnotation).propagate,
         ConstrainedRel(rel,r,to,leftAnnotation,rightAnnotation).propagate)
     }
-    def getAnnotation(column: ColumnPos): PropValue = {
+    /*def getAnnotation(column: ColumnPos): PropValue = {
       if (column == LeftCol) leftAnnotation
       else rightAnnotation
     }
@@ -48,7 +49,7 @@ object Solve {
     }
     def setAnyAnnotation(d: PropValue,column: ColumnPos) = {
       setAnnotation(d,column)
-    }
+    } */
     def propagate: CR = {
       if (isValid) {
         val l = rel.left.annotationRange(from,to)
@@ -56,6 +57,7 @@ object Solve {
 
         val d1 = rel.left.equal.propagate(leftAnnotation,l)._1
         val d2 = rel.right.equal.propagate(rightAnnotation,r)._1
+        
         ConstrainedRel(rel,from,to,d1,d2)
       }
       else this
@@ -64,7 +66,7 @@ object Solve {
     def applyRange: LSEQ = createRange(from,to)
   }
 
-  def createRelDomain[@specialized X1,@specialized X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+  def createRelDomain[@@sp X1,@@sp X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
   (rel: BinRel[X1,X2,A1,A2,S1,S2,S]) = {
     val l = rel.left.annotation
     val r = rel.right.annotation
@@ -83,14 +85,20 @@ object Solve {
 
   case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
     { mm = mm + 1 }
-    def addSequence[@specialized X1,@specialized X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
+    def addSequence[@@sp X1,@@sp X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
     (s: Symbol, rel: BinRel[X1,X2,A1,A2,S1,S2,S]): Model = {
       Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain(rel)),isValid)
     }
-    def addConstraint[X,A <: PropValue](cc: Prop[A], r1: RCol[X,A], r2: RCol[X,A]): Model = {
-      val id1 = relsInv(r1.rel)
-      val id2 = relsInv(r2.rel)
-      val c = RelConstraint(r1.withID(id1),r2.withID(id2),cc)
+    def addConstraint[X,A <: PropValue]
+    (cc: Prop[A], r1: AnnSelector[_,_,_,_,_,X,A,_], r2: AnnSelector[_,_,_,_,_,X,A,_]): Model = {
+
+      // Check if they have mathing IDs
+      val id1 = relsInv(r1.s)
+      val id2 = relsInv(r2.s)
+
+      if ((id1 == null) || (id2 == null)) sys.error("No matching rel")
+      
+      val c = RelConstraint(r1,r2,cc)
       Model(rels,relsInv,ctrs + c,domains,isValid)
     }
     def setRelDomain(id: Symbol, rel: CREL): Model = {
@@ -109,7 +117,8 @@ object Solve {
       var fixpoint = false
       var isValid = true
       var domains = m.domains
-
+      var relsInv = m.relsInv
+      
       while(!fixpoint && isValid) { // Loop until fixpoint (no annotations have changed after propagation)
         fixpoint = true
 
@@ -117,11 +126,17 @@ object Solve {
         while(iter.hasNext && isValid) {
           val c = iter.next
 
-          val d1 = domains(c.r1.id)
-          val d2 = domains(c.r2.id)
+          val c1: AnnSelector[_,_,_,_,EREL,_,_,_] = c.r1.asInstanceOf[AnnSelector[_,_,_,_,EREL,_,_,_]]
+          val c2: AnnSelector[_,_,_,_,EREL,_,_,_] = c.r2.asInstanceOf[AnnSelector[_,_,_,_,EREL,_,_,_]]
 
-          val dd1 = d1.getAnnotation(c.r1.column)
-          val dd2 = d2.getAnnotation(c.r2.column)
+          val id1: Symbol = relsInv(c1.s.asInstanceOf[EREL])
+          val id2: Symbol = relsInv(c1.s.asInstanceOf[EREL])
+          
+          val d1: CREL = domains(id1)
+          val d2: CREL = domains(id2)
+
+          val dd1: PropValue = c1(d1.rel).asInstanceOf[AnnotatedSeq[_,_ <: PropValue,_]].annotation
+          val dd2: PropValue = c2(d2.rel).asInstanceOf[AnnotatedSeq[_,_ <: PropValue,_]].annotation
 
           val (rd1,rd2) = c.prop.propagateAny(dd1,dd2)
 
@@ -129,12 +144,12 @@ object Solve {
 
           if ((dd1 != rd1) || (dd2 != rd2)) {
             fixpoint = false // Either one of the domains have been propagated to something different
-            if (c.r1.id != c.r2.id) {
-              domains = domains + (c.r1.id -> d1.setAnnotation(rd1,c.r1.column))
-              domains = domains + (c.r2.id -> d2.setAnnotation(rd2,c.r2.column))
-            }
+            if (id1 != id2) {
+              domains = domains + (id1 -> d1.setAnnotation(rd1,dd1))
+              domains = domains + (id2 -> d2.setAnnotation(rd2,dd2))
+            } 
             else {
-              domains = domains + (c.r1.id -> d1.setAnnotation(rd1,c.r1.column).setAnnotation(rd2,c.r2.column))
+              domains = domains + (id1 -> d1.setAnnotation(rd1,dd1).setAnnotation(rd2,dd2))
             }
           }
         }
@@ -181,16 +196,7 @@ object Solve {
     }
   }
 
-  case class ColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
-  (rel: BinRel[X1,X2,A1,A2,S1,S2,S]) {
-    def L: RCol[X1,A1] = LeftRCol[X1,X2,A1,A2,S1,S2,S](rel)
-    def R: RCol[X2,A2] = RightRCol[X1,X2,A1,A2,S1,S2,S](rel)
-  }
-
-  implicit def toColSyntax[X1,X2,A1 <: PropValue,A2 <: PropValue,S1 <: ASEQ[X1,A1,S1],S2 <: ASEQ[X2,A2,S2], S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]]
-  (id: BinRel[X1,X2,A1,A2,S1,S2,S]): ColSyntax[X1,X2,A1,A2,S1,S2,S] = ColSyntax(id)
-
-  def createPaired[@specialized X1: ClassTag,@specialized X2: ClassTag]
+  def createPaired[@@sp X1: ClassTag,@@sp X2: ClassTag]
     (x1: Array[X1], x2: Array[X2])(implicit o1: Ordering[X1], o2: Ordering[X2]) = {
       import Combiner._
 
@@ -199,9 +205,10 @@ object Solve {
       xx1 && xx2
   }
 
-  implicit def annotator[@specialized X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
+  implicit def annotator[@@sp X](implicit ord: Ordering[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
 
   final def main(args: Array[String]): Unit = {
+    import Selector._
 
     val a = createPaired(
       (505.toLong until 100000).toArray,
@@ -218,16 +225,25 @@ object Solve {
       (500.toLong until 510).toArray
     )
 
-    var m = createModel.
+    val a1 = a.select(_.L,'a1)
+    val a2 = a.select(_.R,'a2)
+
+    val b1 = b.select(_.L,'b1)
+    val b2 = b.select(_.R,'b2)
+
+    val c1 = c.select(_.L,'c1)
+    val c2 = c.select(_.R,'c2)
+    
+    /*var m = createModel.
       addSequence('a, a).
       addSequence('b, b).
       addSequence('c, c).
       addConstraint(EqualStatP[Long](),b.R,a.L).
       addConstraint(EqualStatP[Long](),b.R,b.L).
-      addConstraint(EqualStatP[Long](),c.R,b.L)
+      addConstraint(EqualStatP[Long](),c.R,b.L)   */
 
-    val s = m.solve
+   // val s = m.solve
 
-    println("s: "  + s)
-  }
+    //println("s: "  + s)
+  }  */
 }

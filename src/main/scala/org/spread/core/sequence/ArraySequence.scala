@@ -1,10 +1,13 @@
 package org.spread.core.sequence
 
+import org.spread.core.annotation.Annotation.Annotator
 import org.spread.core.sequence.Sequence._
+
 import scala.reflect.ClassTag
+import org.spread.core.language.Annotation.sp
 
 object ArraySequence {
-  case class ArraySeq[@specialized X: ClassTag](x: Array[X]) extends Seq[X,ArraySeq[X]] {
+  case class ArraySeq[@sp X: ClassTag](x: Array[X]) extends SeqImpl[X,ArraySeq[X]] {
     type S = ArraySeq[X]
 
     def self: S = this
@@ -23,6 +26,7 @@ object ArraySequence {
       while ((i < s) || !eq) { eq = (x(i) ==  ox(i)) }
       eq
     }
+    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A = annotator.manyX(x)
     def apply(i: Long) = x(i.toInt)
     def first = x(0)
     def last = x(x.length-1)

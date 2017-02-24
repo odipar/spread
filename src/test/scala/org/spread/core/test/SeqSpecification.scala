@@ -54,9 +54,8 @@ object SeqSpecification extends Properties("Seq") {
   }
 
   property("multiSet") = forAll { (p: SSEQ) =>
-    import org.spread.core.algorithm.Combine._
 
-    val s = p sort
+    val s = p.sort
     val u = s union s
     val d = s difference u
 

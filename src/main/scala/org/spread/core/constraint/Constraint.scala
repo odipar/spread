@@ -1,8 +1,10 @@
 package org.spread.core.constraint
 
-import org.spread.core.annotation.Annotation.{Statistics, StatisticsAnnotator, createStats}
+import org.spread.core.annotation.Annotation.{NoAnnotation, Statistics, StatisticsAnnotator, createStats}
 import org.spread.core.sequence.PairedSequence._
+
 import scala.language.{existentials, implicitConversions}
+import org.spread.core.language.Annotation.sp
 
 //
 // Standard constraint propagation objects
@@ -15,16 +17,21 @@ object Constraint {
     def isValid: Boolean
   }
 
-  trait Prop[@specialized X] {
+  trait Prop[@sp X] {
     def propagate(o1: X, o2: X): (X,X)
     def propagateAny(o1: Any, o2: Any): (X,X) = propagate(o1.asInstanceOf[X],o2.asInstanceOf[X])
   }
 
-  trait EqualProp[@specialized X] extends Prop[X]
+  trait EqualProp[@sp X] extends Prop[X]
 
-  trait StatisticsProp[@specialized X] extends Prop[Statistics[X]]
+  trait StatisticsProp[@sp X] extends Prop[Statistics[X]]
 
-  case class EqualStatP[@specialized X](implicit ann: StatisticsAnnotator[X])
+  case object EqualNoAnn extends EqualProp[NoAnnotation] {
+    val noAnn = (NoAnnotation,NoAnnotation)
+    def propagate(o1: NoAnnotation,o2: NoAnnotation): (NoAnnotation,NoAnnotation) = noAnn
+  }
+
+  case class EqualStatP[@sp X](implicit ann: StatisticsAnnotator[X])
     extends StatisticsProp[X] with EqualProp[Statistics[X]] {
     
     def ord = ann.ordering
@@ -48,12 +55,12 @@ object Constraint {
     override def toString = "EqualStatP"
   }
 
-  implicit def equalStatProp[@specialized X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = {
+  implicit def equalStatProp[@sp X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = {
     EqualStatP[X]()
   }
-
-  case class RelConstraint[@specialized X,A <: PropValue](r1: RelCol[X,A],r2: RelCol[X,A],prop: Prop[A]) {
+  
+  /*case class RelConstraint[@sp X, A <: PropValue]
+    (r1: AnnSelector[_,_,_,_,_,X,A,_], r2: AnnSelector[_,_,_,_,_,X,A,_], prop: Prop[A]) {
     override def toString = "" + r1 + prop + r2
-  }
-
+  } */
 }

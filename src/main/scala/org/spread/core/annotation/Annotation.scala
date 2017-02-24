@@ -1,7 +1,10 @@
 package org.spread.core.annotation
 
-import org.spread.core.constraint.Constraint.{PropValue}
+import cats.Order
+import org.spread.core.constraint.Constraint.PropValue
+
 import scala.language.{existentials, implicitConversions}
+import org.spread.core.language.Annotation.sp
 
 //
 // Sequence Annotators, most notably StatisticsAnnotator
@@ -10,7 +13,7 @@ import scala.language.{existentials, implicitConversions}
 //
 object Annotation {
 
-  trait Annotator[@specialized X,A] {
+  trait Annotator[@sp X,@sp A] {
     def none: A
     def one(x: X): A
     def manyX(d: Array[X]): A
@@ -24,7 +27,7 @@ object Annotation {
     override def toString = "'"
   }
 
-  case class NoAnnotator[@specialized X]() extends Annotator[X,NoAnnotation] {
+  case class NoAnnotator[@sp X]() extends Annotator[X,NoAnnotation] {
     def none: NoAnnotation = NoAnnotation
     def one(x: X): NoAnnotation = NoAnnotation
     def manyX(d: Array[X]): NoAnnotation = NoAnnotation
@@ -34,7 +37,7 @@ object Annotation {
   }
 
 
-  trait Statistics[@specialized X] extends PropValue {
+  trait Statistics[@sp X] extends PropValue {
     def lowerBound: X
     def upperBound: X
     def first: X
@@ -45,7 +48,7 @@ object Annotation {
     }
   }
 
-  case class InvalidStatistics[@specialized X]() extends Statistics[X] {
+  case class InvalidStatistics[@sp X]() extends Statistics[X] {
     def error = sys.error("invalid statistics")
     def lowerBound = error
     def upperBound = error
@@ -56,7 +59,7 @@ object Annotation {
     override def toString = ".."
   }
 
-  case class StatisticsImpl3[@specialized X]
+  case class StatisticsImpl3[@sp X]
   (lowerBound: X) extends Statistics[X] {
     def upperBound = lowerBound
     def first = lowerBound
@@ -65,7 +68,7 @@ object Annotation {
     def isValid = true
   }
 
-  case class StatisticsImpl2[@specialized X]
+  case class StatisticsImpl2[@sp X]
   (lowerBound: X,upperBound: X) extends Statistics[X] {
     def first = lowerBound
     def last = upperBound
@@ -73,12 +76,12 @@ object Annotation {
     def isValid = true
   }
 
-  case class StatisticsImpl[@specialized X]
+  case class StatisticsImpl[@sp X]
   (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean) extends Statistics[X] {
     def isValid = true
   }
 
-  def createStats[@specialized X]
+  def createStats[@sp X]
   (lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean): Statistics[X] = {
 
     if ((lowerBound == first) && (upperBound == last) && sorted) {
@@ -88,7 +91,7 @@ object Annotation {
     else StatisticsImpl(lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean)
   }
 
-  case class StatisticsAnnotator[@specialized X](implicit ord: Ordering[X])
+  case class StatisticsAnnotator[@sp X](implicit ord: Order[X])
     extends Annotator[X,Statistics[X]]{
 
     def ordering = ord
@@ -102,7 +105,7 @@ object Annotation {
         val x = a(i)
         lower = ord.min(lower,x)
         upper = ord.max(upper,x)
-        msorted = msorted && ord.lteq(a(i - 1),x)
+        msorted = msorted && ord.lteqv(a(i - 1),x)
       }
       createStats(lower,upper,a(0),a(a.length-1),msorted)
     }
@@ -116,7 +119,7 @@ object Annotation {
         val x = a(i)
         lower = ord.min(lower,x.lowerBound)
         upper = ord.max(upper,x.upperBound)
-        msorted = msorted && x.sorted && ord.lteq(a(i - 1).last,x.first)
+        msorted = msorted && x.sorted && ord.lteqv(a(i - 1).last,x.first)
       }
       createStats(lower,upper,s.first,a(a.length-1).last,msorted)
     }
@@ -125,7 +128,7 @@ object Annotation {
         ord.min(s1.lowerBound,s2.lowerBound),
         ord.max(s1.upperBound,s2.upperBound),
         s1.first,s2.last,
-        s1.sorted && s2.sorted && ord.lteq(s1.last,s2.first)
+        s1.sorted && s2.sorted && ord.lteqv(s1.last,s2.first)
       )
     }
   }
