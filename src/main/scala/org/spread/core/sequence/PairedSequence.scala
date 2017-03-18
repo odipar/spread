@@ -1,15 +1,14 @@
 package org.spread.core.sequence
 
-import cats.Order
 import org.spread.core.annotation.Annotation.Annotator
 import org.spread.core.constraint.Constraint.PropValue
 import org.spread.core.sequence.Sequence._
 
-import scala.language.{existentials, implicitConversions}
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.OrderingSequence._
 
+import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
 
 object PairedSequence {
@@ -24,6 +23,32 @@ object PairedSequence {
 
     def emptySeq = create(left.emptySeq,right.emptySeq)
     def create(l: S1, r: S2): S
+
+    implicit def xTag = left.tag
+    implicit def yTag = right.tag
+    
+    def createSeq(a: Array[(X1,X2)]) = {
+      // TODO: optimize
+      val x1 = a.map(_._1).toArray
+      val x2 = a.map(_._2).toArray
+
+      create(left.createSeq(x1),right.createSeq(x2))
+    }
+
+    def toArray: Array[(X1,X2)] = {
+      val x1 = left.toArray
+      val x2 = right.toArray
+      val result = new Array[(X1,X2)](x1.length)
+
+      var i = 0
+      var s = x1.length
+      while (i < s) {
+        result(i) = (x1(i),x2(i))
+        i = i + 1
+      }
+      result
+    }
+
     def append[S2 <: S](o: S2): S = create(left append o.left, right append o.right)
     def split(o: Long) = {
       val (ll,lr) = left.split(o)
@@ -36,19 +61,19 @@ object PairedSequence {
     def first = (left.first,right.first)
     def last = (left.last,right.last)
     def apply(i: Long) = (left(i),right(i))
-    def annotate[@sp A: ClassTag](annotator: Annotator[(X1,X2),A]): A = ???
   }
 
-  case class PairSeqImpl[@sp X1,@sp X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]](left: S1, right: S2)
+  case class PairSeqImpl[@sp X1,@sp X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]](left: S1, right: S2, tag: ClassTag[(X1,X2)])
     extends PairedSeq[X1,X2,S1,S2,PairSeqImpl[X1,X2,S1,S2]] {
 
     type S = PairSeqImpl[X1,X2,S1,S2]
-    def create(l: S1, r: S2): S = PairSeqImpl(l,r)
+
+    def create(l: S1, r: S2): S = PairSeqImpl(l,r,tag)
     def self = this
   }
 
   case class OrdPairSeqImpl[@sp X1,@sp X2,S1 <: OrderingSeq[X1,S1], S2 <: OrderingSeq[X2,S2]]
-  (left: S1, right: S2)(implicit ord: Order[(X1,X2)])
+  (left: S1, right: S2, tag: ClassTag[(X1,X2)])(implicit ord: Order[(X1,X2)])
     extends PairedSeq[X1,X2,S1,S2,OrdPairSeqImpl[X1,X2,S1,S2]] with OrderingSeq[(X1,X2),OrdPairSeqImpl[X1,X2,S1,S2]] {
 
     type S = OrdPairSeqImpl[X1,X2,S1,S2]
@@ -56,7 +81,7 @@ object PairedSequence {
 
     def sort = defaultSort
     def ordering = ord
-    def create(l: S1, r: S2): S = OrdPairSeqImpl[X1,X2,S1,S2](l,r)(ord)
+    def create(l: S1, r: S2): S = OrdPairSeqImpl[X1,X2,S1,S2](l,r,tag)(ord)
     def self = this
   }
 
@@ -70,17 +95,17 @@ object PairedSequence {
   }
 
   case class AnnPairSeqImpl[@sp X1,@sp X2,A1,A2,S1 <: AS[X1,A1,S1], S2 <: AS[X2,A2,S2]]
-  (left: S1, right: S2) extends AnnPairSeq[X1,X2,A1,A2,S1,S2,AnnPairSeqImpl[X1,X2,A1,A2,S1,S2]] {
+  (left: S1, right: S2, tag: ClassTag[(X1,X2)]) extends AnnPairSeq[X1,X2,A1,A2,S1,S2,AnnPairSeqImpl[X1,X2,A1,A2,S1,S2]] {
 
     type S = AnnPairSeqImpl[X1,X2,A1,A2,S1,S2]
 
     def annotation = (left.annotation,right.annotation)
-    def create(l: S1, r: S2): S = AnnPairSeqImpl(left,right)
+    def create(l: S1, r: S2): S = AnnPairSeqImpl(left,right,tag)
     def self = this
   }
 
   case class AnnOrdPairSeqImpl[@sp X1,@sp X2,A1,A2,S1 <: AS[X1,A1,S1], S2 <: AS[X2,A2,S2]]
-  (left: S1, right: S2)(implicit ord: Order[(X1,X2)])
+  (left: S1, right: S2, tag: ClassTag[(X1,X2)])(implicit ord: Order[(X1,X2)])
     extends AnnPairSeq[X1,X2,A1,A2,S1,S2,AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2]] with
       AnnOrdSeq[(X1,X2),(A1,A2),AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2]] {
 
@@ -90,7 +115,7 @@ object PairedSequence {
     def sort = defaultSort
     def ordering = ord
     def annotation = (left.annotation,right.annotation)
-    def create(l: S1, r: S2): S = AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2](l,r)(ord)
+    def create(l: S1, r: S2): S = AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2](l,r,tag)(ord)
     def self = this
   }
 
@@ -98,7 +123,7 @@ object PairedSequence {
     trait Combiner4[@sp X1,S1 <: Seq[X1,S1]] {
       def s1: Seq[X1,S1]
       def &&[@sp X2,S2 <: Seq[X2,S2]](s2: Seq[X2,S2]) = {
-        PairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+        PairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2],implicitly[ClassTag[(X1,X2)]])
       }
     }
     implicit class SimpleCombiner[@sp X1,S1 <: Seq[X1,S1]](val s1: Seq[X1,S1]) extends Combiner4[X1,S1]
@@ -108,7 +133,7 @@ object PairedSequence {
     trait Combiner3[@sp X1,S1 <: OrderingSeq[X1,S1]] extends Combiner4[X1,S1] {
       def s1: OrderingSeq[X1,S1]
       def &&[@sp X2,S2 <: OrderingSeq[X2,S2]](s2: OrderingSeq[X2,S2])(implicit ord: Order[(X1,X2)]) = {
-        OrdPairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+        OrdPairSeqImpl[X1,X2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2],implicitly[ClassTag[(X1,X2)]])
       }
     }
     implicit class OrdCombiner[@sp X1,S1 <: OrderingSeq[X1,S1]](val s1: OrderingSeq[X1,S1])
@@ -119,7 +144,7 @@ object PairedSequence {
     trait Combiner2[@sp X1,A1,S1 <: AnnotatedSeq[X1,A1,S1]] extends Combiner4[X1,S1] {
       def s1: AnnotatedSeq[X1,A1,S1]
       def &&[@sp X2,A2,S2 <: AnnotatedSeq[X2,A2,S2]](s2: AnnotatedSeq[X2,A2,S2]) = {
-        AnnPairSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+        AnnPairSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2],implicitly[ClassTag[(X1,X2)]])
       }
     }
     implicit class AnnCombiner[@sp X1,A1,S1 <: AnnotatedSeq[X1,A1,S1]](val s1: AnnotatedSeq[X1,A1,S1])
@@ -131,7 +156,7 @@ object PairedSequence {
       def s1: AnnOrdSeq[X1,A1,S1]
       def &&[@sp X2,A2,S2 <: AnnOrdSeq[X2,A2,S2]]
       (s2: AnnOrdSeq[X2,A2,S2])(implicit ord: Order[(X1,X2)]) = {
-        AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2])
+        AnnOrdPairSeqImpl[X1,X2,A1,A2,S1,S2](s1.asInstanceOf[S1],s2.asInstanceOf[S2],implicitly[ClassTag[(X1,X2)]])
       }
     }
     implicit class AnnOrdCombiner[@sp X1,A1,S1 <: AnnOrdSeq[X1,A1,S1]](val s1: AnnOrdSeq[X1,A1,S1])
@@ -139,57 +164,38 @@ object PairedSequence {
   }
 
   object Combiner extends Prio1Combiner // combining (&&) AnnOrdSeq has highest prio (Prio1)
-  
-  type ASEQ[@sp X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
-  type BinRel[
-    @sp X1,
-    @sp X2,
-    A1 <: PropValue,
-    A2 <: PropValue,
-    S1 <: ASEQ[X1,A1,S1],
-    S2 <: ASEQ[X2,A2,S2],
-    S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]] = AnnPairSeq[X1,X2,A1,A2,S1,S2,S]
-  
-  type EREL = BinRel[X1,X2,A1,A2,S1,S2,S] forSome {
-    type X1
-    type X2
-    type A1 <: PropValue
-    type A2 <: PropValue
-    type S1 <: ASEQ[X1,A1,S1]
-    type S2 <: ASEQ[X2,A2,S2]
-    type S <: AnnPairSeq[X1,X2,A1,A2,S1,S2,S]
-  }
-  
-  case class Selector[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S],XX,SS <: Seq[XX,SS]]
-  (n: Symbol,s: S)(implicit f: S => SS) {
-    def apply(): SS = f(s)
-    def apply(o: S): SS = f(o)
+
+  case class Selector[@sp X1,@sp X2, S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]]
+  (n: Symbol, seq: S1)(implicit f: S1 => S2) {
+    def apply(): S2 = f(seq)
+    def apply(o: S1): S2 = f(o)
   }
 
-  // AnnSelector[_,_,_,_,EREL,X,A,_]
-  case class AnnSelector[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S],XX,AA,SS <: AnnotatedSeq[XX,AA,SS]]
-  (n: Symbol,s: S)(implicit f: S => SS) {
-    def function = f
-    //def apply(): SS = f(s)
-    def apply(o: S): SS = f(o)
+  case class AnnSelector[@sp X1,@sp X2, A, S1 <: Seq[X1,S1], S2 <: AnnotatedSeq[X2,A,S2]]
+  (n: Symbol, seq: S1)(implicit f: S1 => S2) {
+    def apply(): S2 = f(seq)
+    def apply(o: S1): S2 = f(o)
   }
-  
+
   trait Prio2Selector {
-    implicit class Select[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S]]
-    (s: PairedSeq[X1,X2,S1,S2,S]) {
-      def select[XX,SS <: Seq[XX,SS]](f: PairedSeq[X1,X2,S1,S2,S] => Seq[XX,SS],n: Symbol) = {
-        Selector[X1,X2,S1,S2,S,XX,SS](n,s.asInstanceOf[S])(f.asInstanceOf[S=>SS])
+    implicit class Select1[@sp X1,S1 <: Seq[X1,S1]]
+    (s: Seq[X1,S1]) {
+      def select[X2,S2 <: Seq[X2,S2]](n: Symbol, f: S1 => Seq[X2,S2]) = {
+        Selector[X1,X2,S1,S2](n,s.asInstanceOf[S1])(f.asInstanceOf[S1=>S2])
       }
     }
   }
+
   trait Prio1Selector extends Prio2Selector {
-    implicit class AnnSelect[X1,X2,S1 <: Seq[X1,S1], S2 <: Seq[X2,S2], S <: PairedSeq[X1,X2,S1,S2,S]]
-    (s: PairedSeq[X1,X2,S1,S2,S]) {
-      def select[XX,AA,SS <: AnnotatedSeq[XX,AA,SS]](f: PairedSeq[X1,X2,S1,S2,S] => AnnotatedSeq[XX,AA,SS],n: Symbol) = {
-        AnnSelector[X1,X2,S1,S2,S,XX,AA,SS](n,s.asInstanceOf[S])(f.asInstanceOf[S=>SS])
+    implicit class Select2[@sp X1,S1 <: Seq[X1,S1]]
+    (seq: Seq[X1,S1]) {
+      def select[@sp X2,A,S2 <: AnnotatedSeq[X2,A,S2]]
+      (n: Symbol, f: S1 => AnnotatedSeq[X2,A,S2]) = {
+        AnnSelector[X1,X2,A,S1,S2](n,seq.asInstanceOf[S1])(f.asInstanceOf[S1 => S2])
       }
     }
   }
+
   object Selector extends Prio1Selector
 }
 

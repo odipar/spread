@@ -3,19 +3,21 @@ package org.spread.core.test
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.{BooleanOperators, forAll}
 import org.scalacheck.{Arbitrary, Gen, Properties}
-import org.spread.core.annotation.Annotation.Statistics
+import org.spread.core.annotation.Annotation._
+import org.spread.core.constraint.Constraint._
 import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.RangedSequence._
 import scala.language.{existentials, implicitConversions, postfixOps}
+import spire.implicits._
 
 object SeqSpecification extends Properties("Seq") {
   type SSEQ = AnnTreeSeq[Long,Statistics[Long]]
 
-  val factory = longSeqFactory
+  val factory = seqFactory[Long]
   implicit def arbitraryIntSeq: Arbitrary[SSEQ] = Arbitrary(longSeq)
 
   def longSeq: Gen[SSEQ] = for {
-    l <- Gen.choose(0, 1000)
+    l <- Gen.choose(0, 10000)
     a <- Gen.listOfN(l,arbitrary[Int])
   } yield factory.createSeq(a.toArray.map(_.toLong))
 
@@ -46,12 +48,15 @@ object SeqSpecification extends Properties("Seq") {
       val a1 = p1.annotation
       val a2 = p2.annotation
 
-      val l = a1.lowerBound min a2.lowerBound
-      val h = a1.upperBound max a2.upperBound
+      val l = min(a1.lowerBound, a2.lowerBound)
+      val h = max(a1.upperBound, a2.upperBound)
       (l == ca.lowerBound) && (h == ca.upperBound)
     }
     else true
   }
+
+  def min(l1: Long, l2: Long) = if (l1 < l2) l1 ; else l2
+  def max(l1: Long, l2: Long) = if (l1 > l2) l1 ; else l2
 
   property("multiSet") = forAll { (p: SSEQ) =>
 

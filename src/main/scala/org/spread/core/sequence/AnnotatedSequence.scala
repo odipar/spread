@@ -1,12 +1,12 @@
 package org.spread.core.sequence
 
-import cats.Order
 import org.spread.core.annotation.Annotation.Annotator
 import org.spread.core.constraint.Constraint.EqualProp
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.OrderingSequence._
 import org.spread.core.sequence.Sequence._
 
+import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
 
 /**
@@ -39,7 +39,6 @@ object AnnotatedSequence {
     def first = repr.first(self)
     def last = repr.last(self)
     def apply(i: Long) = repr.apply(i)(self)
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A = repr.annotate(annotator)
   }
 
   trait AnnOrdSeqWithRepr[@sp X,A,S <: AnnOrdSeqWithRepr[X,A,S]]
@@ -56,7 +55,6 @@ object AnnotatedSequence {
     def first(implicit c: S): X
     def last(implicit c: S): X
     def apply(i: Long)(implicit c: S): X
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A
   }
 
   trait AnnotationContext[@sp X,A]

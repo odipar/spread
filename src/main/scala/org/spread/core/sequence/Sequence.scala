@@ -9,11 +9,11 @@ import org.spread.core.language.Annotation.sp
 import scala.reflect.ClassTag
 
 object Sequence {
-  trait Seq[X,S <: Seq[X,S]] {
+  trait Seq[@sp X,S <: Seq[X,S]] {
 
     def self: S
     def emptySeq: S
-    
+
     def append[S2 <: S](o: S2): S
     def split(o: Long): (S,S)
     def equalTo[S2 <: S](o: S2): Boolean
@@ -25,12 +25,26 @@ object Sequence {
     def first: X
     def last: X
 
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A
+    def iterator: SequenceIterator[X] = ???
+
+    def tag: ClassTag[X]
+    def createSeq(a: Array[X]): S
+    def toArray: Array[X]
     
     def isEmpty: Boolean = (size == 0)
     def ++[S2 <: S](o: S2): S = append(o)
   }
-  
+
+  trait SequenceIterator[@sp X] {
+    def size: Long
+    
+    def next: X
+    def hasNext: Boolean
+
+    def goto(i: Long)
+    def position: Long
+  }
+
   // Yet to be defined extra methods
   trait SeqImpl[X, S <: SeqImpl[X,S]] extends Seq[X,S] { }
   

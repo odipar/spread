@@ -1,10 +1,10 @@
 package org.spread.core.annotation
 
-import cats.Order
 import org.spread.core.constraint.Constraint.PropValue
 
 import scala.language.{existentials, implicitConversions}
 import org.spread.core.language.Annotation.sp
+import org.spread.core.sequence.OrderingSequence.Order
 
 //
 // Sequence Annotators, most notably StatisticsAnnotator
@@ -18,22 +18,25 @@ object Annotation {
     def one(x: X): A
     def manyX(d: Array[X]): A
     def manyA(d: Array[A]): A
-    def append(r1: A,r2: A): A
+    def append(r1: A, r2: A): A
   }
 
   trait NoAnnotation
+
   object NoAnnotation extends NoAnnotation {
     def isValid = false
     override def toString = "'"
   }
 
-  case class NoAnnotator[@sp X]() extends Annotator[X,NoAnnotation] {
+  case class NoAnnotator[@sp X]() extends Annotator[X,NoAnnotation] with PropValue {
     def none: NoAnnotation = NoAnnotation
     def one(x: X): NoAnnotation = NoAnnotation
     def manyX(d: Array[X]): NoAnnotation = NoAnnotation
     def manyA(d: Array[NoAnnotation]): NoAnnotation = NoAnnotation
     def append(a1: NoAnnotation, a2: NoAnnotation): NoAnnotation = NoAnnotation
     def isNone(a: NoAnnotation) = true
+    def range(start: X, end: X) = NoAnnotation
+    def isValid = false
   }
 
 
@@ -94,6 +97,16 @@ object Annotation {
   case class StatisticsAnnotator[@sp X](implicit ord: Order[X])
     extends Annotator[X,Statistics[X]]{
 
+    // explicit implementation to avoid boxing ??
+    @inline final def min(v1: X, v2: X, o: Order[X]): X = {
+      if (o.lt(v1,v2)) v1
+      else v2
+    }
+    @inline final def max(v1: X, v2: X, o: Order[X]): X = {
+      if (o.gt(v1,v2)) v1
+      else v2
+    }
+    def range(start: X, end: X) = StatisticsImpl2(start,end)
     def ordering = ord
     def none: Statistics[X] = InvalidStatistics()
     def one(x: X) = StatisticsImpl2(x,x)
@@ -103,8 +116,8 @@ object Annotation {
       var msorted = true
       for (i <- 1 until a.length) {
         val x = a(i)
-        lower = ord.min(lower,x)
-        upper = ord.max(upper,x)
+        lower = min(lower,x,ord)
+        upper = max(upper,x,ord)
         msorted = msorted && ord.lteqv(a(i - 1),x)
       }
       createStats(lower,upper,a(0),a(a.length-1),msorted)
@@ -117,19 +130,23 @@ object Annotation {
       var msorted = s.sorted
       for (i <- 1 until a.length) {
         val x = a(i)
-        lower = ord.min(lower,x.lowerBound)
-        upper = ord.max(upper,x.upperBound)
+
+        lower = min(lower,x.lowerBound,ord)
+        upper = max(upper,x.upperBound,ord)
+
         msorted = msorted && x.sorted && ord.lteqv(a(i - 1).last,x.first)
       }
       createStats(lower,upper,s.first,a(a.length-1).last,msorted)
     }
     def append(s1: Statistics[X],s2: Statistics[X]): Statistics[X] ={
       StatisticsImpl(
-        ord.min(s1.lowerBound,s2.lowerBound),
-        ord.max(s1.upperBound,s2.upperBound),
+        min(s1.lowerBound,s2.lowerBound,ord),
+        max(s1.upperBound,s2.upperBound,ord),
         s1.first,s2.last,
         s1.sorted && s2.sorted && ord.lteqv(s1.last,s2.first)
       )
     }
   }
+
+  implicit def stats[X](implicit ord: Order[X]) = StatisticsAnnotator[X]()
 }

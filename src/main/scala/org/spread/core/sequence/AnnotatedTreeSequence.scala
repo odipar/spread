@@ -1,14 +1,15 @@
 package org.spread.core.sequence
 
-import cats.Order
 import org.spread.core.annotation.Annotation._
 import org.spread.core.constraint.Constraint._
 import org.spread.core.sequence.Sequence._
+import org.spread.core.sequence.OrderingSequence._
 
 import scala.language.{existentials, implicitConversions}
 import scala.reflect.ClassTag
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.AnnotatedSequence._
+import org.spread.core.sequence.OrderingSequence.Union
 
 object AnnotatedTreeSequence {
 
@@ -22,23 +23,45 @@ object AnnotatedTreeSequence {
     def annotator = context.ann
     def ordering = context.ord
     def equal = context.eq
-    
+
+    def tag = context.xTag
     def empty: SAS = EmptySeq()
 
     implicit def xTag: ClassTag[X] = context.xTag
     implicit def aTag: ClassTag[A] = context.aTag
-    
-    def minWidth = 16
-    final def maxWidth = minWidth*4
 
-    def createSeq(a: Array[X]): AnnTreeSeq[X,A] = {
-      if (a.length <= maxWidth) create(createLeaf(a)(this))
+    
+    @inline final def minWidth = 16
+    @inline final def maxWidth = minWidth*4
+
+    def createSeq(a: Array[X]): AnnTreeSeq[X,A] = createSeq(a,0,a.length)
+    def toArray = {
+      if (size < Int.MaxValue) {
+        val array = new Array[X](size.toInt)
+        repr.intoArray(array,0)
+        array
+      }
+      else sys.error("sequence to big")
+    }
+
+    def createSeq(a: Array[X], start: Int, size: Int): AnnTreeSeq[X,A] = {
+      if (size <= maxWidth) {
+        val b = new Array[X](size.toInt)
+        val end = start + size
+        var i = start
+        var ii = 0
+        while (i < end) {
+          b(ii) = a(i)
+          i = i + 1
+          ii = ii + 1
+        }
+        create(createLeaf(b)(this))
+      }
       else {
-        val (l,r) = a.splitAt(a.length/2)
-        createSeq(l).append(createSeq(r))
+        val ms = size / 2
+        createSeq(a,start,ms).append(createSeq(a,start+ms,size - ms))
       }
     }
-    
     def createLeaf(a: Array[X])(implicit c: SS) = {
       if (a.length == 0) empty
       else BSeqLeafImpl(a,annotator.manyX(a))
@@ -49,7 +72,15 @@ object AnnotatedTreeSequence {
       val an = new Array[A](a.length)
 
       var ts: Long = 0
-      for (i <- a.indices) {ts = ts + a(i).size; sz(i) = ts; an(i) = a(i).annotation}
+      
+      var i = 0
+      var s = a.length
+
+      while (i < s) {
+        ts = ts + a(i).size; sz(i) = ts; an(i) = a(i).annotation
+        i = i + 1
+      }
+      
       BSeqTreeImpl(a,sz,annotator.manyA(an))
     }
 
@@ -85,23 +116,37 @@ object AnnotatedTreeSequence {
 
       }
     }
+
     def asTree(t: SAS): BSeqTree[X,A] = t.asInstanceOf[BSeqTree[X,A]]
     def asLeaf(l: SAS): BSeqLeaf[X,A] = l.asInstanceOf[BSeqLeaf[X,A]]
 
-
     def sort = {
       if (size <= 1) this
+      else if (size <= (64*64)) {
+        val a = toArray
+
+        spire.math.Sorting.mergeSort(a)(ordering,tag)
+        createSeq(a)
+      }
       else repr match {
         case l: BSeqLeaf[X,A] => {
-          if (l.size < 128) create(createLeaf(insertionSort(l.toArray.clone,ordering))(this))
-          else defaultSort
+          var a = toArray
+          spire.math.Sorting.mergeSort(a)(ordering,tag)
+
+          create(createLeaf(a)(this))
         }
         case t: BSeqTree[X,A] => {
-          val sortedChilds: Array[SS] = t.childs.map(x => create(x).sort)
-          var union = sortedChilds(0)
-          for (i <- 1 until sortedChilds.size) { union = union.union(sortedChilds(i))}
-          union
+          val childs: Array[SS] = t.childs.map(x => create(x))
+          sort(childs,0,childs.size)
         }
+      }
+    }
+
+    def sort(s: Array[SS], start: Int, size: Int): SS = {
+      if (size == 1) { s(start).sort }
+      else {
+        val m = size / 2
+        combineSorted(sort(s,start,m),(sort(s,start+m,size-m)),Union)
       }
     }
     
@@ -124,8 +169,8 @@ object AnnotatedTreeSequence {
       }
     }
     def equalTo[AA1 <: SAS, AA2 <: SAS](s1: AA1, s2: AA2)(implicit c: SS): Boolean = {
-      // optimize with valueRange
-      if (s1 == s2) true
+      // TODO: optimize this
+      if (s1 eq s2) true
       else if (s1.size != s2.size) false
       else {
         if (s1.size == 1) asLeaf(s1).first == asLeaf(s2).first
@@ -137,6 +182,7 @@ object AnnotatedTreeSequence {
         }
       }
     }
+    override def iterator: SequenceIterator[X] = TreeSeqIterator[X,A]()(self)
   }
 
   trait BSeqTr[X,A] extends AnnSeqRepr[X,A,AnnTreeSeq[X,A]]
@@ -144,6 +190,10 @@ object AnnotatedTreeSequence {
     type AS = BSeqTr[X,A]
     type SS = AnnTreeSeq[X,A]
     type SAS = SS#AS
+
+    def getLeaf(i: Long): (BSeqLeaf[X,A],Int)
+    def getLeaf2(i: Long): BSeqLeaf[X,A]
+    def intoArray(dest: Array[X], i: Int): Int
   }
 
   trait BSeqTree[@sp X,A] extends BSeqTr[X,A] {
@@ -209,20 +259,21 @@ object AnnotatedTreeSequence {
       val o = offsetForChild(cc)
       childAt(cc)(i-o)
     }
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A = {
-      var i = 1
-      var s = childs.length
-      var a = childs(0).annotate(annotator)
-      while (i < s) {
-        a = annotator.append(a,childs(i).annotate(annotator))
-        i = i + 1
-      }
-      a
+    def getLeaf(i: Long): (BSeqLeaf[X,A],Int) = {
+      val cc = childAtIndex(i)
+      val o = offsetForChild(cc)
+      childAt(cc).getLeaf(i-o)
+    }
+    def getLeaf2(i: Long): BSeqLeaf[X,A] = {
+      val cc = childAtIndex(i)
+      val o = offsetForChild(cc)
+      childAt(cc).getLeaf2(i-o)
     }
     override def toString = childs.foldLeft("<")((x,y) => x + " " + y) + " >"
   }
-  
+
   case class EmptySeq[@sp X,A]() extends BSeqTr[X,A] {
+    def error = sys.error("empty")
     def annotation(implicit c: SS) = c.annotator.none
     def size = 0.toLong
     def height = -1
@@ -230,10 +281,12 @@ object AnnotatedTreeSequence {
     def append[AAS <: SAS](o: AAS)(implicit c: SS): SAS = o
     def annotationRange(start: Long,end: Long)(implicit c: SS) = c.annotator.none
     def equalToTree[AAS <: SAS](o: AAS)(implicit c: SS): Boolean = (o.size == 0)
-    def first(implicit c: SS) = sys.error("empty")
-    def last(implicit c: SS) = sys.error("empty")
-    def apply(i: Long)(implicit c: SS) = sys.error("empty")
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A = annotator.none
+    def first(implicit c: SS) = error
+    def last(implicit c: SS) = error
+    def apply(i: Long)(implicit c: SS) = error
+    def getLeaf(i: Long): (BSeqLeaf[X,A],Int) = error
+    def getLeaf2(i: Long): BSeqLeaf[X,A] = error
+    def intoArray(dest: Array[X], i: Int) = i
     override def toString = "<>"
   }
 
@@ -267,12 +320,27 @@ object AnnotatedTreeSequence {
     def last(implicit c: SS) = array(array.length - 1)
     def append[AAS <: SAS](o: AAS)(implicit c: SS): SAS = c.append(this,o)
     def apply(i: Long)(implicit c: SS) = array(i.toInt)
-    def annotate[@sp A: ClassTag](annotator: Annotator[X,A]): A = annotator.manyX(array)
+    def getLeaf(i: Long): (BSeqLeaf[X,A],Int) = (this,i.toInt)
+    def getLeaf2(i: Long): BSeqLeaf[X,A] = this
+    def intoArray(dest: Array[X], i: Int): Int = {
+      array.copyToArray(dest,i,array.length)
+      array.length + i
+    }
   }
 
   case class BSeqTreeImpl[@sp X,A, ARR <: Array[AnnTreeSeq[X,A]#AS]]
   (childs: ARR,sizes: Array[Long],ann: A) extends BSeqTree[X,A] {
     def annotation(implicit c: SS) = ann
+    def intoArray(dest: Array[X], i: Int): Int = {
+      var ii = i
+      var s = childs.length
+      var idx = 0
+      while (idx < s) {
+        ii = childs(idx).intoArray(dest,ii)
+        idx = idx + 1
+      }
+      ii
+    }
   }
 
   trait AnnTreeSeqImpl[@sp X,A] extends AnnTreeSeq[X,A] {
@@ -280,8 +348,9 @@ object AnnotatedTreeSequence {
     def self = this
     def emptySeq = EmptyAnnotatedTreeSeq()(context)
     def create(s: AnnTreeSeq[X,A]#AS) = FullAnnotatedTreeSeq(s)(context)
+    implicit def xtag = context.xTag
   }
-  
+
   case class EmptyAnnotatedTreeSeq[@sp X,A]
   (implicit c: AnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
     def context = c
@@ -299,6 +368,52 @@ object AnnotatedTreeSequence {
     EmptyAnnotatedTreeSeq()(AnnOrdContextImpl(ann,eq,ord,ct,ca))
   }
 
+  def defaultSeqFactory[@sp X](implicit ord: Order[X], ct: ClassTag[X]) = {
+    val ann = NoAnnotator[X]
+    val ca = implicitly[ClassTag[NoAnnotation]]
+    val eq = EqualNoAnn
+    EmptyAnnotatedTreeSeq()(AnnOrdContextImpl(ann,eq,ord,ct,ca))
+  }
+
+
+  private case class TreeSeqIterator[@sp X,@sp A](implicit seq: AnnTreeSeq[X,A]) extends SequenceIterator[X] {
+    var pos: Long = 0
+    var li: Int = seq.repr.getLeaf(0)._2
+    var leaf: BSeqLeaf[X,A] = seq.repr.getLeaf(0)._1
+
+    val size = seq.size
+    var lsize: Long = seq.repr.getLeaf(0)._1.size
+
+    def next: X = {
+      if (li < lsize) {
+        val v = leaf(li) ; li = li + 1
+        v
+      }
+      else {
+        pos = pos + lsize
+        if (pos < size) {
+          val (newleaf,newli) = seq.repr.getLeaf(pos)
+          leaf = newleaf
+          li = newli
+          lsize = leaf.size
+          next
+        }
+        else sys.error("no more elements")
+      }
+    }
+    def position = pos
+    def hasNext = {
+      if (li < lsize) true
+      else (pos+lsize) < size
+    }
+    def goto(i: Long) = {
+      val (newleaf,newli) = seq.repr.getLeaf(pos)
+      leaf = newleaf
+      li = newli
+      lsize = leaf.size
+      pos = i
+    }
+  }
 
   def insertionSort[@sp X](input: Array[X], ordering: Order[X]): Array[X] = {
     var i = 1
