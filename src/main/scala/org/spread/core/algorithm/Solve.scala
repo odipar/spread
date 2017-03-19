@@ -289,24 +289,24 @@ object Solve {
       Array( 2,  2,  2,  2,  1 )
     )
 
-    val tt1 = (createSeq(t1._1) && createSeq(t1._2) && createSeq(t1._3)).sort
-    val tt2 = (createSeq(t2._1) && createSeq(t2._2) && createSeq(t2._3)).sort
+    val tt1 = createSeq(t1._1) && createSeq(t1._2) && createSeq(t1._3)
+    val tt2 = createSeq(t2._1) && createSeq(t2._2) && createSeq(t2._3)
 
     tt1.show
     tt2.show
     
-    val s11 = tt1.select(_.L.L)
-    val s12 = tt1.select(_.L.R)
-    val s13 = tt1.select(_.R)
+    val s1_c1 = tt1.select(_.L.L)
+    val s1_c2 = tt1.select(_.L.R)
+    val s1_c3 = tt1.select(_.R)
 
-    val s21 = tt2.select(_.L.L)
-    val s22 = tt2.select(_.L.R)
-    val s23 = tt2.select(_.R)
+    val s2_c1 = tt2.select(_.L.L)
+    val s2_c2 = tt2.select(_.L.R)
+    val s2_c3 = tt2.select(_.R)
 
     var m = createModel.
-      addConstraint(s11,s21)(equalStatP).
-      addConstraint(s12,s23)(equalStatP).
-      addConstraint(s13,s22)(equalStatP)
+      addConstraint(s1_c1,s2_c1)(equalStatP).
+      addConstraint(s1_c2,s2_c3)(equalStatP).
+      addConstraint(s1_c3,s2_c2)(equalStatP)
 
     println("m: " + m.solve.map(x => x._2.sort))
   }
