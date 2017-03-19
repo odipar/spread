@@ -20,11 +20,15 @@ import spire.implicits._
 import org.spread.core.annotation.Annotation.Annotator
 import org.spread.core.sequence.ArraySequence
 
+import scala.collection.immutable.HashSet
+import scala.reflect.ClassTag
+
 //
 // Exposing all the nice stuff
 //
 
 object SampleApplication {
+
   final def main(args: Array[String]): Unit = {
     import Selector._
     import Combiner._
@@ -62,10 +66,10 @@ object SampleApplication {
     val c8 = eee && ee
     val c9 = eee && eee
     
-    val col1 = c1.select('c1,_.L.L)
-    val col2 = c1.select('c2,_.L.R)
-    val col3 = c1.select('c3,_.R.L)
-    val col4 = c1.select('c4,_.R.R)
+    val col1 = c1.select(_.L.L)
+    val col2 = c1.select(_.L.R)
+    val col3 = c1.select(_.R.L)
+    val col4 = c1.select(_.R.R)
 
     println("c1: " + c1)
     println("c2: " + c2)

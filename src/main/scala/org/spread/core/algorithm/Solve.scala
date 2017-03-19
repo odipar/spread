@@ -48,7 +48,13 @@ object Solve {
 
   type SSEQ = Seq[X,S] forSome { type X ; type S <: Seq[X,S] }
   type ASEQ = AnnotatedSeq[X,A,S] forSome { type X ; type A <: PropValue ; type S <: AnnotatedSeq[X,A,S] }
-
+  type ANSEL = AnnSelector[X1,X2,A,S1,S2] forSome {
+    type X1
+    type X2
+    type A <: PropValue
+    type S1 <: Seq[X1,S1]
+    type S2 <: AnnotatedSeq[X2,A,S2]
+  }
   type ASEL[X1,A <: PropValue, S1 <: Seq[X1,S1]] = AnnSeqSelector[X1,X2,A,S1,S2] forSome {
     type X2 ;
     type S2 <: AnnotatedSeq[X2,A,S2]
@@ -99,8 +105,8 @@ object Solve {
           val sel = k.next
           val annSeq = sel()
           val equalProp = annSeq.equal
-          val ann0: PropValue = annSeq.annotationRange(from,to)
-          val ann1: PropValue = vmap(sel)
+          val ann0 = annSeq.annotationRange(from,to)
+          val ann1 = vmap(sel)
           val propAnn = equalProp.propagateAny(ann0,ann1)._1
           newm = newm + (sel->propAnn)
         }
@@ -124,44 +130,39 @@ object Solve {
   }
 
   type CREL = ConstrainedRel[X,S] forSome { type X ; type S <: Seq[X,S] }
-  type RELS = Map[Symbol,SSEQ]
-  type RELSI = Map[SSEQ,Symbol]
   type CTRS = Set[RCSTR]
-  type DOMS = Map[Symbol,CREL]
+  type DOMS = Map[SSEQ,CREL]
 
-  def createModel: Model = Model(Map(),Map(),Set(),Map(),isValid = true)
+  def createModel: Model = Model(Set(),Map(),isValid = true)
 
   def createRelDomain[@sp X, S <: Seq[X,S]](rel: S): ConstrainedRel[X,S] = {
     ConstrainedRel[X,S](rel,0,rel.size-1,Map())
   }
 
-  case class Model(rels: RELS,relsInv: RELSI,ctrs: CTRS,domains: DOMS,isValid: Boolean) {
-    def addSequence[@sp X, S <: Seq[X,S]](s: Symbol, rel: Seq[X,S]): Model = {
-      Model(rels + (s->rel),relsInv + (rel->s),ctrs,domains + (s->createRelDomain[X,S](rel.asInstanceOf[S])),isValid)
+  case class Model(ctrs: CTRS,domains: DOMS,isValid: Boolean) {
+    def addSequence[@sp X, S <: Seq[X,S]](seq: Seq[X,S]): Model = {
+      Model(ctrs,domains + (seq->createRelDomain[X,S](seq.asInstanceOf[S])),isValid)
     }
 
     def addConstraint[X1,X2,X3,X4,A <: PropValue,S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2], S3 <: Seq[X3,S3], S4 <: AnnotatedSeq[X4,A,S4]]
-    (cc: Prop[A], r1: AnnSelector[X1,X2,A,S1,S2], r2: AnnSelector[X3,X4,A,S3,S4]): Model = {
-
-      // Check if they have matching IDs
-      val id1 = relsInv(r1.seq)
-      val id2 = relsInv(r2.seq)
-
-      // TODO: if not found, add them with secret ids
-      if ((id1 == null) || (id2 == null)) sys.error("No matching rel")
-
+    (r1: AnnSelector[X1,X2,A,S1,S2], r2: AnnSelector[X3,X4,A,S3,S4])(cc: Prop[A]): Model = {
+      
       val c = RelConstraint(r1,r2,cc)
 
       var ndomains = domains
-      ndomains = ndomains + (id1 -> ndomains(id1).setAnyAnnotation(r1().annotation,c.leftSelector))
-      ndomains = ndomains + (id2 -> ndomains(id2).setAnyAnnotation(r2().annotation,c.rightSelector))
 
-      Model(rels,relsInv,ctrs + c,ndomains,isValid)
-    }
-    def setRelDomain(id: Symbol, rel: CREL): Model = {
-      Model(rels,relsInv,ctrs,domains + (id -> rel),rel.isValid)
-    }
+      val s1 = r1.seq
+      val s2 = r2.seq
+      
+      if (!ndomains.contains(s1)) ndomains = ndomains + (s1->createRelDomain[X1,S1](s1.asInstanceOf[S1]))
+      if (!ndomains.contains(s2)) ndomains = ndomains + (s2->createRelDomain[X3,S3](s2.asInstanceOf[S3]))
 
+      ndomains = ndomains + (s1 -> ndomains(s1).setAnyAnnotation(r1().annotation,c.leftSelector))
+      ndomains = ndomains + (s2 -> ndomains(s2).setAnyAnnotation(r2().annotation,c.rightSelector))
+      
+      Model(ctrs + c,ndomains,isValid)
+    }
+    def setRelDomain(seq: SSEQ, rel: CREL): Model = Model(ctrs,domains + (seq -> rel),rel.isValid)
     def propagateConstraints = propagateModelConstraints(this)
     def split = splitModel(this)
     def solve = solveModel(this)
@@ -174,7 +175,6 @@ object Solve {
       var fixpoint = false
       var isValid = true
       var domains = m.domains
-      var relsInv = m.relsInv
 
       while(!fixpoint && isValid) { // Loop until fixpoint (no annotations have changed after propagation)
         fixpoint = true
@@ -183,15 +183,11 @@ object Solve {
         while(iter.hasNext && isValid) {
           val c = iter.next
 
-          val c1 = c.s1
-          val c2 = c.s2
-
-          // TODO: remove asInstanceOf[SSEQ]
-          val id1: Symbol = relsInv(c1.seq.asInstanceOf[SSEQ])
-          val id2: Symbol = relsInv(c2.seq.asInstanceOf[SSEQ])
-
-          val d1 = domains(id1)
-          val d2 = domains(id2)
+          val s1 = c.s1.asSeq
+          val s2 = c.s2.asSeq
+          
+          val d1 = domains(s1)
+          val d2 = domains(s2)
 
           val r1 = d1.rel
           val r2 = d2.rel
@@ -211,21 +207,21 @@ object Solve {
 
             fixpoint = false // Either one of the domains have been propagated to something different
 
-            if (id1 != id2) {
-              domains = domains + (id1 -> d1.setAnyAnnotation(rd1,left))
-              domains = domains + (id2 -> d2.setAnyAnnotation(rd2,right))
+            if (s1 != s2) {
+              domains = domains + (s1 -> d1.setAnyAnnotation(rd1,left))
+              domains = domains + (s2 -> d2.setAnyAnnotation(rd2,right))
             }
             else {
-              domains = domains + (id1 -> d1.setAnyAnnotation(rd1,left).setAnyAnnotation(rd2,right))
+              domains = domains + (s1 -> d1.setAnyAnnotation(rd1,left).setAnyAnnotation(rd2,right))
             }
           }
         }
       }
-      Model(m.rels,m.relsInv,m.ctrs,domains,isValid)
+      Model(m.ctrs,domains,isValid)
     }
   }
 
-  def selectBestSplitCandidate(m: Model): (Symbol,CREL) = {
+  def selectBestSplitCandidate(m: Model): (SSEQ,CREL) = {
     val doms = m.domains
     var bestCandidate = doms.last
 
@@ -248,7 +244,7 @@ object Solve {
     (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
   }
 
-  def solveModel(mm: Model): (Map[Symbol,LSEQ[NoAnnotation]]) = {
+  def solveModel(mm: Model): (Map[SSEQ,LSEQ[NoAnnotation]]) = {
     val m = mm.propagateConstraints
 
     if (!m.isValid) m.domains.mapValues(x => defaultLongSeqFactory) // not valid - empty
@@ -271,45 +267,48 @@ object Solve {
     xx1 && xx2
   }
 
+  def createSeq[@sp X: ClassTag](x: Array[X])(implicit o1: Order[X]) = { seqFactory[X].createSeq(x) }
+  
   implicit def annotator[@sp X](implicit ord: Order[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
 
+  def equalStatP[X](implicit ann: StatisticsAnnotator[X]) = EqualStatP[X]()
 
   final def main(args: Array[String]): Unit = {
     import Selector._
+    import Combiner._
 
-    val a = createPaired(
-      (505.toLong until 100000).toArray,
-      (505.toLong until 100000).toArray
+    val t1 = (
+      Array("a","b","c","d"),
+      Array( 1 , 1,  2,  2 ),
+      Array(0.1,0.2,0.3,0.4)
     )
 
-    val b = createPaired(
-      (500.toLong until 6000).toArray,
-      (500.toLong until 6000).toArray
+    val t2 = (
+      Array("a","c","c","e","a"),
+      Array(0.1,0.2,0.3,0.4,0.1),
+      Array( 2,  2,  2,  2,  1 )
     )
 
-    val c = createPaired(
-      (500.toLong until 510).toArray,
-      (500.toLong until 510).toArray
-    )
+    val tt1 = (createSeq(t1._1) && createSeq(t1._2) && createSeq(t1._3)).sort
+    val tt2 = (createSeq(t2._1) && createSeq(t2._2) && createSeq(t2._3)).sort
 
-    val a1 = a.select('a1,_.L)
-    val a2 = a.select('a2,_.R)
+    tt1.show
+    tt2.show
+    
+    val s11 = tt1.select(_.L.L)
+    val s12 = tt1.select(_.L.R)
+    val s13 = tt1.select(_.R)
 
-    val b1 = b.select('b1,_.L)
-    val b2 = b.select('b2,_.R)
-
-    val c1 = c.select('c1,_.L)
-    val c2 = c.select('c2,_.R)
+    val s21 = tt2.select(_.L.L)
+    val s22 = tt2.select(_.L.R)
+    val s23 = tt2.select(_.R)
 
     var m = createModel.
-      addSequence('a, a).
-      addSequence('b, b).
-      addSequence('c, c).
-      addConstraint(EqualStatP[Long](),a2,b1).
-      addConstraint(EqualStatP[Long](),b2,c1).
-      addConstraint(EqualStatP[Long](),c2,a1)
+      addConstraint(s11,s21)(equalStatP).
+      addConstraint(s12,s23)(equalStatP).
+      addConstraint(s13,s22)(equalStatP)
 
-    println("m: " + m.solve)
+    println("m: " + m.solve.map(x => x._2.sort))
   }
 }
 

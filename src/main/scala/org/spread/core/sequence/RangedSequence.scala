@@ -29,6 +29,11 @@ object RangedSequence {
       else LongLeafRange[A](lowerBound,upperBound)
     }
 
+    override def sort = repr match {
+      case l: LongLeafRange[A] => this
+      case _ => defaultSort2
+    }
+    
     override def createTree[ARR <: Array[SAS]](a: ARR)(implicit c: SS): SAS = {
       var i = 0
       for (ii <- 1 until a.length) {
@@ -102,7 +107,7 @@ object RangedSequence {
       var ri = i
       var ii = lowerBound.toInt
       while (ii <= upperBound) {
-        dest(ii) = i
+        dest(ri) = ii
         ri = ri + 1
         ii = ii + 1
       }

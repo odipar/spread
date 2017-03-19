@@ -9,6 +9,7 @@ import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.OrderingSequence._
 
 import scala.language.{existentials, implicitConversions}
+
 import scala.reflect.ClassTag
 
 object PairedSequence {
@@ -166,13 +167,15 @@ object PairedSequence {
   object Combiner extends Prio1Combiner // combining (&&) AnnOrdSeq has highest prio (Prio1)
 
   case class Selector[@sp X1,@sp X2, S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]]
-  (n: Symbol, seq: S1)(implicit f: S1 => S2) {
+  (seq: S1)(implicit f: S1 => S2) {
+    def asSeq: Seq[X1,S1] = seq
     def apply(): S2 = f(seq)
     def apply(o: S1): S2 = f(o)
   }
 
   case class AnnSelector[@sp X1,@sp X2, A, S1 <: Seq[X1,S1], S2 <: AnnotatedSeq[X2,A,S2]]
-  (n: Symbol, seq: S1)(implicit f: S1 => S2) {
+  (seq: S1)(implicit f: S1 => S2) {
+    def asSeq: Seq[X1,S1] = seq
     def apply(): S2 = f(seq)
     def apply(o: S1): S2 = f(o)
   }
@@ -180,8 +183,8 @@ object PairedSequence {
   trait Prio2Selector {
     implicit class Select1[@sp X1,S1 <: Seq[X1,S1]]
     (s: Seq[X1,S1]) {
-      def select[X2,S2 <: Seq[X2,S2]](n: Symbol, f: S1 => Seq[X2,S2]) = {
-        Selector[X1,X2,S1,S2](n,s.asInstanceOf[S1])(f.asInstanceOf[S1=>S2])
+      def select[X2,S2 <: Seq[X2,S2]](f: S1 => Seq[X2,S2]) = {
+        Selector[X1,X2,S1,S2](s.asInstanceOf[S1])(f.asInstanceOf[S1=>S2])
       }
     }
   }
@@ -190,8 +193,8 @@ object PairedSequence {
     implicit class Select2[@sp X1,S1 <: Seq[X1,S1]]
     (seq: Seq[X1,S1]) {
       def select[@sp X2,A,S2 <: AnnotatedSeq[X2,A,S2]]
-      (n: Symbol, f: S1 => AnnotatedSeq[X2,A,S2]) = {
-        AnnSelector[X1,X2,A,S1,S2](n,seq.asInstanceOf[S1])(f.asInstanceOf[S1 => S2])
+      (f: S1 => AnnotatedSeq[X2,A,S2]) = {
+        AnnSelector[X1,X2,A,S1,S2](seq.asInstanceOf[S1])(f.asInstanceOf[S1 => S2])
       }
     }
   }

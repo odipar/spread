@@ -120,7 +120,9 @@ object AnnotatedTreeSequence {
     def asTree(t: SAS): BSeqTree[X,A] = t.asInstanceOf[BSeqTree[X,A]]
     def asLeaf(l: SAS): BSeqLeaf[X,A] = l.asInstanceOf[BSeqLeaf[X,A]]
 
-    def sort = {
+    def sort = defaultSort2
+
+    def defaultSort2 = {
       if (size <= 1) this
       else if (size <= (64*64)) {
         val a = toArray
