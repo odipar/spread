@@ -91,10 +91,10 @@ To show how well this works in practice we first define the infamous fibonacci f
 
 ```scala
 object fib extends Function1[Int,Int] {
-    def apply(i: Int) = {
-        if (i < 2) 1
-        else fib(i-1) + fib(i-2)
-    }
+  def apply(i: Int) = {
+    if (i < 2) 1
+    else fib(i-1) + fib(i-2)
+  }
 }
 ```
 Of course, real Scala wizards would abbreviate the above to:
@@ -107,10 +107,10 @@ val fib: Int=>Int = i => { if (i < 2) 1 ; else fib(i-1) + fib(i-2) }
 Now here is the same `fib` function in SPREAD format:
 ```scala
 object fib extends FA1[Int,Int] {
-    def apply(i: $Int) = {
-      if (!i < 2) 1
-      else %(fib,!i - 1) !+ %(fib,!i - 2)
-    }
+  def apply(i: $Int) = {
+    if (!i < 2) 1
+    else %(fib,!i - 1) !+ %(fib,!i - 2)
+  }
 }
 ```
 .. which I actually believe is not too bad: apart from the extra syntactic noise (due to limitations of the DSL) the SPREAD version pretty much matches with the idiomatic Scala version.
@@ -151,11 +151,11 @@ Fortunately, the size of a trace can be reduced by applying various evaluation s
 Our first strategy is to prune a trace at certain levels. We can encode pruning directly in another version of the fib function:
 ```scala
 object fib2 extends FA1[Int,Int] {
-    def apply(i: $Int) = {
-      if (!i < 2) 1
-      else if (!i < 5) ~%(fib,!i)
-      else %(fib2,!i-1) + %(fib2,!i-2)
-    }
+  def apply(i: $Int) = {
+    if (!i < 2) 1
+    else if (!i < 5) ~%(fib,!i)
+    else %(fib2,!i-1) + %(fib2,!i-2)
+  }
 }
 ```
 Notice that, when `fib2(i)` is called with `i < 5`, it applies the tilde(`~`) operator on `fib(i)`.
@@ -255,11 +255,11 @@ For SPREAD, a more advanced Sequence Abstract Data Type (ADT) has been implement
 
 ```scala
 trait Sequence[X] {
-	def size: Int
-	def concat(o: Sequence[X]): Sequence[X]
-    def split(i: Int): (Sequence[X], Sequence[X])
-    def first: X
-    def last: X
+  def size: Int
+  def concat(o: Sequence[X]): Sequence[X]
+  def split(i: Int): (Sequence[X], Sequence[X])
+  def first: X
+  def last: X
 }
 ```
 
@@ -284,8 +284,8 @@ What's interesting about SplitHash is that it isn't build on top of a single cry
 
 ```scala
 trait Hash {
-	def hashAt(i: Int): Int
-	override def hashCode = hashAt(0)
+  def hashAt(i: Int): Int
+  override def hashCode = hashAt(0)
 }
 ```
 
@@ -317,20 +317,20 @@ The implementation of a sum algorithm in SPREAD showcases everything what makes 
 Here is the implementation:
 ```scala
 object sum extends FA1[_SplitHash[Int],Int] {
-    def apply(s: $SplitHash[Int]) = {
-          val ss = !s
-          if (ss.size == 1) ss.last
-          else {
-                val parts = ss.splitParts
-                var ssum = %(sum,expr(parts(0)))
-                var i = 1
-                while (i < parts.length) {
-                      ssum = ssum !+ %(sum,expr(parts(i)))
-                      i = i + 1
-                }
-                ssum
-          }
+  def apply(s: $SplitHash[Int]) = {
+    val ss = !s
+    if (ss.size == 1) ss.last
+    else {
+      val parts = ss.splitParts
+      var ssum = %(sum,expr(parts(0)))
+      var i = 1
+      while (i < parts.length) {
+        ssum = ssum !+ %(sum,expr(parts(i)))
+        i = i + 1
+      }
+      ssum
     }
+  }
 }
 ```
 Yes I know, not the prettiest code. But don't bother too much about the syntactic sugar for now, let's put it to use:
