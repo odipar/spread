@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 //
 
 object SampleApplication {
-
+  
   final def main(args: Array[String]): Unit = {
     import Selector._
     import Combiner._

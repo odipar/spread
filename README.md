@@ -1,4 +1,5 @@
-###SPREAD
+### SPREAD
+
 I want to know *exactly* what my software is doing. Better still, I want *cryptographic proof* that my software executes each and every computation step correctly.
 
 Wouldn't you?
@@ -31,12 +32,14 @@ Not *exactly*. Actually not by a mile.
 
 However, the spreadsheet spirit is there. In fact, SPREAD can be considered the next-generation spreadsheet, and possibly the next-generation of software in general.
 
-####Warning
+#### Warning
+
 SPREAD is currently in extreme ALPHA stage. For the impatient, there is already some novelty to be found in the repository:
 
-####[SplitHash](https://github.com/odipar/spread/blob/master/src/spread/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
+#### [SplitHash](https://github.com/odipar/spread/blob/master/src/spread/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
 
 ### Implementation
+
 SPREAD is currently implemented as a Scala DSL. This is not an absolute requirement for SPREAD to work, but Scala does bring some nice benefits to the table:
 
 * It runs on the Java Virtual Machine (JVM)
@@ -46,7 +49,7 @@ SPREAD is currently implemented as a Scala DSL. This is not an absolute requirem
 
 (to be honest, I would have rather liked to implement SPREAD in the Avail Programming Language, but Avail's toolchain isn't just there yet).
 
-###The anotomy of a simple SPREAD expression
+### The anotomy of a simple SPREAD expression
 
 Now let's take a look at this standard Scala code:
 ```scala
@@ -83,6 +86,7 @@ Indeed, destroying data in SPREAD is certainly possible, but directly goes again
 Authenticating a trace can be achieved by prefixing a tilde `~` to any expression. When such expression is evaluated, it will yield a default 128 bit cryptographic hash of its trace, together with its final value. In similar fashion, more cryptographic bits can be acquired by prefixing more consecutive tildes.
 
 ### Fibonacci revisited
+
 To show how well this works in practice we first define the infamous fibonacci function in plain Scala:
 
 ```scala
@@ -143,7 +147,7 @@ fib(4) => (fib(3) !+ fib(2))
 Just calculating `fib(4)` already generates a medium sized trace. Although in this case, keeping the trace of `fib(4)` would be relatively cheap, the naïve storage of `fib(25)` would incur 971138 items - which is just too much overhead.
 
 Fortunately, the size of a trace can be reduced by applying various evaluation strategies. Of course, which strategy to choose from depends on certain trade-offs that have to be made.
-###Pruning traces
+### Pruning traces
 Our first strategy is to prune a trace at certain levels. We can encode pruning directly in another version of the fib function:
 ```scala
 object fib2 extends FA1[Int,Int] {
@@ -182,7 +186,7 @@ fib2(6) => (fib2(5) !+ fib2(4))
 ```
 
 Notice that the fulll (sub)trace of fib(4) is now replaced by its cryptographic hash (indicated by the `#` prefix).
-###Memoizing traces
+### Memoizing traces
 A possibly more advantageous strategy is to reduce the memory footprint via (dynamic) memoization. Memoization is nothing more than a special kind of index that maps function calls to traces, during evaluation.
 
 Memoization yields 2 major benefits:
@@ -273,7 +277,7 @@ Here is an example. Let's say that you've just calculated the SHA256 hash of a b
 
 The question is: how fast can you recalculate the SHA256 hash of that slightly modified file?
 
-###SplitHash
+### SplitHash
 The first known Sequence ADT that is able to incrementally re-hash slightly modified data in `O(log(n))` is called SplitHash.
 
 What's interesting about SplitHash is that it isn't build on top of a single cryptographic hash type (like GIT's SHA1), but on top of 'infinite' hashes with the following API.
@@ -287,7 +291,7 @@ trait Hash {
 
 Pending crypthographic scrutiny, this API makes hash collisions very unlikely. Only objects that implement the Hash trait may be put into a SplitHash, so it is no surprise that all SPREAD primitives are Hashes, including SplitHash itself!
 
-###Building them
+### Building them
 It's very easy to create and split SplitHashes. See if you can follow what is going on:
 ```scala
 val s1 = 1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8 // construct
@@ -303,7 +307,7 @@ println(s7.hashAt(0) == s8.hashAt(0)) // true
 ```
 
 So SplitHashes are used by SPREAD as the basic building block for traces. But they are also extremely useful to implement incremental algorithms for Sequences, such as fold, map, etc.
-###Incremental Sum
+### Incremental Sum
 The implementation of a sum algorithm in SPREAD showcases everything what makes SPREAD so special. With this implementation we get:
 
 - An authenticated, proven sum
@@ -344,7 +348,7 @@ println(sum2)
 ```
 What now follows is the output of the two sums:
 
-###**WE FIRST LOOK AT THE TRACE OF THE FIRST SUM1. KEEP SCROLLING**
+### **WE FIRST LOOK AT THE TRACE OF THE FIRST SUM1. KEEP SCROLLING**
 ```
 sum($(1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 ! 7 ! 8)))
 (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 ! 7 ! 8))) =>
@@ -384,7 +388,7 @@ sum($(1 ! 2 ! 3 ! 4 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 4)) !+ sum($(5 ! 6 !
 (10 !+ 26) => 36
 ```
 
-###**NOW WE LOOK AT THE TRACE OF THE SECOND SUM2. KEEP SCROLLING**
+### **NOW WE LOOK AT THE TRACE OF THE SECOND SUM2. KEEP SCROLLING**
 ```
 sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 ! 7 ! 8)))
 (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 ! 7 ! 8))) =>
@@ -423,19 +427,19 @@ sum($(1 ! 2 ! 3 ! 9 ! 5 ! 6 ! 7 ! 8)) => (sum($(1 ! 2 ! 3 ! 9)) !+ sum($(5 ! 6 !
 	(15 !+ 26)
 (15 !+ 26) => 41
 ```
-###**DID YOU NOTICE ANY DIFFERENCE BETWEEN THE TWO?**
+### **DID YOU NOTICE ANY DIFFERENCE BETWEEN THE TWO?**
 Of course you did! But did you also notice that there were some (sub)sums shared between `sum1` and `sum2`?
 
 Most notably the memoization of (sub)sum of `5 ! 6 ! 7 ! 8` was re-used. That's almost half of the sum. Of course, this is no coincidence. Indeed, it can be proven that - if only 1 element in a number sequence is changed - we only need to do `O(log(n))` extra work to re-calculate its sum.
 
-###Conclusion
+### Conclusion
 For now, I'm done explaining the basics of SPREAD. I hope that you liked it.
 
 So what's next?
 
 Probably the coming two months I'll spend writing a formal paper on SplitHash. After that I'm planning to implement some radical new database technology on top of SPREAD:
 
-###SPREAD: A database like Datomic but then with spreadsheet like capabilities!
+### SPREAD: A database like Datomic but then with spreadsheet like capabilities!
 
 Oh yeah, and SPREAD *finally* supersedes the [Enchilada Programming Language](http://www.enchiladacode.nl).
 

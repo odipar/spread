@@ -1,7 +1,7 @@
 package org.spread.core.algorithm
 
 import org.spread.core.annotation.Annotation.{NoAnnotation, StatisticsAnnotator}
-import org.spread.core.constraint.Constraint.{EqualStatP, Prop, PropValue}
+import org.spread.core.constraint.Constraint.{EqualStatP, GreaterEqualStatP, Prop, PropValue}
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.AnnotatedTreeSequence._
@@ -139,7 +139,10 @@ object Solve {
     ConstrainedRel[X,S](rel,0,rel.size-1,Map())
   }
 
+  var mm: Long = 0
+
   case class Model(ctrs: CTRS,domains: DOMS,isValid: Boolean) {
+    { mm = mm + 1 }
     def addSequence[@sp X, S <: Seq[X,S]](seq: Seq[X,S]): Model = {
       Model(ctrs,domains + (seq->createRelDomain[X,S](seq.asInstanceOf[S])),isValid)
     }
@@ -257,27 +260,17 @@ object Solve {
     }
   }
 
-  def createPaired[@sp X1: ClassTag,@sp X2: ClassTag]
-  (x1: Array[X1], x2: Array[X2])(implicit o1: Order[X1], o2: Order[X2]) = {
-    import Combiner._
-
-    val xx1 = seqFactory[X1].createSeq(x1)
-    val xx2 = seqFactory[X2].createSeq(x2)
-
-    xx1 && xx2
-  }
-
   def createSeq[@sp X: ClassTag](x: Array[X])(implicit o1: Order[X]) = { seqFactory[X].createSeq(x) }
   
   implicit def annotator[@sp X](implicit ord: Order[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
 
-  def equalStatP[X](implicit ann: StatisticsAnnotator[X]) = EqualStatP[X]()
+  def equalStatP[@sp X](implicit ann: StatisticsAnnotator[X]) = EqualStatP[X]()
 
   final def main(args: Array[String]): Unit = {
     import Selector._
     import Combiner._
 
-    val t1 = (
+    /*val t1 = (
       Array("a","b","c","d"),
       Array( 1 , 1,  2,  2 ),
       Array(0.1,0.2,0.3,0.4)
@@ -286,11 +279,13 @@ object Solve {
     val t2 = (
       Array("a","c","c","e","a"),
       Array(0.1,0.2,0.3,0.4,0.1),
-      Array( 2,  2,  2,  2,  1 )
+      Array( 2,  2,  3,  2,  1 )
     )
 
     val tt1 = createSeq(t1._1) && createSeq(t1._2) && createSeq(t1._3)
     val tt2 = createSeq(t2._1) && createSeq(t2._2) && createSeq(t2._3)
+    val tt3 = createSeq(Array("c"))
+    val tt4 = createSeq(Array(2))
 
     tt1.show
     tt2.show
@@ -303,12 +298,35 @@ object Solve {
     val s2_c2 = tt2.select(_.L.R)
     val s2_c3 = tt2.select(_.R)
 
-    var m = createModel.
+    val s3_c1 = tt3.select(x => x)
+    val s4_c1 = tt4.select(x => x)
+                                       */
+    /*var m = createModel.
       addConstraint(s1_c1,s2_c1)(equalStatP).
       addConstraint(s1_c2,s2_c3)(equalStatP).
       addConstraint(s1_c3,s2_c2)(equalStatP)
+      */
 
-    println("m: " + m.solve.map(x => x._2.sort))
+   /* var m = createModel.
+      addConstraint(s2_c1,s3_c1)(GreaterEqualStatP()).
+      addConstraint(s4_c1,s2_c3)(GreaterEqualStatP())  */
+
+    val s1 = createSeq((0 to 6).toArray)
+    val s1_c1 = s1.select(x => x)
+
+    val ls = createSeq(Array(0,2))
+    val hs = createSeq(Array(4,6))
+
+    val ls_c1 = ls.select(x => x)
+    val hs_c1 = hs.select(x => x)
+
+    var m = createModel.
+      addConstraint(s1_c1,ls_c1)(GreaterEqualStatP()).
+      addConstraint(hs_c1,s1_c1)(GreaterEqualStatP())
+
+    println("start: " + mm)
+    m.solve.map(x => x._2.sort.show)
+    println("end: " + mm)
   }
 }
 
