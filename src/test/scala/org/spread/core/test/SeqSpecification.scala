@@ -17,7 +17,7 @@ object SeqSpecification extends Properties("Seq") {
   implicit def arbitraryIntSeq: Arbitrary[SSEQ] = Arbitrary(longSeq)
 
   def longSeq: Gen[SSEQ] = for {
-    l <- Gen.choose(0, 10000)
+    l <- Gen.choose(0, 1000)
     a <- Gen.listOfN(l,arbitrary[Int])
   } yield factory.createSeq(a.toArray.map(_.toLong))
 

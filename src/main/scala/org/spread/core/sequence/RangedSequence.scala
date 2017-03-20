@@ -156,5 +156,7 @@ object RangedSequence {
     val eq = EqualNoAnn
     longSeqFactory(ann,ca,eq)
   }
+
   def createRange(lb: Long, ub: Long): LSEQ[NoAnnotation] = defaultLongSeqFactory.asInstanceOf[LongTreeSeqImpl[NoAnnotation]].create(lb,ub)
+  def createAnnRange(lb: Long, ub: Long): LSEQ[SL] = defaultLongSeqFactory.asInstanceOf[LongTreeSeqImpl[SL]].create(lb,ub)
 }
