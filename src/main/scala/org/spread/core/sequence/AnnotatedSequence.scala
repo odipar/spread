@@ -1,6 +1,6 @@
 package org.spread.core.sequence
 
-import org.spread.core.annotation.Annotation.Annotator
+import org.spread.core.annotation.Annotation.{Annotator, RangeAnnotator}
 import org.spread.core.constraint.Constraint.EqualProp
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.OrderingSequence._
@@ -59,22 +59,36 @@ object AnnotatedSequence {
 
   trait AnnotationContext[@sp X,A]
   {
-    def ann: Annotator[X,A]
+    type ANN <: Annotator[X,A]
+    def ann: ANN
     def eq: EqualProp[A]
     def xTag: ClassTag[X]
     def aTag: ClassTag[A]
   }
 
   case class AnnContextImpl[X,A]
-  (ann: Annotator[X,A], eq: EqualProp[A], xTag: ClassTag[X], aTag: ClassTag[A]) extends AnnotationContext[X,A]
+  (ann: Annotator[X,A], eq: EqualProp[A], xTag: ClassTag[X], aTag: ClassTag[A]) extends AnnotationContext[X,A] {
+    type ANN = Annotator[X,A]
+  }
 
   trait AnnotationOrderingContext[X,A] extends AnnotationContext[X,A]
   {
     def ord: Order[X]
   }
 
+  trait RangedAnnotationOrderingContext[X,A] extends AnnotationOrderingContext[X,A] {
+    type ANN <: RangeAnnotator[X,A]
+  }
+
   case class AnnOrdContextImpl[X,A]
   (ann: Annotator[X,A], eq: EqualProp[A], ord: Order[X], xTag: ClassTag[X], aTag: ClassTag[A])
-    extends AnnotationOrderingContext[X,A]
+    extends AnnotationOrderingContext[X,A] {
+    type ANN = Annotator[X,A]
+  }
 
+  case class RangedAnnOrdContextImpl[X,A]
+  (ann: RangeAnnotator[X,A], eq: EqualProp[A], ord: Order[X], xTag: ClassTag[X], aTag: ClassTag[A])
+    extends RangedAnnotationOrderingContext[X,A] {
+    type ANN = RangeAnnotator[X,A]
+  }
 }
