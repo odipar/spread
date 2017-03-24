@@ -21,6 +21,10 @@ object Annotation {
     def append(r1: A, r2: A): A
   }
 
+  trait RangeAnnotator[@sp X, @sp A] extends Annotator[X,A] {
+    def range(from: X, to: X): A
+  }
+  
   trait NoAnnotation
 
   object NoAnnotation extends NoAnnotation {
@@ -28,7 +32,7 @@ object Annotation {
     override def toString = "'"
   }
 
-  case class NoAnnotator[@sp X]() extends Annotator[X,NoAnnotation] with PropValue {
+  case class NoAnnotator[@sp X]() extends RangeAnnotator[X,NoAnnotation] with PropValue {
     def none: NoAnnotation = NoAnnotation
     def one(x: X): NoAnnotation = NoAnnotation
     def manyX(d: Array[X]): NoAnnotation = NoAnnotation
@@ -95,7 +99,7 @@ object Annotation {
   }
 
   case class StatisticsAnnotator[@sp X](implicit ord: Order[X])
-    extends Annotator[X,Statistics[X]]{
+    extends RangeAnnotator[X,Statistics[X]]{
 
     // explicit implementation to avoid boxing ??
     @inline final def min(v1: X, v2: X, o: Order[X]): X = {
