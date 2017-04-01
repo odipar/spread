@@ -243,7 +243,6 @@ object Solve2 {
     def cartesianProduct = {
       var psize: Long = 1
       for (x <- seqs.values) { psize = psize * x.size }
-      println("psize: " + psize)
       seqs.mapValues( x => repeat(x.applyRange,psize / x.size) )
     }
 
