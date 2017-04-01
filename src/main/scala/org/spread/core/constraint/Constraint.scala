@@ -20,17 +20,23 @@ object Constraint {
   trait Prop[@sp X] {
     def isSolved(o1: X,o2: X): Boolean
     def isAnySolved(o1: Any,o2: Any) = isSolved(o1.asInstanceOf[X],o2.asInstanceOf[X])
+    def isValid(o1: X, o2: X): Boolean
+    def isAnyValid(o1: Any, o2: Any) = isValid(o1.asInstanceOf[X],o2.asInstanceOf[X])
     def propagate(o1: X, o2: X): (X,X)
     def propagateAny(o1: Any, o2: Any): (X,X) = propagate(o1.asInstanceOf[X],o2.asInstanceOf[X])
   }
 
   trait EqualProp[@sp X] extends Prop[X]
+  trait NotEqualProp[@sp X] extends Prop[X]
+  trait GreaterEqualProp[@sp X] extends Prop[X]
+  trait LowerEqualProp[@sp X] extends Prop[X]
 
   trait StatisticsProp[@sp X] extends Prop[Statistics[X]]
 
   case object EqualNoAnn extends EqualProp[NoAnnotation] {
     val noAnn = (NoAnnotation,NoAnnotation)
     def isSolved(o1: NoAnnotation,o2: NoAnnotation) = false
+    def isValid(o1: NoAnnotation,o2: NoAnnotation) = false
     def propagate(o1: NoAnnotation,o2: NoAnnotation): (NoAnnotation,NoAnnotation) = noAnn
   }
 
@@ -42,15 +48,19 @@ object Constraint {
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = {
       (o1.lowerBound == o2.upperBound) && (o1.upperBound == o2.lowerBound)
     }
+    
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = {
+      !(ord.gt(o1.lowerBound,o2.upperBound) || ord.lt(o1.upperBound,o2.lowerBound))
+    }
 
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateOne(o1,o2)
       val right = propagateOne(o2,o1)
       (left,right)
     }
+
     def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
-      if (!o1.isValid || !o1.isValid) ann.none
-      else if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
+      if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
       else if (ord.lt(o1.upperBound,o2.lowerBound)) ann.none
       else {
         // TODO: more tight bounds on first and last, we now set first=lower and last=upper
@@ -63,6 +73,37 @@ object Constraint {
     override def toString = "EqualStatP"
   }
 
+  case class NotEqualStatP[@sp X](implicit ann: StatisticsAnnotator[X])
+    extends StatisticsProp[X] with NotEqualProp[Statistics[X]] {
+
+    def ord = ann.ordering
+
+    def isSolved(o1: Statistics[X],o2: Statistics[X]) = {
+      (ord.gt(o1.lowerBound,o2.upperBound) || ord.lt(o1.upperBound,o2.lowerBound))
+    }
+
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = {
+      !((o1.lowerBound == o2.upperBound) && (o1.upperBound == o2.lowerBound))
+    }
+
+    def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
+      val left = propagateOne(o1,o2)
+      val right = propagateOne(o2,o1)
+      (left,right)
+    }
+
+    def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
+      if(!isValid(o1,o2)) ann.none
+      else {
+        val lower = ord.min(o1.lowerBound,o2.lowerBound)
+        val upper = ord.max(o1.upperBound,o2.upperBound)
+        val sorted = o1.sorted && o2.sorted
+        createStats(lower,upper,lower,upper,sorted)
+      }
+    }
+    override def toString = "NotEqualStatP"
+  }
+  
   trait CompEqualStatP[@sp X] extends StatisticsProp[X] with EqualProp[Statistics[X]] {
     def ann: StatisticsAnnotator[X]
     def ord = ann.ordering
@@ -94,12 +135,13 @@ object Constraint {
   }
 
   case class GreaterEqualStatP[@sp X](implicit a: StatisticsAnnotator[X])
-    extends CompEqualStatP[X] {
+    extends CompEqualStatP[X] with GreaterEqualProp[Statistics[X]] {
 
     def ann = a
 
-    def isSolved(o1: Statistics[X],o2: Statistics[X]) =  ord.gteqv(o1.lowerBound,o2.upperBound)
- 
+    def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.gteqv(o1.lowerBound,o2.upperBound)
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.lt(o1.upperBound,o2.lowerBound)
+
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateGreaterEqual(o1,o2)
       val right = propagateLowerEqual(o2,o1)
@@ -110,11 +152,12 @@ object Constraint {
   }
 
   case class LowerEqualStatP[@sp X](implicit a: StatisticsAnnotator[X])
-    extends CompEqualStatP[X] {
+    extends CompEqualStatP[X] with LowerEqualProp[Statistics[X]] {
 
     def ann = a
 
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.lteqv(o1.upperBound,o2.lowerBound)
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.gt(o1.lowerBound,o2.upperBound)
 
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateLowerEqual(o1,o2)
@@ -127,5 +170,17 @@ object Constraint {
   
   implicit def equalStatProp[@sp X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = {
     EqualStatP[X]()
+  }
+
+  implicit def notEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): NotEqualProp[Statistics[X]] = {
+    NotEqualStatP[X]()
+  }
+
+  implicit def greatereEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): GreaterEqualProp[Statistics[X]] = {
+    GreaterEqualStatP[X]()
+  }
+
+  implicit def lowerEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): LowerEqualProp[Statistics[X]] = {
+    LowerEqualStatP[X]()
   }
 }
