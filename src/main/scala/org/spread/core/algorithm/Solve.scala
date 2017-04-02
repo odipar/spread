@@ -251,7 +251,6 @@ object Solve {
     def cartesianProduct = {
       var psize: Long = 1
       for (x <- seqs.values) { psize = psize * x.size }
-      println("psize: " + psize)
       seqs.mapValues( x => repeat(x.applyRange,psize / x.size) )
     }
 
@@ -302,18 +301,23 @@ object Solve {
     import Selector._
     import Combiner._
 
-    val t1 = createSeq((50 to 10050).toArray)
-    val t2 = createSeq((100 to 10100).map(_.toDouble).toArray)
+    val t1 = createSeq((50 to 1000050).toArray)
+    val t2 = createSeq((100 to 1000100).map(_.toDouble).toArray)
 
+    // table with pairwise columns
     val t = t1 && t2
-    
-    val c1 = t.select(_.L)
-    val c2 = t.select(_.R)
 
-    val c0 = ((c1 >= 500) AND (c1 <= 600)) OR ((c2 >= 800.0) AND (c2 <= 900.0))
-    
-    val r = defaultSolver.solve(c0)
+    // select first column
+    val C1 = t.select(_.L)
+    // select second column
+    val C2 = t.select(_.R)  
 
-    println("t: " + r(t))
+    // predicate to solve
+    val c0 = ((C1 >= 500) AND (C1 <= 600)) OR ((C2 >= 800.0) AND (C2 <= 900.0))
+    
+    val solution = defaultSolver.solve(c0)
+
+    // print indices of solution
+    println("t: " + solution(t))
   }
 }
