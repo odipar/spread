@@ -1,182 +1,258 @@
 package org.spread.core.algorithm
 
-import org.spread.core.annotation.Annotation.{NoAnnotation, StatisticsAnnotator}
-import org.spread.core.constraint.Constraint.{EqualStatP, GreaterEqualStatP, LowerEqualStatP, Prop, PropValue}
+import org.spread.core.annotation.Annotation._
+import org.spread.core.constraint.Constraint.{EqualProp, EqualStatP, GreaterEqualProp, GreaterEqualStatP, LowerEqualProp, LowerEqualStatP, NotEqualProp, Prop, PropValue}
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.AnnotatedSequence._
 import org.spread.core.sequence.AnnotatedTreeSequence._
 import org.spread.core.sequence.PairedSequence._
 import org.spread.core.sequence.RangedSequence._
 import org.spread.core.sequence.Sequence._
+import org.spread.core.splithash.Hashing
 import spire.algebra.Order
 import spire.implicits._
 
 import scala.reflect.ClassTag
 import scala.language.{existentials, implicitConversions}
 
+
 //
 // Constraint propagation relational join algorithm, based on user defined annotations
+// and a predicate DSL
 //
 // Copyright 2017: Robbert van Dalen
 //
 
 object Solve {
+  type ASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
+  type ASEL[X1,X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]] = AnnSelector[X1,X2,A,S1,S2]
 
-  case class RelConstraint[X1,X2,X3,X4,A <: PropValue,S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2], S3 <: Seq[X3,S3],S4 <: AnnotatedSeq[X4,A,S4]]
-  (s1: AnnSelector[X1,X2,A,S1,S2],s2: AnnSelector[X3,X4,A,S3,S4],prop: Prop[A]) {
-    val leftSelector: AnnSeqSelector[X1,X2,A,S1,S2] = LeftSelector[X1,X2,A,S1,S2](s1)
-    val rightSelector: AnnSeqSelector[X3,X4,A,S3,S4]  = RightSelector[X3,X4,A,S3,S4](s2)
-  }
-
-  trait AnnSeqSelector[X1,X2,A <: PropValue,S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2]] {
-    def selector: AnnSelector[X1,X2,A,S1,S2]
-    def apply(): AnnotatedSeq[X2,A,S2] = selector()
-  }
-
-  case class LeftSelector[X1,X2,A <: PropValue, S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2]]
-  (selector: AnnSelector[X1,X2,A,S1,S2])
-    extends AnnSeqSelector[X1,X2,A,S1,S2] {
-  }
-
-  case class RightSelector[X1,X2,A <: PropValue, S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2]]
-  (selector: AnnSelector[X1,X2,A,S1,S2])
-    extends AnnSeqSelector[X1,X2,A,S1,S2] {
-  }
-
-  type SSEQ = Seq[X,S] forSome { type X ; type S <: Seq[X,S] }
-  type ASEQ = AnnotatedSeq[X,A,S] forSome { type X ; type A <: PropValue ; type S <: AnnotatedSeq[X,A,S] }
-  type ANSEL = AnnSelector[X1,X2,A,S1,S2] forSome {
+  type ANYSEL = AnnSelector[X1,X2,A,S1,S2] forSome {
     type X1
     type X2
     type A <: PropValue
     type S1 <: Seq[X1,S1]
     type S2 <: AnnotatedSeq[X2,A,S2]
   }
-  type ASEL[X1,A <: PropValue, S1 <: Seq[X1,S1]] = AnnSeqSelector[X1,X2,A,S1,S2] forSome {
-    type X2 ;
-    type S2 <: AnnotatedSeq[X2,A,S2]
+  type PVAL = PropValue
+  type ANYSEQ = Seq[X,S] forSome { type X ; type S <: Seq[X,S] }
+
+  trait Solver[S <: Solver[S]] {
+    def asFixPoint: S
+
+    def init[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): S
+
+    def isValid[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): Boolean
+
+    def isSolved[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): Boolean
+
+    def propagate[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): S
+
+    def split: (S,S)
+
+    def solve[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]]
   }
 
-  type VMAP[X,S <: Seq[X,S]] = Map[ASEL[X,_ <: PropValue, S], PropValue]
-
-
-  type PVAL = AnnSeqSelector[X1,X2,A,S1,S2] forSome {
-    type X1
-    type X2
-    type A <: PropValue
-    type S1 <: Seq[X1,S1]
-    type S2 <: AnnotatedSeq[X2,A,S2]
+  trait CExpr[E <: CExpr[E]] {
+    def isValid[S <: Solver[S]](s: S): Boolean
+    def isSolved[S <: Solver[S]](s: S): Boolean
+    def init[S <: Solver[S]](s: S): S
+    def propagate[S <: Solver[S]](s: S): S
   }
 
-  case class ConstrainedRel[X, S <: Seq[X,S]](rel: Seq[X,S], from: Long, to: Long, vmap: VMAP[X,S]) {
-    type CR = ConstrainedRel[X,S]
-    
-    def isValid = {
-      val iter = vmap.valuesIterator
-      var isValid = true
-      while (iter.hasNext && isValid) {isValid = isValid && iter.next.isValid}
-      isValid
-    }
-    def getPropAnnotation(sel: ASEL[X,_ <: PropValue, S]): PropValue = vmap(sel)
-    def getAnyPropAnnotation(sel: PVAL): PropValue = getPropAnnotation(sel.asInstanceOf[ASEL[X, _ <: PropValue,S]])
-    def getAnnotation(sel: ASEL[X,_ <: PropValue, S]): PropValue = sel().annotationRange(from,to)
-    def getAnyAnnotation(sel: PVAL): PropValue = getAnnotation(sel.asInstanceOf[ASEL[X, _ <: PropValue,S]])
+  case class CAndExpr[L <: CExpr[L],R <: CExpr[R]](left: L,right: R) extends CExpr[CAndExpr[L,R]] {
+    def isValid[S <: Solver[S]](s: S) = left.isValid(s) && right.isValid(s)
+    def isSolved[S <: Solver[S]](s: S) = left.isSolved(s) && right.isSolved(s)
+    def init[S <: Solver[S]](s: S) = right.init(left.init(s))
+    def propagate[S <: Solver[S]](s: S) = right.propagate(left.propagate(s))
+  }
 
-    def setAnnotation(d: PropValue,sel: ASEL[X,_ <: PropValue,S]): ConstrainedRel[X,S] = {
-      val nmap  = vmap + (sel -> d)
-      ConstrainedRel(rel,from,to,nmap)
+  case class COrExpr[L <: CExpr[L],R <: CExpr[R]](left: L,right: R) extends CExpr[COrExpr[L,R]] {
+    def isValid[S <: Solver[S]](s: S) = left.isValid(s) || right.isValid(s)
+    def isSolved[S <: Solver[S]](s: S) = left.isSolved(s) || right.isSolved(s)
+    def init[S <: Solver[S]](s: S) = right.init(left.init(s))
+    def propagate[S <: Solver[S]](s: S) = right.propagate(left.propagate(s))
+  }
+
+  case class CBinExpr[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) extends CExpr[CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+    def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
+    def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
+    def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
+    def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
+  }
+
+  def binExpr[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4])(cc: Prop[A]) = CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4](r1,r2,cc)
+
+  implicit class CBinSyntax[X1,X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]](r1: ASEL[X1,X2,A,S1,S2]) {
+    def ===[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit eq: EqualProp[A]) = {
+      binExpr(r1.copy,r2.copy)(eq)
     }
-    def setAnyAnnotation(d: PropValue,sel: PVAL): ConstrainedRel[X,S] = {
-      val s = sel.asInstanceOf[ASEL[X,_ <: PropValue,S]]
-      setAnnotation(d,s)
+    def =!=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit eq: NotEqualProp[A]) = {
+      binExpr(r1.copy,r2.copy)(eq)
     }
-    def size = to - from + 1
-    def split: (CR,CR) = {
-      val r = (from + to + 1) / 2
-      (ConstrainedRel(rel,from,r-1,vmap).propagate, ConstrainedRel(rel,r,to,vmap).propagate)
+    def >=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit ge: GreaterEqualProp[A]) = {
+      binExpr(r1.copy,r2.copy)(ge)
+    }
+    def <=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit le: LowerEqualProp[A]) = {
+      binExpr(r1.copy,r2.copy)(le)
+    }
+  }
+
+  implicit class CExprSyntax[L <: CExpr[L]](left: L) {
+    def and[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
+    def or[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
+
+    def AND[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
+    def OR[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
+
+    def &&[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
+    def ||[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
+  }
+
+  def defaultSolver: DSolver = new DefaultSolver(Map(),Map(),true)
+
+  case class SeqRange(start: Long, end: Long) {
+    def size = (end-start+1)
+    def applyRange = createRange(start,end)
+  }
+
+  trait DSolver extends Solver[DSolver] {
+    def fixPoint: Boolean
+    def seqs: Map[ANYSEQ,SeqRange]
+    def doms: Map[ANYSEL,PropValue]
+    def propagate: DSolver
+
+    def solve2[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]]
+    def solve3[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]]
+  }
+
+  case class DefaultSolver(seqs: Map[ANYSEQ,SeqRange], doms: Map[ANYSEL,PropValue], fixPoint: Boolean) extends DSolver {
+    def self: DSolver = this
+
+    def asFixPoint = DefaultSolver(seqs,doms,true)
+    def isValid[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
+      val a1 = doms(sel1)
+      val a2 = doms(sel2)
+
+      a1.isValid && a2.isValid && cc.isAnyValid(a1,a2)
     }
 
-    def propagate: CR = {
-      if (isValid) {
-        val k = vmap.keysIterator
-        var newm: VMAP[X,S] = Map()
+    def isSolved[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
+      val a1 = doms(sel1)
+      val a2 = doms(sel2)
 
-        while (k.hasNext) {
-          val sel = k.next
-          val annSeq = sel()
-          val equalProp = annSeq.equal
-          val ann0 = annSeq.annotationRange(from,to)
-          val ann1 = vmap(sel)
-          val propAnn = equalProp.propagateAny(ann0,ann1)._1
-          newm = newm + (sel->propAnn)
+      if (a1.isValid && a2.isValid && cc.isAnySolved(a1,a2)) {
+        val r1 = seqs(sel1.asSeq)
+        val r2 = seqs(sel2.asSeq)
+
+        val a3 = sel1().annotationRange(r1.start,r1.end)
+        val a4 = sel2().annotationRange(r2.start,r2.end)
+        
+        cc.isAnySolved(a3,a4)
+      }
+      else false
+    }
+
+    def propagate: DSolver = {
+      var ndoms = doms
+      for (dom <- doms.keys) {
+        val seq = dom.asSeq
+        val range = seqs(seq)
+        val annSeq = dom()
+        val pval = doms(dom)
+        if (pval.isValid) {
+          val ann = annSeq.annotationRange(range.start,range.end)
+          val eqProp = annSeq.equal
+          val annResult = eqProp.propagateAny(ann,pval)._1
+          ndoms = ndoms + (dom -> annResult)
         }
-        ConstrainedRel(rel,from,to,newm)
+      }
+      DefaultSolver(seqs,ndoms,fixPoint)
+    }
+
+    def init[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): DSolver = {
+      val s1 = sel1.asSeq
+      val s2 = sel2.asSeq
+
+      val nseqs = seqs + (s1 -> SeqRange(0,s1.size-1)) + (s2 -> SeqRange(0,s2.size-1))
+      val ndoms = doms + (sel1 -> sel1().annotation) + (sel2 -> sel2().annotation)
+
+      DefaultSolver(nseqs,ndoms,true)
+    }
+
+    def propagate[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): DSolver = {
+      val s1 = sel1.asSeq
+      val s2 = sel2.asSeq
+
+      val r1 = seqs(s1)
+      val r2 = seqs(s2)
+
+      val a1 = doms(sel1)
+      val a2 = doms(sel2)
+
+      if (a1.isValid && a2.isValid) {
+        val (aa1,aa2) = cc.propagateAny(a1,a2)
+        if ((a1 == aa1) && (a2 == aa2)) this
+        else DefaultSolver(seqs,doms + (sel1 -> aa1) + (sel2 -> aa2),false)
       }
       else this
     }
-    def applyRange: LSEQ[NoAnnotation] = {
-      createRange(from,to)
-    }
-  }
 
-  type RCSTR = RelConstraint[X1,X2,X3,X4,A,S1,S2,S3,S4] forSome {
-    type X1
-    type X2
-    type X3
-    type X4
-    type A <: PropValue
-    type S1 <: Seq[X1,S1]
-    type S2 <: AnnotatedSeq[X2,A,S2]
-    type S3 <: Seq[X3,S3]
-    type S4 <: AnnotatedSeq[X4,A,S4]
-  }
+    def split: (DSolver,DSolver) = {
+      val bestSeq = selectBestSplitCandidate
+      val bestRange = seqs(bestSeq)
+      val mid = (bestRange.start + bestRange.end + 1)/2
 
-  type CREL = ConstrainedRel[X,S] forSome { type X ; type S <: Seq[X,S] }
-  type CTRS = Set[RCSTR]
-  type DOMS = Map[SSEQ,CREL]
+      val leftRange = SeqRange(bestRange.start,mid-1)
+      val rightRange = SeqRange(mid,bestRange.end)
 
-  def createModel: Model = Model(Set(),Map(),isValid = true)
+      val left = DefaultSolver(seqs + (bestSeq -> leftRange),doms,fixPoint)
+      val right = DefaultSolver(seqs + (bestSeq -> rightRange),doms,fixPoint)
 
-  def createRelDomain[@sp X, S <: Seq[X,S]](rel: S): ConstrainedRel[X,S] = {
-    ConstrainedRel[X,S](rel,0,rel.size-1,Map())
-  }
-
-  var mm: Long = 0
-
-  case class Model(ctrs: CTRS,domains: DOMS,isValid: Boolean) {
-    { mm = mm + 1 }
-    def addSequence[@sp X, S <: Seq[X,S]](seq: Seq[X,S]): Model = {
-      Model(ctrs,domains + (seq->createRelDomain[X,S](seq.asInstanceOf[S])),isValid)
+      (left.propagate,right.propagate)
     }
 
-    def addConstraint[X1,X2,X3,X4,A <: PropValue,S1 <: Seq[X1,S1],S2 <: AnnotatedSeq[X2,A,S2], S3 <: Seq[X3,S3], S4 <: AnnotatedSeq[X4,A,S4]]
-    (r1: AnnSelector[X1,X2,A,S1,S2], r2: AnnSelector[X3,X4,A,S3,S4])(cc: Prop[A]): Model = {
+    def selectBestSplitCandidate: ANYSEQ = {
+      // Select sequence that has the most valid annotations and least size
+      // TODO: optimize with mutable maps?
+      var candidates = seqs.map(x => (x._1,(0,x._2.size))).toMap[ANYSEQ,(Int,Long)]
+      for (dom <- doms) {
+        val annSeq = dom._1
+        val ann = dom._2
+        if (ann.isValid) {
+          val seq = annSeq.asSeq
+          val v = candidates(seq)
+          candidates = candidates + (seq -> (v._1 - 1,v._2))
+        }
+      }
+      // sort by -#valid annotations and least size
+      val candidates2 = candidates.map(x => (x._2,x._1)).toSeq.sortBy(_._1).map(x => x._2)
 
-      val c = RelConstraint(r1,r2,cc)
+      var bestCandidate = candidates2(0)
+      for (seq <- candidates2) {
+        val s = seqs(seq).size
+        val cs = seqs(bestCandidate).size
+        if ((cs <= 1) || ((s > 1) && (s < cs))) { bestCandidate = seq }
+      }
 
-      var ndomains = domains
-
-      val s1 = r1.seq
-      val s2 = r2.seq
-
-      if (!ndomains.contains(s1)) ndomains = ndomains + (s1->createRelDomain[X1,S1](s1.asInstanceOf[S1]))
-      if (!ndomains.contains(s2)) ndomains = ndomains + (s2->createRelDomain[X3,S3](s2.asInstanceOf[S3]))
-
-      ndomains = ndomains + (s1 -> ndomains(s1).setAnyAnnotation(r1().annotation,c.leftSelector))
-      ndomains = ndomains + (s2 -> ndomains(s2).setAnyAnnotation(r2().annotation,c.rightSelector))
-
-      Model(ctrs + c,ndomains,isValid)
+      bestCandidate
     }
-    def setRelDomain(seq: SSEQ, rel: CREL): Model = Model(ctrs,domains + (seq -> rel),rel.isValid)
-    def propagateConstraints = propagateModelConstraints(this)
-    def split = splitModel(this)
-    def solve = solveModel(this)
-    def isSolved = isModelSolved(this)
+
     def cartesianProduct = {
       var psize: Long = 1
-
-      for (x <- domains.values) { psize = psize * x.size }
-      domains.mapValues( x => repeat(x.applyRange,psize / x.size) )
+      for (x <- seqs.values) { psize = psize * x.size }
+      println("psize: " + psize)
+      seqs.mapValues( x => repeat(x.applyRange,psize / x.size) )
     }
 
     def repeat(s1: LSEQ[NoAnnotation],m: Long): LSEQ[NoAnnotation] = {
@@ -188,152 +264,56 @@ object Solve {
         sr.append(sr).append(repeat(s1,m - (m2 * 2)))
       }
     }
-  }
 
-  def isModelSolved(m: Model): Boolean = {
-    val iter = m.ctrs.iterator
-    val domains = m.domains
-
-    var isModelSolved = true
-
-    while (iter.hasNext && isModelSolved) {
-      val c = iter.next
-
-      val dom1 = domains(c.s1.asSeq)
-      val dom2 = domains(c.s2.asSeq)
-
-      val dd1 = dom1.getAnyPropAnnotation(c.leftSelector)
-      val dd2 = dom2.getAnyPropAnnotation(c.rightSelector)
-
-      val s = c.prop.isAnySolved(dd1,dd2)
-
-      if (s) {
-        val aa1 = dom1.getAnyAnnotation(c.leftSelector)
-        val aa2 = dom2.getAnyAnnotation(c.rightSelector)
-
-        isModelSolved = c.prop.isAnySolved(aa1,dd2) && c.prop.isAnySolved(dd1,aa2)
-      }
-      else { isModelSolved = false }
+    def solve[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
+      // init
+      val s2 = e.init(self)
+      val s3 = s2.propagate
+      s3.solve2(e)
     }
-    isModelSolved
-  }
 
-  def propagateModelConstraints(m: Model): Model = {
-    if (!m.isValid) m
-    else {
-      var fixpoint = false
-      var isValid = true
-      var domains = m.domains
-
-      while(!fixpoint && isValid) { // Loop until fixpoint (no annotations have changed after propagation)
-        fixpoint = true
-
-        val iter = m.ctrs.iterator
-        while(iter.hasNext && isValid) {
-          val c = iter.next
-
-          val s1 = c.s1.asSeq
-          val s2 = c.s2.asSeq
-
-          val d1 = domains(s1)
-          val d2 = domains(s2)
-
-          val r1 = d1.rel
-          val r2 = d2.rel
-
-          val left = c.leftSelector
-          val right = c.rightSelector
-
-          val dd1 = d1.getAnyPropAnnotation(left)
-          val dd2 = d2.getAnyPropAnnotation(right)
-
-          val (rd1,rd2) = c.prop.propagateAny(dd1,dd2)
-
-          isValid = rd1.isValid && rd2.isValid
-
-          if ((dd1 != rd1) || (dd2 != rd2)) {
-            val k = d1.setAnyAnnotation(rd1,left)
-
-            fixpoint = false // Either one of the domains have been propagated to something different
-
-            if (s1 != s2) {
-              domains = domains + (s1 -> d1.setAnyAnnotation(rd1,left))
-              domains = domains + (s2 -> d2.setAnyAnnotation(rd2,right))
-            }
-            else {
-              domains = domains + (s1 -> d1.setAnyAnnotation(rd1,left).setAnyAnnotation(rd2,right))
-            }
-          }
-        }
-      }
-      Model(m.ctrs,domains,isValid)
-    }
-  }
-
-  def selectBestSplitCandidate(m: Model): (SSEQ,CREL) = {
-    val doms = m.domains
-    var bestCandidate = doms.last
-
-    for (d <- doms) {
-      val s = d._2.size
-      val cs = bestCandidate._2.size
-
-      // Simple size heuristic (smallest > 1 is selected)
-      // TODO: make heuristics pluggable
-      if ((cs <= 1) || ((s > 1) && (s < cs))) {
-        bestCandidate = d
+    def solve2[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
+      if (!e.isValid(self)) seqs.mapValues(x => defaultLongSeqFactory)
+      else if (e.isSolved(self)) cartesianProduct
+      else {
+        // propagate until fixpoint
+        var s = e.propagate(self.asFixPoint)
+        while (!s.fixPoint) {s = e.propagate(s.asFixPoint)}
+        s.solve3(e)
       }
     }
-    bestCandidate
-  }
-  
-  def splitModel(m: Model): (Model,Model) = {
-    val s = selectBestSplitCandidate(m)
-    val (l: CREL,r: CREL) = s._2.split
 
-    (m.setRelDomain(s._1,l),m.setRelDomain(s._1,r))
-  }
-
-  def solveModel(mm: Model): (Map[SSEQ,LSEQ[NoAnnotation]]) = {
-    if (!mm.isValid) mm.domains.mapValues(x => defaultLongSeqFactory) // not valid - empty
-    else if (mm.isSolved) mm.cartesianProduct
-    else {
-      val (m1,m2) = mm.propagateConstraints.split
-      val mm1 = solveModel(m1)
-      val mm2 = solveModel(m2)
+    def solve3[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
+      val (m1,m2) = split
+      val mm1 = m1.solve2(e)
+      val mm2 = m2.solve2(e)
       mm1.transform((k,v) => v.append(mm2(k)))
     }
   }
 
+  implicit def toConstantSel[@sp X: ClassTag](x: X)(implicit o1: Order[X], ann: StatisticsAnnotator[X])= {
+    import Selector._
+    createSeq(Array(x)).selectSame
+  }
+
   def createSeq[@sp X: ClassTag](x: Array[X])(implicit o1: Order[X]) = { seqFactory[X].createSeq(x) }
   
-  implicit def annotator[@sp X](implicit ord: Order[X]): StatisticsAnnotator[X] = StatisticsAnnotator[X]()
-
-  def equalStatP[@sp X](implicit ann: StatisticsAnnotator[X]) = EqualStatP[X]()
-
   final def main(args: Array[String]): Unit = {
     import Selector._
     import Combiner._
 
-    val s1 = createAnnRange(0,2000000) && createAnnRange(2,2000002)
-    val s1_c1 = s1.select(x => x.L)
-    val s1_c2 = s1.select(x => x.R)
+    val t1 = createSeq((50 to 10050).toArray)
+    val t2 = createSeq((100 to 10100).map(_.toDouble).toArray)
 
-    val ls1 = createSeq[Long](Array(112))
-    val hs1 = createSeq[Long](Array(162))
+    val t = t1 && t2
+    
+    val c1 = t.select(_.L)
+    val c2 = t.select(_.R)
 
-    val ls1_c1 = ls1.selectSame
-    val hs1_c1 = hs1.selectSame
+    val c0 = ((c1 >= 500) AND (c1 <= 600)) OR ((c2 >= 800.0) AND (c2 <= 900.0))
+    
+    val r = defaultSolver.solve(c0)
 
-    var m = createModel.
-      addConstraint(s1_c1,ls1_c1)(GreaterEqualStatP()).
-      addConstraint(s1_c1,hs1_c1)(LowerEqualStatP()).
-      addConstraint(s1_c2,ls1_c1)(GreaterEqualStatP()).
-      addConstraint(s1_c2,hs1_c1)(LowerEqualStatP())
-
-    println("mm: " + mm)
-    println(m.solve.map(x => x._2))
-    println("mm: " + mm)
+    println("t: " + r(t))
   }
 }
-
