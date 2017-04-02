@@ -17,7 +17,6 @@ object RangedSequence {
 
   trait LongTreeSeqImpl[A]
     extends AnnTreeSeq[Long,A] {
-    type C = AnnotationOrderingContext[Long,A]
 
     def self = this
     def emptySeq: AnnTreeSeq[Long,A] = EmptyLongTreeSeq[A]()(context)
@@ -70,12 +69,12 @@ object RangedSequence {
     }
   }
 
-  case class EmptyLongTreeSeq[A](implicit c: AnnotationOrderingContext[Long,A]) extends LongTreeSeqImpl[A] {
+  case class EmptyLongTreeSeq[A](implicit c: RangedAnnotationOrderingContext[Long,A]) extends LongTreeSeqImpl[A] {
     def repr = empty
     def context = c
   }
 
-  case class FullLongTreeSeq[A](repr: AnnTreeSeq[Long,A]#AS)(implicit c: AnnotationOrderingContext[Long,A])
+  case class FullLongTreeSeq[A](repr: AnnTreeSeq[Long,A]#AS)(implicit c: RangedAnnotationOrderingContext[Long,A])
     extends LongTreeSeqImpl[A] {
     def context = c
   }
@@ -84,7 +83,7 @@ object RangedSequence {
     extends BSeqLeaf[Long,A]{
     { assert(lowerBound <= upperBound) }
 
-    def annotation(implicit c: SS) = ???
+    def annotation(implicit c: SS) = c.annotator.range(lowerBound,upperBound)
     def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS): SAS = {
       if (lowerBound > upperBound) c.empty
       else LongLeafRange(lowerBound,upperBound)
@@ -99,8 +98,11 @@ object RangedSequence {
         (l,r)
       }
     }
+    
     def annotationRange(start: Long,end: Long)(implicit c: SS): A = {
-      ??? //LongLeafRange(lowerBound,upperBound).annotate(c.annotator)(c.aTag)
+      if (end >= size) annotationRange(start,size - 1)
+      else if (start < 0) annotationRange(0,end)
+      else c.annotator.range(lowerBound + start,lowerBound + end)
     }
 
     def intoArray(dest: Array[Long], i: Int) = {
@@ -128,7 +130,6 @@ object RangedSequence {
     def sorted = true
     def size = upperBound - lowerBound + 1
     def toArray = (lowerBound to upperBound).toArray
-    def annotation(implicit c: AnnotationContext[Long,SL]) = this
     def first = lowerBound
     def last = upperBound
     def first(implicit c: SS) = lowerBound
@@ -144,10 +145,10 @@ object RangedSequence {
 
   type LSEQ[A] = AnnTreeSeq[Long,A]
 
-  def longSeqFactory[A](implicit ann: Annotator[Long,A], ca: ClassTag[A], eq: EqualProp[A]): LSEQ[A] = {
+  def longSeqFactory[A](implicit ann: RangeAnnotator[Long,A], ca: ClassTag[A], eq: EqualProp[A]): LSEQ[A] = {
     val ord = implicitly[Order[Long]]
     val cx = implicitly[ClassTag[Long]]
-    EmptyLongTreeSeq()(AnnOrdContextImpl[Long,A](ann,eq,ord,cx,ca))
+    EmptyLongTreeSeq()(RangedAnnOrdContextImpl[Long,A](ann,eq,ord,cx,ca))
   }
 
   def defaultLongSeqFactory = {
@@ -157,6 +158,13 @@ object RangedSequence {
     longSeqFactory(ann,ca,eq)
   }
 
+  def defaultAnnLongSeqFactory = {
+    val ann = StatisticsAnnotator[Long]()
+    val ca = implicitly[ClassTag[SL]]
+    val eq = EqualStatP()(ann)
+    longSeqFactory(ann,ca,eq)
+  }
+
   def createRange(lb: Long, ub: Long): LSEQ[NoAnnotation] = defaultLongSeqFactory.asInstanceOf[LongTreeSeqImpl[NoAnnotation]].create(lb,ub)
-  def createAnnRange(lb: Long, ub: Long): LSEQ[SL] = defaultLongSeqFactory.asInstanceOf[LongTreeSeqImpl[SL]].create(lb,ub)
+  def createAnnRange(lb: Long, ub: Long): LSEQ[SL] = defaultAnnLongSeqFactory.asInstanceOf[LongTreeSeqImpl[SL]].create(lb,ub)
 }

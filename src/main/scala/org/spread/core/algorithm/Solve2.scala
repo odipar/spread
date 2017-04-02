@@ -1,5 +1,6 @@
 package org.spread.core.algorithm
 
+import org.spread.core.algorithm.Solve.createSeq
 import org.spread.core.annotation.Annotation._
 import org.spread.core.constraint.Constraint.{EqualProp, EqualStatP, GreaterEqualProp, GreaterEqualStatP, LowerEqualProp, LowerEqualStatP, NotEqualProp, Prop, PropValue}
 import org.spread.core.language.Annotation.sp
@@ -23,7 +24,7 @@ import scala.language.{existentials, implicitConversions}
 // Copyright 2017: Robbert van Dalen
 //
 
-object Solve {
+object Solve2 {
   type ASEQ[X,A,S <: AnnotatedSeq[X,A,S]] = AnnotatedSeq[X,A,S]
   type ASEL[X1,X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]] = AnnSelector[X1,X2,A,S1,S2]
 
@@ -85,38 +86,32 @@ object Solve {
     def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
     def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
   }
-
+  
   def binExpr[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
   (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4])(cc: Prop[A]) = CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4](r1,r2,cc)
 
   implicit class CBinSyntax[X1,X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]](r1: ASEL[X1,X2,A,S1,S2]) {
     def ===[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit eq: EqualProp[A]) = {
-      binExpr(r1.copy,r2.copy)(eq)
+      binExpr(r1,r2)(eq)
     }
     def =!=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit eq: NotEqualProp[A]) = {
-      binExpr(r1.copy,r2.copy)(eq)
+      binExpr(r1,r2)(eq)
     }
     def >=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit ge: GreaterEqualProp[A]) = {
-      binExpr(r1.copy,r2.copy)(ge)
+      binExpr(r1,r2)(ge)
     }
     def <=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit le: LowerEqualProp[A]) = {
-      binExpr(r1.copy,r2.copy)(le)
+      binExpr(r1,r2)(le)
     }
   }
 
   implicit class CExprSyntax[L <: CExpr[L]](left: L) {
     def and[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
     def or[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
-
-    def AND[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
-    def OR[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
-
-    def &&[R <: CExpr[R]](right: R): CAndExpr[L,R] = CAndExpr[L,R](left,right)
-    def ||[R <: CExpr[R]](right: R): COrExpr[L,R] = COrExpr[L,R](left,right)
   }
 
   def defaultSolver: DSolver = new DefaultSolver(Map(),Map(),true)
-
+  
   case class SeqRange(start: Long, end: Long) {
     def size = (end-start+1)
     def applyRange = createRange(start,end)
@@ -131,10 +126,10 @@ object Solve {
     def solve2[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]]
     def solve3[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]]
   }
-
+  
   case class DefaultSolver(seqs: Map[ANYSEQ,SeqRange], doms: Map[ANYSEL,PropValue], fixPoint: Boolean) extends DSolver {
     def self: DSolver = this
-
+    
     def asFixPoint = DefaultSolver(seqs,doms,true)
     def isValid[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
@@ -148,17 +143,14 @@ object Solve {
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
       val a1 = doms(sel1)
       val a2 = doms(sel2)
+      
+      val r1 = seqs(sel1.asSeq)
+      val r2 = seqs(sel2.asSeq)
 
-      if (a1.isValid && a2.isValid && cc.isAnySolved(a1,a2)) {
-        val r1 = seqs(sel1.asSeq)
-        val r2 = seqs(sel2.asSeq)
-
-        val a3 = sel1().annotationRange(r1.start,r1.end)
-        val a4 = sel2().annotationRange(r2.start,r2.end)
-        
-        cc.isAnySolved(a3,a4)
-      }
-      else false
+      val a3 = sel1().annotationRange(r1.start,r1.end)
+      val a4 = sel2().annotationRange(r2.start,r2.end)
+      
+      a1.isValid && a2.isValid && cc.isAnySolved(a1,a2) && cc.isAnySolved(a3,a4)
     }
 
     def propagate: DSolver = {
@@ -185,10 +177,10 @@ object Solve {
 
       val nseqs = seqs + (s1 -> SeqRange(0,s1.size-1)) + (s2 -> SeqRange(0,s2.size-1))
       val ndoms = doms + (sel1 -> sel1().annotation) + (sel2 -> sel2().annotation)
-
+      
       DefaultSolver(nseqs,ndoms,true)
     }
-
+    
     def propagate[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): DSolver = {
       val s1 = sel1.asSeq
@@ -263,7 +255,7 @@ object Solve {
         sr.append(sr).append(repeat(s1,m - (m2 * 2)))
       }
     }
-
+    
     def solve[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
       // init
       val s2 = e.init(self)
@@ -290,34 +282,47 @@ object Solve {
     }
   }
 
-  implicit def toConstantSel[@sp X: ClassTag](x: X)(implicit o1: Order[X], ann: StatisticsAnnotator[X])= {
-    import Selector._
-    createSeq(Array(x)).selectSame
-  }
-
-  def createSeq[@sp X: ClassTag](x: Array[X])(implicit o1: Order[X]) = { seqFactory[X].createSeq(x) }
-  
   final def main(args: Array[String]): Unit = {
     import Selector._
     import Combiner._
-
-    val t1 = createSeq((50 to 1000050).toArray)
-    val t2 = createSeq((100 to 1000100).map(_.toDouble).toArray)
-
-    // table with pairwise columns
-    val t = t1 && t2
-
-    // select first column
-    val C1 = t.select(_.L)
-    // select second column
-    val C2 = t.select(_.R)  
-
-    // predicate to solve
-    val c0 = ((C1 >= 500) AND (C1 <= 600)) OR ((C2 >= 800.0) AND (C2 <= 900.0))
     
-    val solution = defaultSolver.solve(c0)
+    val s1 = createSeq[Long]((3 to 6).map(x => x.toLong).toArray)
+    val s2 = createSeq[Long]((4 to 8).map(x => x.toLong).toArray)
+    
+    val t1_c1 = s1.selectSame
+    val t2_c1 = s2.selectSame
 
-    // print indices of solution
-    println("t: " + solution(t))
+    val c0 = (t1_c1 <= t2_c1)
+
+    val r = defaultSolver.solve(c0)
+
+    // 3,4 x
+    // 4,4 x
+    // 5,4
+    // 6,4
+
+    // 3,5 x
+    // 4,5 x
+    // 5,5 x
+    // 6,5
+
+    // 3,6 x
+    // 4,6 x
+    // 5,6 x
+    // 6,6 x
+
+    // 3,7 x
+    // 4,7 x
+    // 5,7 x
+    // 6,7 x
+
+    // 3,8 x
+    // 4,8 x
+    // 5,8 x
+    // 6,8 x
+    
+    println("s1: " + r(s1))
+    println("s2: " + r(s2))
+
   }
 }

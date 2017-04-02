@@ -14,7 +14,7 @@ import org.spread.core.sequence.OrderingSequence.Union
 object AnnotatedTreeSequence {
 
   trait AnnTreeSeq[@sp X,A] extends AnnOrdSeqWithRepr[X,A,AnnTreeSeq[X,A]] {
-    type C <: AnnotationOrderingContext[X,A]
+    type C = RangedAnnotationOrderingContext[X,A]
     type AS = BSeqTr[X,A]
     type SS = AnnTreeSeq[X,A]
     type SAS = SS#AS
@@ -346,7 +346,6 @@ object AnnotatedTreeSequence {
   }
 
   trait AnnTreeSeqImpl[@sp X,A] extends AnnTreeSeq[X,A] {
-    type C = AnnotationOrderingContext[X,A]
     def self = this
     def emptySeq = EmptyAnnotatedTreeSeq()(context)
     def create(s: AnnTreeSeq[X,A]#AS) = FullAnnotatedTreeSeq(s)(context)
@@ -354,27 +353,27 @@ object AnnotatedTreeSequence {
   }
 
   case class EmptyAnnotatedTreeSeq[@sp X,A]
-  (implicit c: AnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
+  (implicit c: RangedAnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
     def context = c
     def repr = empty
   }
 
   case class FullAnnotatedTreeSeq[@sp X,A]
-  (repr: AnnTreeSeq[X,A]#AS)(implicit c: AnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
+  (repr: AnnTreeSeq[X,A]#AS)(implicit c: RangedAnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
     def context = c
   }
 
   def seqFactory[@sp X](implicit ord: Order[X], ct: ClassTag[X], ca: ClassTag[Statistics[X]]) = {
     val ann = StatisticsAnnotator[X]()
     val eq = EqualStatP()(ann)
-    EmptyAnnotatedTreeSeq()(AnnOrdContextImpl(ann,eq,ord,ct,ca))
+    EmptyAnnotatedTreeSeq()(RangedAnnOrdContextImpl(ann,eq,ord,ct,ca))
   }
 
   def defaultSeqFactory[@sp X](implicit ord: Order[X], ct: ClassTag[X]) = {
     val ann = NoAnnotator[X]
     val ca = implicitly[ClassTag[NoAnnotation]]
     val eq = EqualNoAnn
-    EmptyAnnotatedTreeSeq()(AnnOrdContextImpl(ann,eq,ord,ct,ca))
+    EmptyAnnotatedTreeSeq()(RangedAnnOrdContextImpl(ann,eq,ord,ct,ca))
   }
 
 
