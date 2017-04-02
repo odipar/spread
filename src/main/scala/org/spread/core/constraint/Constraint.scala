@@ -26,15 +26,28 @@ object Constraint {
     def propagateAny(o1: Any, o2: Any): (X,X) = propagate(o1.asInstanceOf[X],o2.asInstanceOf[X])
   }
 
-  trait EqualProp[@sp X] extends Prop[X]
-  trait NotEqualProp[@sp X] extends Prop[X]
-  trait GreaterEqualProp[@sp X] extends Prop[X]
-  trait LowerEqualProp[@sp X] extends Prop[X]
+  trait EqualProp[@sp X] extends Prop[X] {
+    def notEqual: NotEqualProp[X]
+  }
+  trait NotEqualProp[@sp X] extends Prop[X] {
+    def equal: EqualProp[X]
+  }
+  trait GreaterEqualProp[@sp X] extends Prop[X] {
+    def notEqual: NotEqualProp[X]
+    def lowerEqual: LowerEqualProp[X]
+  }
+  trait LowerEqualProp[@sp X] extends Prop[X] {
+    def notEqual: NotEqualProp[X]
+    def greaterEqual: GreaterEqualProp[X]
+  }
 
   trait StatisticsProp[@sp X] extends Prop[Statistics[X]]
 
-  case object EqualNoAnn extends EqualProp[NoAnnotation] {
+  case object EqualNoAnn extends EqualProp[NoAnnotation] with NotEqualProp[NoAnnotation] {
     val noAnn = (NoAnnotation,NoAnnotation)
+    def notEqual = this
+    def equal = this
+    def not = this
     def isSolved(o1: NoAnnotation,o2: NoAnnotation) = false
     def isValid(o1: NoAnnotation,o2: NoAnnotation) = false
     def propagate(o1: NoAnnotation,o2: NoAnnotation): (NoAnnotation,NoAnnotation) = noAnn
@@ -44,7 +57,8 @@ object Constraint {
     extends StatisticsProp[X] with EqualProp[Statistics[X]] {
 
     def ord = ann.ordering
-
+    def notEqual = NotEqualStatP()
+    
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = {
       (o1.lowerBound == o2.upperBound) && (o1.upperBound == o2.lowerBound)
     }
@@ -77,6 +91,7 @@ object Constraint {
     extends StatisticsProp[X] with NotEqualProp[Statistics[X]] {
 
     def ord = ann.ordering
+    def equal = EqualStatP()
 
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = {
       (ord.gt(o1.lowerBound,o2.upperBound) || ord.lt(o1.upperBound,o2.lowerBound))
@@ -138,6 +153,9 @@ object Constraint {
     extends CompEqualStatP[X] with GreaterEqualProp[Statistics[X]] {
 
     def ann = a
+    
+    def lowerEqual = LowerEqualStatP[X]()
+    def notEqual = NotEqualStatP[X]()
 
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.gteqv(o1.lowerBound,o2.upperBound)
     def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.lt(o1.upperBound,o2.lowerBound)
@@ -155,6 +173,9 @@ object Constraint {
     extends CompEqualStatP[X] with LowerEqualProp[Statistics[X]] {
 
     def ann = a
+    
+    def greaterEqual = GreaterEqualStatP[X]()
+    def notEqual = NotEqualStatP[X]()
 
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.lteqv(o1.upperBound,o2.lowerBound)
     def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.gt(o1.lowerBound,o2.upperBound)
