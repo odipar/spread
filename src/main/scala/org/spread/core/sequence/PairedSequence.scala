@@ -168,15 +168,19 @@ object PairedSequence {
 
   object Combiner extends Prio1Combiner // combining (&&) AnnOrdSeq has highest prio (Prio1)
 
-  case class Selector[@sp X1,@sp X2, S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]]
+  // Selector has identity
+  class Selector[@sp X1,@sp X2, S1 <: Seq[X1,S1], S2 <: Seq[X2,S2]]
   (seq: S1, f: S1 => S2) {
+    def copy: Selector[X1,X2,S1,S2] = new Selector(seq,f)
     def asSeq: Seq[X1,S1] = seq
     def apply(): S2 = f(seq)
     def apply(o: S1): S2 = f(o)
   }
 
-  case class AnnSelector[@sp X1,@sp X2, A, S1 <: Seq[X1,S1], S2 <: AnnotatedSeq[X2,A,S2]]
+  // AnnSelector has identity
+  class AnnSelector[@sp X1,@sp X2, A, S1 <: Seq[X1,S1], S2 <: AnnotatedSeq[X2,A,S2]]
   (seq: S1, f: S1 => S2) {
+    def copy: AnnSelector[X1,X2,A,S1,S2] = new AnnSelector(seq,f)
     def asSeq: Seq[X1,S1] = seq
     def apply(): S2 = f(seq)
     def apply(o: S1): S2 = f(o)
@@ -184,7 +188,7 @@ object PairedSequence {
 
   trait Prio3Selector {
     implicit class Select3[@sp X1,A,S1 <: AnnotatedSeq[X1,A,S1]](seq: AnnotatedSeq[X1,A,S1]) {
-      def selectSame = AnnSelector[X1,X1,A,S1,S1](seq.asInstanceOf[S1],(x=>x))
+      def selectSame = new AnnSelector[X1,X1,A,S1,S1](seq.asInstanceOf[S1],(x=>x))
     }                                                                  
   }
 
@@ -192,7 +196,7 @@ object PairedSequence {
     implicit class Select2[@sp X1,S1 <: Seq[X1,S1]]
     (s: Seq[X1,S1]) {
       def select[X2,S2 <: Seq[X2,S2]](f: S1 => Seq[X2,S2]) = {
-        Selector[X1,X2,S1,S2](s.asInstanceOf[S1], f.asInstanceOf[S1=>S2])
+        new Selector[X1,X2,S1,S2](s.asInstanceOf[S1], f.asInstanceOf[S1=>S2])
       }
     }
   }
@@ -202,7 +206,7 @@ object PairedSequence {
     (seq: Seq[X1,S1]) {
       def select[@sp X2,A,S2 <: AnnotatedSeq[X2,A,S2]]
       (f: S1 => AnnotatedSeq[X2,A,S2]) = {
-        AnnSelector[X1,X2,A,S1,S2](seq.asInstanceOf[S1], f.asInstanceOf[S1 => S2])
+        new AnnSelector[X1,X2,A,S1,S2](seq.asInstanceOf[S1], f.asInstanceOf[S1 => S2])
       }
     }
 
