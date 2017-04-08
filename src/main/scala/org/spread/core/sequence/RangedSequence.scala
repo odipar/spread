@@ -25,7 +25,7 @@ object RangedSequence {
 
     def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS) = {
       if (lowerBound > upperBound) c.empty
-      else LongLeafRange[A](lowerBound,upperBound)
+      else LongLeafRange[A](lowerBound,upperBound,c.annotator.range(lowerBound,upperBound))
     }
 
     override def sort = repr match {
@@ -52,10 +52,10 @@ object RangedSequence {
       else false
     }
 
-    def merge(s1: SAS, s2: SAS): SAS = {
+    def merge(s1: SAS, s2: SAS)(implicit c: SS): SAS = {
       val l1 = s1.asInstanceOf[LongLeafRange[A]]
       val l2 = s2.asInstanceOf[LongLeafRange[A]]
-      LongLeafRange(l1.lowerBound,l2.upperBound)
+      createRange(l1.lowerBound,l2.upperBound)
     }
     
     override def createLeaf(a: Array[Long])(implicit c: SS) = {
@@ -63,7 +63,7 @@ object RangedSequence {
       else {
         var sequential = true
         for (i <- 1 until a.length) { if ((a(i-1)+1) != a(i)) sequential = false }
-        if (sequential) LongLeafRange(a(0),a(a.length-1))
+        if (sequential) { createRange(a(0),a(a.length-1)) }
         else BSeqLeafImpl(a,c.annotator.manyX(a))
       }
     }
@@ -79,14 +79,14 @@ object RangedSequence {
     def context = c
   }
 
-  case class LongLeafRange[A](lowerBound: Long,upperBound: Long)
+  case class LongLeafRange[A](lowerBound: Long,upperBound: Long, ann: A)
     extends BSeqLeaf[Long,A]{
     { assert(lowerBound <= upperBound) }
 
-    def annotation(implicit c: SS) = c.annotator.range(lowerBound,upperBound)
+    def annotation = ann
     def createRange(lowerBound: Long,upperBound: Long)(implicit c: SS): SAS = {
       if (lowerBound > upperBound) c.empty
-      else LongLeafRange(lowerBound,upperBound)
+      else LongLeafRange(lowerBound,upperBound,c.annotator.range(lowerBound,upperBound))
     }
 
     def split(i: Long)(implicit c: SS) = {
@@ -105,6 +105,12 @@ object RangedSequence {
       else c.annotator.range(lowerBound + start,lowerBound + end)
     }
 
+    def approxAnnotationRange(start: Long,end: Long)(implicit c: SS): A = {
+      if (end >= size) approxAnnotationRange(start,size - 1)
+      else if (start < 0) approxAnnotationRange(0,end)
+      else c.annotator.range(lowerBound + start,lowerBound + end)
+    }
+
     def intoArray(dest: Array[Long], i: Int) = {
       var ri = i
       var ii = lowerBound.toInt
@@ -116,12 +122,12 @@ object RangedSequence {
       ri
     }
     def equalToTree[AAS <: SAS](o: AAS)(implicit c: SS): Boolean = o match {
-      case LongLeafRange(l,u) => (lowerBound == l) && (upperBound == u)
+      case LongLeafRange(l,u,_) => (lowerBound == l) && (upperBound == u)
       case _ => c.equalTo(this,o)
     }
     def append[AAS <: SAS](o: AAS)(implicit c: SS): SAS = o match {
-      case LongLeafRange(l,u) => {
-        if ((upperBound+1) == l) LongLeafRange(lowerBound,u)
+      case LongLeafRange(l,u,_) => {
+        if ((upperBound+1) == l) createRange(lowerBound,u)
         else c.append(this ,o)
       }
       case _ => c.append(this,o)
@@ -148,7 +154,7 @@ object RangedSequence {
   def longSeqFactory[A](implicit ann: RangeAnnotator[Long,A], ca: ClassTag[A], eq: EqualProp[A]): LSEQ[A] = {
     val ord = implicitly[Order[Long]]
     val cx = implicitly[ClassTag[Long]]
-    EmptyLongTreeSeq()(RangedAnnOrdContextImpl[Long,A](ann,eq,ord,cx,ca))
+    EmptyLongTreeSeq()(new RangedAnnOrdContextImpl[Long,A](ann,eq,ord,cx,ca))
   }
 
   def defaultLongSeqFactory = {

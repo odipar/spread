@@ -1,6 +1,6 @@
 package org.spread.core.sequence
 
-import org.spread.core.annotation.Annotation.{Annotator, RangeAnnotator}
+import org.spread.core.annotation.Annotation.{Annotated, Annotator, RangeAnnotator}
 import org.spread.core.constraint.Constraint.EqualProp
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.OrderingSequence._
@@ -14,9 +14,9 @@ import scala.reflect.ClassTag
   */
 object AnnotatedSequence {
 
-  trait AnnotatedSeq[@sp X,A,S <: AnnotatedSeq[X,A,S]] extends SeqImpl[X,S] {
-    def annotation: A
+  trait AnnotatedSeq[@sp X,A,S <: AnnotatedSeq[X,A,S]] extends SeqImpl[X,S] with Annotated[A] {
     def annotationRange(start: Long, end: Long): A
+    def approxAnnotationRange(start: Long, end: Long): A
     def equal: EqualProp[A]
   }
 
@@ -32,8 +32,9 @@ object AnnotatedSequence {
     def append[S2 <: S](o: S2): S = create(repr.append(o.repr)(self))
     def split(o: Long): (S,S) = { val (l,r) = repr.split(o)(self); (create(l),create(r)) }
     def equalTo[S2 <: S](o: S2): Boolean = repr.equalToTree(o.repr)(self)
-    def annotation = repr.annotation(self)
+    def annotation = repr.annotation
     def annotationRange(start: Long, end: Long) = repr.annotationRange(start,end)(self)
+    def approxAnnotationRange(start: Long, end: Long) = repr.approxAnnotationRange(start,end)(self)
     def size = repr.size
     def height = repr.height+1
     def first = repr.first(self)
@@ -44,14 +45,14 @@ object AnnotatedSequence {
   trait AnnOrdSeqWithRepr[@sp X,A,S <: AnnOrdSeqWithRepr[X,A,S]]
     extends AnnSeqWithRepr[X,A,S] with AnnOrdSeq[X,A,S]
 
-  trait AnnSeqRepr[@sp X,A,S <: AnnSeqWithRepr[X,A,S]] {
+  trait AnnSeqRepr[@sp X,A,S <: AnnSeqWithRepr[X,A,S]] extends Annotated[A] {
     def size: Long
     def height: Int
     def append[AS <: S#AS](o: AS)(implicit c: S): S#AS
     def split(o: Long)(implicit c: S): (S#AS,S#AS)
     def equalToTree[AS <: S#AS](o: AS)(implicit s: S): Boolean
-    def annotation(implicit c: S): A
     def annotationRange(start: Long, end: Long)(implicit c: S): A
+    def approxAnnotationRange(start: Long, end: Long)(implicit c: S): A
     def first(implicit c: S): X
     def last(implicit c: S): X
     def apply(i: Long)(implicit c: S): X
@@ -66,28 +67,28 @@ object AnnotatedSequence {
     def aTag: ClassTag[A]
   }
 
-  case class AnnContextImpl[X,A]
-  (ann: Annotator[X,A], eq: EqualProp[A], xTag: ClassTag[X], aTag: ClassTag[A]) extends AnnotationContext[X,A] {
+  class AnnContextImpl[@sp X,A]
+  (val ann: Annotator[X,A], val eq: EqualProp[A], val xTag: ClassTag[X], val aTag: ClassTag[A]) extends AnnotationContext[X,A] {
     type ANN = Annotator[X,A]
   }
 
-  trait AnnotationOrderingContext[X,A] extends AnnotationContext[X,A]
+  trait AnnotationOrderingContext[@sp X,A] extends AnnotationContext[X,A]
   {
     def ord: Order[X]
   }
 
-  trait RangedAnnotationOrderingContext[X,A] extends AnnotationOrderingContext[X,A] {
+  trait RangedAnnotationOrderingContext[@sp X,A] extends AnnotationOrderingContext[X,A] {
     type ANN <: RangeAnnotator[X,A]
   }
 
-  case class AnnOrdContextImpl[X,A]
-  (ann: Annotator[X,A], eq: EqualProp[A], ord: Order[X], xTag: ClassTag[X], aTag: ClassTag[A])
+  class AnnOrdContextImpl[@sp X,A]
+  (val ann: Annotator[X,A], val eq: EqualProp[A], val ord: Order[X], val xTag: ClassTag[X], val aTag: ClassTag[A])
     extends AnnotationOrderingContext[X,A] {
     type ANN = Annotator[X,A]
   }
 
-  case class RangedAnnOrdContextImpl[X,A]
-  (ann: RangeAnnotator[X,A], eq: EqualProp[A], ord: Order[X], xTag: ClassTag[X], aTag: ClassTag[A])
+  class RangedAnnOrdContextImpl[@sp X,A]
+  (val ann: RangeAnnotator[X,A], val eq: EqualProp[A], val ord: Order[X], val xTag: ClassTag[X], val aTag: ClassTag[A])
     extends RangedAnnotationOrderingContext[X,A] {
     type ANN = RangeAnnotator[X,A]
   }

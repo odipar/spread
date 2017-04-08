@@ -13,12 +13,19 @@ import org.spread.core.sequence.OrderingSequence.Order
 //
 object Annotation {
 
+  trait Annotated[@sp A] {
+    def annotation: A
+  }
+
   trait Annotator[@sp X,@sp A] {
     def none: A
     def one(x: X): A
-    def manyX(d: Array[X]): A
-    def manyA(d: Array[A]): A
+    def manyX(start: Int, end: Int, d: Array[X]): A
+    def manyA(start: Int, end: Int, d: Array[Annotated[A]]): A
     def append(r1: A, r2: A): A
+
+    def manyX(d: Array[X]): A = manyX(0,d.length,d)
+    def manyA(d: Array[Annotated[A]]): A = manyA(0,d.length,d)
   }
 
   trait RangeAnnotator[@sp X, @sp A] extends Annotator[X,A] {
@@ -35,8 +42,8 @@ object Annotation {
   case class NoAnnotator[@sp X]() extends RangeAnnotator[X,NoAnnotation] with PropValue {
     def none: NoAnnotation = NoAnnotation
     def one(x: X): NoAnnotation = NoAnnotation
-    def manyX(d: Array[X]): NoAnnotation = NoAnnotation
-    def manyA(d: Array[NoAnnotation]): NoAnnotation = NoAnnotation
+    def manyX(start: Int, end: Int, d: Array[X]) = NoAnnotation
+    def manyA(start: Int, end: Int, d: Array[Annotated[NoAnnotation]]) = NoAnnotation
     def append(a1: NoAnnotation, a2: NoAnnotation): NoAnnotation = NoAnnotation
     def isNone(a: NoAnnotation) = true
     def range(start: X, end: X) = NoAnnotation
@@ -97,7 +104,7 @@ object Annotation {
     }
     else StatisticsImpl(lowerBound: X,upperBound: X, first: X, last: X, sorted: Boolean)
   }
-
+  StatisticsAnnotator
   case class StatisticsAnnotator[@sp X](implicit ord: Order[X])
     extends RangeAnnotator[X,Statistics[X]]{
 
@@ -110,37 +117,51 @@ object Annotation {
       if (o.gt(v1,v2)) v1
       else v2
     }
+    @inline final def gteqv(v1: X, v2: X, o: Order[X]): Boolean = {
+      o.gteqv(v1,v2)
+    }
+    @inline final def lteqv(v1: X, v2: X, o: Order[X]): Boolean = {
+      o.lteqv(v1,v2)
+    }
+    @inline final def lt(v1: X, v2: X, o: Order[X]): Boolean = {
+      o.lt(v1,v2)
+    }
+    @inline final def gt(v1: X, v2: X, o: Order[X]): Boolean = {
+      o.gt(v1,v2)
+    }
     def range(start: X, end: X) = StatisticsImpl2(start,end)
     def ordering = ord
     def none: Statistics[X] = InvalidStatistics()
     def one(x: X) = StatisticsImpl2(x,x)
-    def manyX(a: Array[X]): Statistics[X] ={
-      var lower = a(0)
-      var upper = a(0)
+    def manyX(start: Int, end: Int, a: Array[X]): Statistics[X] ={
+      var lower = a(start)
+      var upper = a(start)
       var msorted = true
-      for (i <- 1 until a.length) {
+      var i = start+1
+      while (i < end) {
         val x = a(i)
         lower = min(lower,x,ord)
         upper = max(upper,x,ord)
         msorted = msorted && ord.lteqv(a(i - 1),x)
+        i = i + 1
       }
-      createStats(lower,upper,a(0),a(a.length-1),msorted)
+      createStats(lower,upper,a(start),a(end-1),msorted)
     }
     // Some duplication of code for performance reasons
-    def manyA(a: Array[Statistics[X]]): Statistics[X] ={
-      var s = a(0)
+    def manyA(start: Int, end: Int, a: Array[Annotated[Statistics[X]]]): Statistics[X] ={
+      var s = a(start).annotation
       var lower = s.lowerBound
       var upper = s.upperBound
       var msorted = s.sorted
-      for (i <- 1 until a.length) {
-        val x = a(i)
-
+      var i = start+1
+      while (i < end) {
+        val x = a(i).annotation
         lower = min(lower,x.lowerBound,ord)
         upper = max(upper,x.upperBound,ord)
-
-        msorted = msorted && x.sorted && ord.lteqv(a(i - 1).last,x.first)
+        msorted = msorted && x.sorted && ord.lteqv(a(i - 1).annotation.last,x.first)
+        i = i + 1
       }
-      createStats(lower,upper,s.first,a(a.length-1).last,msorted)
+      createStats(lower,upper,s.first,a(end-1).annotation.last,msorted)
     }
     def append(s1: Statistics[X],s2: Statistics[X]): Statistics[X] ={
       StatisticsImpl(
