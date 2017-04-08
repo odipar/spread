@@ -38,31 +38,32 @@ object SampleApplication {
     import Selector._
     import Combiner._
 
-    val c1 = createSeq((0 until 100000).map(x => x).toArray)
-    val c2 = createSeq((0 until 100000).map(x => Hashing.siphash24(x,-x)).toArray)
-    val c3 = createSeq((0 until 100000).map(x => Hashing.siphash24(-x,x)).toArray)
+    val c1 = createSeq((0 until 1000000).map(x => x).toArray)
+    val c2 = createSeq((0 until 1000000).map(x => Hashing.siphash24(x,-x)).toArray)
+    val c3 = createSeq((0 until 1000000).map(x => Hashing.siphash24(-x,x)).toArray)
 
     // table with pairwise columns
     val t1 = (c2 && c1).sort
     val t2 = (c3 && c1).sort      
 
     val T1_C1 = t1.select(_.L)
+    val T1_C1_1 = t1.select(_.L)
+
     val T1_C2 = t1.select(_.R)
 
     val T2_C1 = t2.select(_.L)
     val T2_C2 = t2.select(_.R)
 
     val p = (T1_C2 === T2_C2) AND (T1_C1 === c2(10000) OR T1_C1 === c2(20000)) AND (T2_C1 === c3(10000) OR T2_C1 === c3(20000))
-
-
+    
     val solver = defaultSolver
 
     for (k <- 1 to 10) {
       ss = 0
       val solution = defaultSolver.solve(p)
       println("number of solvers: " + ss)
-      println("solution(t1): " + solution(t1).size)
-      println("solution(t2): " + solution(t2).size)
+      println("solution(t1): " + solution(t1))
+      //println("solution(t2): " + solution(t2))
 
     }                                        
   }

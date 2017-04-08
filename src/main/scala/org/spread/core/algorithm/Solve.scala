@@ -298,10 +298,15 @@ object Solve {
     def selectBestSplitCandidate: ANYSEQ = {
       val iterator = seqs.iterator
       var bestCandidate = seqs.last
-      
+
       while (iterator.hasNext) {
         val item = iterator.next
-        if (bestCandidate._2.size < item._2.size) {
+        val s = item._2.size
+        val cs = bestCandidate._2.size
+
+        // Simple size heuristic (smallest > 1 is selected)
+        // TODO: make heuristics pluggable
+        if ((cs <= 1) || ((s > 1) && (s < cs))) {
           bestCandidate = item
         }
       }
