@@ -5,6 +5,7 @@ import org.spread.core.sequence.PairedSequence._
 
 import scala.language.{existentials, implicitConversions}
 import org.spread.core.language.Annotation.sp
+import org.spread.core.sequence.OrderingSequence.Order
 
 //
 // Standard constraint propagation objects
@@ -55,7 +56,7 @@ object Constraint {
 
   case class EqualStatP[@sp X](implicit ann: StatisticsAnnotator[X])
     extends StatisticsProp[X] with EqualProp[Statistics[X]] {
-
+    
     def ord = ann.ordering
     def notEqual = NotEqualStatP()
     
@@ -64,7 +65,7 @@ object Constraint {
     }
     
     def isValid(o1: Statistics[X],o2: Statistics[X]) = {
-      !(ord.gt(o1.lowerBound,o2.upperBound) || ord.lt(o1.upperBound,o2.lowerBound))
+      !(ann.gt(o1.lowerBound,o2.upperBound,ord) || ann.lt(o1.upperBound,o2.lowerBound,ord))
     }
 
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
@@ -74,12 +75,12 @@ object Constraint {
     }
 
     def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
-      if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none
-      else if (ord.lt(o1.upperBound,o2.lowerBound)) ann.none
+      if (ann.gt(o1.lowerBound,o2.upperBound,ord)) ann.none
+      else if (ann.lt(o1.upperBound,o2.lowerBound,ord)) ann.none
       else {
         // TODO: more tight bounds on first and last, we now set first=lower and last=upper
-        val lower = ord.max(o1.lowerBound,o2.lowerBound)
-        val upper = ord.min(o1.upperBound,o2.upperBound)
+        val lower = ann.max(o1.lowerBound,o2.lowerBound,ord)
+        val upper = ann.min(o1.upperBound,o2.upperBound,ord)
         val sorted = o1.sorted && o2.sorted
         createStats(lower,upper,lower,upper,sorted)
       }
@@ -94,7 +95,7 @@ object Constraint {
     def equal = EqualStatP()
 
     def isSolved(o1: Statistics[X],o2: Statistics[X]) = {
-      (ord.gt(o1.lowerBound,o2.upperBound) || ord.lt(o1.upperBound,o2.lowerBound))
+      (ann.gt(o1.lowerBound,o2.upperBound,ord) || ann.lt(o1.upperBound,o2.lowerBound,ord))
     }
 
     def isValid(o1: Statistics[X],o2: Statistics[X]) = {
@@ -110,8 +111,8 @@ object Constraint {
     def propagateOne(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
       if(!isValid(o1,o2)) ann.none
       else {
-        val lower = ord.min(o1.lowerBound,o2.lowerBound)
-        val upper = ord.max(o1.upperBound,o2.upperBound)
+        val lower = ann.min(o1.lowerBound,o2.lowerBound,ord)
+        val upper = ann.max(o1.upperBound,o2.upperBound,ord)
         val sorted = o1.sorted && o2.sorted
         createStats(lower,upper,lower,upper,sorted)
       }
@@ -125,11 +126,11 @@ object Constraint {
 
     def propagateGreaterEqual(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
       if (!o1.isValid || !o1.isValid) ann.none
-      else if (ord.gteqv(o1.lowerBound,o2.upperBound)) o1       // (12,14) >= (6,10)
-      else if (ord.lt(o1.upperBound,o2.lowerBound)) ann.none    // (5,8)   >= (10,13)
+      else if (ann.gteqv(o1.lowerBound,o2.upperBound,ord)) o1       // (12,14) >= (6,10)
+      else if (ann.lt(o1.upperBound,o2.lowerBound,ord)) ann.none    // (5,8)   >= (10,13)
       else {
         // TODO: more tight bounds on first and last, we now set first=lower and last=upper
-        val lower = ord.max(o1.lowerBound,o2.lowerBound)     // (2,10) >= (7,15) => (7,10)
+        val lower = ann.max(o1.lowerBound,o2.lowerBound,ord)     // (2,10) >= (7,15) => (7,10)
         val upper = o1.upperBound
         val sorted = o1.sorted && o2.sorted
         createStats(lower,upper,lower,upper,sorted)
@@ -137,12 +138,12 @@ object Constraint {
     }
     def propagateLowerEqual(o1: Statistics[X], o2: Statistics[X]): Statistics[X] = {
       if (!o1.isValid || !o1.isValid) ann.none
-      else if (ord.gt(o1.lowerBound,o2.upperBound)) ann.none // (10,13) <= (5,8)   => none
-      else if (ord.lteqv(o1.upperBound,o2.lowerBound)) o1 // (6,10)  <= (12,14) => (6,10)
+      else if (ann.gt(o1.lowerBound,o2.upperBound,ord)) ann.none // (10,13) <= (5,8)   => none
+      else if (ann.lteqv(o1.upperBound,o2.lowerBound,ord)) o1 // (6,10)  <= (12,14) => (6,10)
       else {
         // TODO: more tight bounds on first and last, we now set first=lower and last=upper
         val lower = o1.lowerBound
-        val upper = ord.min(o1.upperBound,o2.upperBound)
+        val upper = ann.min(o1.upperBound,o2.upperBound,ord)
         val sorted = o1.sorted && o2.sorted
         createStats(lower,upper,lower,upper,sorted)
       }
@@ -157,8 +158,8 @@ object Constraint {
     def lowerEqual = LowerEqualStatP[X]()
     def notEqual = NotEqualStatP[X]()
 
-    def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.gteqv(o1.lowerBound,o2.upperBound)
-    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.lt(o1.upperBound,o2.lowerBound)
+    def isSolved(o1: Statistics[X],o2: Statistics[X]) = ann.gteqv(o1.lowerBound,o2.upperBound,ord)
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ann.lt(o1.upperBound,o2.lowerBound,ord)
 
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateGreaterEqual(o1,o2)
@@ -177,8 +178,8 @@ object Constraint {
     def greaterEqual = GreaterEqualStatP[X]()
     def notEqual = NotEqualStatP[X]()
 
-    def isSolved(o1: Statistics[X],o2: Statistics[X]) = ord.lteqv(o1.upperBound,o2.lowerBound)
-    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ord.gt(o1.lowerBound,o2.upperBound)
+    def isSolved(o1: Statistics[X],o2: Statistics[X]) = ann.lteqv(o1.upperBound,o2.lowerBound,ord)
+    def isValid(o1: Statistics[X],o2: Statistics[X]) = !ann.gt(o1.lowerBound,o2.upperBound,ord)
 
     def propagate(o1: Statistics[X], o2: Statistics[X]): (Statistics[X],Statistics[X]) = {
       val left = propagateLowerEqual(o1,o2)
@@ -189,19 +190,19 @@ object Constraint {
     override def toString = "LowerEqualStatP"
   }
   
-  implicit def equalStatProp[@sp X](implicit s: StatisticsAnnotator[X]): EqualProp[Statistics[X]] = {
-    EqualStatP[X]()
+  implicit def equalStatProp[@sp X](implicit o: Order[X]): EqualProp[Statistics[X]] = {
+    EqualStatP[X]()(StatisticsAnnotator[X]())
   }
 
-  implicit def notEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): NotEqualProp[Statistics[X]] = {
-    NotEqualStatP[X]()
+  implicit def notEqualStatProp[@sp X](implicit o: Order[X]): NotEqualProp[Statistics[X]] = {
+    NotEqualStatP[X]()(StatisticsAnnotator[X]())
   }
 
-  implicit def greatereEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): GreaterEqualProp[Statistics[X]] = {
-    GreaterEqualStatP[X]()
+  implicit def greatereEqualStatProp[@sp X](implicit o: Order[X]): GreaterEqualProp[Statistics[X]] = {
+    GreaterEqualStatP[X]()(StatisticsAnnotator[X]())
   }
 
-  implicit def lowerEqualStatProp[@sp X](implicit s: StatisticsAnnotator[X]): LowerEqualProp[Statistics[X]] = {
-    LowerEqualStatP[X]()
+  implicit def lowerEqualStatProp[@sp X](implicit o: Order[X]): LowerEqualProp[Statistics[X]] = {
+    LowerEqualStatP[X]()(StatisticsAnnotator[X]())
   }
 }
