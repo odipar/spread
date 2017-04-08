@@ -381,7 +381,6 @@ object AnnotatedTreeSequence {
 
   class EmptyAnnotatedTreeSeq[@sp X,A]
   (implicit c: RangedAnnotationOrderingContext[X,A]) extends AnnTreeSeqImpl[X,A] {
-    def createSeq2(a: Array[X]): FullAnnotatedTreeSeq[X,A] = createSeq(a).asInstanceOf[FullAnnotatedTreeSeq[X,A]]
     def context = c
     def repr = empty
   }
