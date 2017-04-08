@@ -41,16 +41,16 @@ object Solve {
   trait Solver[S <: Solver[S]] {
     def asFixPoint: S
 
-    def init[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def init[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): S
 
-    def isValid[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def isValid[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): Boolean
 
-    def isSolved[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def isSolved[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): Boolean
 
-    def propagate[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def propagate[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (r1: ASEL[X1,X2,A,S1,S2],r2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): S
 
     def split: (S,S)
@@ -107,138 +107,121 @@ object Solve {
     def substitute(s: Map[ANYSEL,ANYSEL]) = COrExpr(left.substitute(s),right.substitute(s))
   }
 
-  /*trait CBinExpr[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-   extends CExpr[CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+  trait CBinExpr[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4], E <: CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4,E]]
+   extends CExpr[E] {
     def r1: ASEL[X1,X2,A,S1,S2]
     def r2: ASEL[X3,X4,A,S3,S4]
     def cc: Prop[A]
-    
+
+    def selectors = Set[ANYSEL](r1,r2)
     def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
     def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
     def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
     def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
-    //def not = CBinExpr(r1,r2,cc.not)
-  } */
-
-  case class CEqual[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], cc: EqualProp[A])
-    extends CExpr[CEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+  }
+  
+  class CEqual[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val cc: EqualProp[A])
+    extends CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4,CEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
     def not = CBinSyntax(r1).=!=(r2)(cc.notEqual).asInstanceOf[ANYCEXPR]
-
-    def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
-    def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
-    def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
-    def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
-    def selectors = Set[ANYSEL](r1,r2)
-    def substitute(s: Map[ANYSEL,ANYSEL]) = {
-      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
-      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CEqual(rr1,rr2,cc)
-    }
-  }
-
-  case class CNotEqual[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], cc: NotEqualProp[A])
-    extends CExpr[CNotEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
-    def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
-    def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
-    def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
-    def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
-    def not = CBinSyntax(r1).===(r2)(cc.equal).asInstanceOf[ANYCEXPR]
-    def selectors = Set[ANYSEL](r1,r2)
-    def substitute(s: Map[ANYSEL,ANYSEL]) = {
-      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
-      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CNotEqual(rr1,rr2,cc)
-    }
-  }
-
-  case class CGreaterEqual[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], cc: GreaterEqualProp[A])
-    extends CExpr[CGreaterEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
-    def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
-    def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
-    def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
-    def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
-    def not = CBinSyntax(r1).<(r2)(cc.lowerEqual,cc.notEqual)
-    def selectors = Set[ANYSEL](r1,r2)
-    def substitute(s: Map[ANYSEL,ANYSEL]) = {
-      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
-      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CGreaterEqual(rr1,rr2,cc)
-    }
-  }
-
-  case class CGreater[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], c1: GreaterEqualProp[A], c2: NotEqualProp[A])
-    extends CExpr[CGreater[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
-    val expr: ANYCEXPR = CAndExpr(CGreaterEqual(r1,r2,c1).asInstanceOf[ANYCEXPR],CNotEqual(r1,r2,c2).asInstanceOf[ANYCEXPR])
-    def isValid[S <: Solver[S]](s: S) = expr.isValid(s)
-    def isSolved[S <: Solver[S]](s: S) = expr.isSolved(s)
-    def init[S <: Solver[S]](s: S) = expr.init(s)
-    def propagate[S <: Solver[S]](s: S) = expr.propagate(s)
-    def not = CBinSyntax(r1).<=(r2)(c1.lowerEqual)
-    def selectors = Set[ANYSEL](r1,r2)
-    def substitute(s: Map[ANYSEL,ANYSEL]) = {
-      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
-      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CGreater(rr1,rr2,c1,c2)
-    }
-  }
-  
-  case class CLowerEqual[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], cc: LowerEqualProp[A])
-    extends CExpr[CLowerEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
-    def isValid[S <: Solver[S]](s: S) = s.isValid(r1,r2,cc)
-    def isSolved[S <: Solver[S]](s: S) = s.isSolved(r1,r2,cc)
-    def init[S <: Solver[S]](s: S) = s.init(r1,r2,cc)
-    def propagate[S <: Solver[S]](s: S) = s.propagate(r1,r2,cc)
-    def not = CBinSyntax(r1).>(r2)(cc.greaterEqual,cc.notEqual)
-    def selectors = Set[ANYSEL](r1,r2)
-    def substitute(s: Map[ANYSEL,ANYSEL]) = {
-      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
-      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CLowerEqual(rr1,rr2,cc)
-    }
-  }
-
-  case class CLower[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
-  (r1: ASEL[X1,X2,A,S1,S2], r2: ASEL[X3,X4,A,S3,S4], c1: LowerEqualProp[A], c2: NotEqualProp[A])
-    extends CExpr[CLower[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
-    val expr: ANYCEXPR = CAndExpr(CLowerEqual(r1,r2,c1).asInstanceOf[ANYCEXPR],CNotEqual(r1,r2,c2).asInstanceOf[ANYCEXPR])
-
-    def isValid[S <: Solver[S]](s: S) = expr.isValid(s)
-    def isSolved[S <: Solver[S]](s: S) = expr.isSolved(s)
-    def init[S <: Solver[S]](s: S) = expr.init(s)
-    def propagate[S <: Solver[S]](s: S) = expr.propagate(s)
     
-    def not = CBinSyntax(r1).>=(r2)(c1.greaterEqual)
-    def selectors = expr.selectors
     def substitute(s: Map[ANYSEL,ANYSEL]) = {
       val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
       val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
-      CLower(rr1,rr2,c1,c2)
+      new CEqual(rr1,rr2,cc)
     }
   }
+
+  class CNotEqual[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val cc: NotEqualProp[A])
+    extends CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4,CNotEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+    def not = CBinSyntax(r1).===(r2)(cc.equal).asInstanceOf[ANYCEXPR]
+    def substitute(s: Map[ANYSEL,ANYSEL]) = {
+      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
+      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
+      new CNotEqual(rr1,rr2,cc)
+    }
+  }
+
+  class CGreaterEqual[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val cc: GreaterEqualProp[A])
+    extends CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4,CGreaterEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+    def not = CBinSyntax(r1).<(r2)(cc.lowerEqual,cc.notEqual).asInstanceOf[ANYCEXPR]
+    def substitute(s: Map[ANYSEL,ANYSEL]) = {
+      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
+      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
+      new CGreaterEqual(rr1,rr2,cc)
+    }
+  }
+
+  class CGreater[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val c1: GreaterEqualProp[A], val c2: NotEqualProp[A])
+   extends CExpr[CGreater[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+
+    val expr = CAndExpr(new CGreaterEqual(r1,r2,c1).asInstanceOf[ANYCEXPR],new CNotEqual(r1.copy,r2.copy,c2).asInstanceOf[ANYCEXPR])
+
+    def not = CBinSyntax(r1).<=(r2)(c1.lowerEqual)
+    def substitute(s: Map[ANYSEL,ANYSEL]) = {
+      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
+      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
+      new CGreater(rr1,rr2,c1,c2)
+    }
+    def selectors = Set[ANYSEL](r1,r2)
+    def isValid[S <: Solver[S]](s: S) = expr.isValid(s)
+    def isSolved[S <: Solver[S]](s: S) = expr.isSolved(s)
+    def init[S <: Solver[S]](s: S) = expr.init(s)
+    def propagate[S <: Solver[S]](s: S) = expr.propagate(s)
+  }
+
+  class CLowerEqual[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val cc: LowerEqualProp[A])
+    extends CBinExpr[X1,X2,X3,X4,A,S1,S2,S3,S4,CLowerEqual[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+
+    def not: ANYCEXPR = CBinSyntax(r1).>(r2)(cc.greaterEqual,cc.notEqual).asInstanceOf[ANYCEXPR]
+    def substitute(s: Map[ANYSEL,ANYSEL]) = {
+      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
+      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
+      new CLowerEqual(rr1,rr2,cc)
+    }
+  }
+
+  class CLower[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+  (val r1: ASEL[X1,X2,A,S1,S2], val r2: ASEL[X3,X4,A,S3,S4], val c1: LowerEqualProp[A], val c2: NotEqualProp[A]) extends
+    CExpr[CLower[X1,X2,X3,X4,A,S1,S2,S3,S4]] {
+
+    val expr = CAndExpr(new CLowerEqual(r1,r2,c1).asInstanceOf[ANYCEXPR],new CNotEqual(r1.copy,r2.copy,c2).asInstanceOf[ANYCEXPR])
+
+    def not = CBinSyntax(r1).>=(r2)(c1.greaterEqual)
+    def substitute(s: Map[ANYSEL,ANYSEL]) = {
+      val rr1 = s.getOrElse(r1,r1).asInstanceOf[ASEL[X1,X2,A,S1,S2]]
+      val rr2 = s.getOrElse(r2,r2).asInstanceOf[ASEL[X3,X4,A,S3,S4]]
+      new CLower(rr1,rr2,c1,c2)
+    }
+    def selectors = Set[ANYSEL](r1,r2)
+    def isValid[S <: Solver[S]](s: S) = expr.isValid(s)
+    def isSolved[S <: Solver[S]](s: S) = expr.isSolved(s)
+    def init[S <: Solver[S]](s: S) = expr.init(s)
+    def propagate[S <: Solver[S]](s: S) = expr.propagate(s)
+  }
   
-  implicit class CBinSyntax[X1,X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]](r1: ASEL[X1,X2,A,S1,S2]) {
-    def ===[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: EqualProp[A]) = {
-      CEqual(r1,r2,cc)
+  implicit class CBinSyntax[X1,@sp X2,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2]](r1: ASEL[X1,X2,A,S1,S2]) {
+    def ===[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: EqualProp[A]) = {
+      new CEqual(r1,r2,cc)
     }
-    def =!=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: NotEqualProp[A]) = {
-      CNotEqual(r1,r2,cc)
+    def =!=[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: NotEqualProp[A]) = {
+      new CNotEqual(r1.copy,r2.copy,cc) // Non-equality needs to be constrained independently (no shared propagation)
     }
-    def >=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: GreaterEqualProp[A])  = {
-      CGreaterEqual(r1,r2,cc)
+    def >=[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: GreaterEqualProp[A])  = {
+      new CGreaterEqual(r1,r2,cc)
     }
-    def <=[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: LowerEqualProp[A]) = {
-      CLowerEqual(r1,r2,cc)
+    def <=[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit cc: LowerEqualProp[A]) = {
+      new CLowerEqual(r1,r2,cc)
     }
-    def <[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit c1: LowerEqualProp[A], c2: NotEqualProp[A]) = {
-      CLower(r1,r2,c1,c2)
+    def <[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit c1: LowerEqualProp[A], c2: NotEqualProp[A]) = {
+      new CLower(r1,r2,c1,c2)
     }
-    def >[X3,X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit c1: GreaterEqualProp[A], c2: NotEqualProp[A]) = {
-      CGreater(r1,r2,c1,c2)
+    def >[X3,@sp X4,S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]](r2: ASEL[X3,X4,A,S3,S4])(implicit c1: GreaterEqualProp[A], c2: NotEqualProp[A]) = {
+      new CGreater(r1,r2,c1,c2)
     }
   }
 
@@ -280,7 +263,7 @@ object Solve {
     def self: DSolver = this
 
     def asFixPoint = DefaultSolver(seqs,doms,true)
-    def isValid[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def isValid[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
       val a1 = doms(sel1)
       val a2 = doms(sel2)
@@ -288,7 +271,7 @@ object Solve {
       a1.isValid && a2.isValid && cc.isAnyValid(a1,a2)
     }
 
-    def isSolved[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def isSolved[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]) = {
       val a1 = doms(sel1)
       val a2 = doms(sel2)
@@ -297,8 +280,8 @@ object Solve {
         val r1 = seqs(sel1.asSeq)
         val r2 = seqs(sel2.asSeq)
 
-        val a3 = sel1().annotationRange(r1.start,r1.end)
-        val a4 = sel2().annotationRange(r2.start,r2.end)
+        val a3 = sel1().approxAnnotationRange(r1.start,r1.end)
+        val a4 = sel2().approxAnnotationRange(r2.start,r2.end)
 
         cc.isAnySolved(a3,a4)
       }
@@ -307,13 +290,17 @@ object Solve {
 
     def propagate: DSolver = {
       var ndoms = doms
-      for (dom <- doms.keys) {
+      val iter = doms.iterator
+
+      while(iter.hasNext) {
+        val item = iter.next
+        val dom = item._1
         val seq = dom.asSeq
         val range = seqs(seq)
         val annSeq = dom()
-        val pval = doms(dom)
+        val pval = item._2
         if (pval.isValid) {
-          val ann = annSeq.annotationRange(range.start,range.end)
+          val ann = annSeq.approxAnnotationRange(range.start,range.end)
           val eqProp = annSeq.equal
           val annResult = eqProp.propagateAny(ann,pval)._1
           ndoms = ndoms + (dom -> annResult)
@@ -322,7 +309,7 @@ object Solve {
       DefaultSolver(seqs,ndoms,fixPoint)
     }
 
-    def init[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def init[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): DSolver = {
       val s1 = sel1.asSeq
       val s2 = sel2.asSeq
@@ -333,7 +320,7 @@ object Solve {
       DefaultSolver(nseqs,ndoms,true)
     }
 
-    def propagate[X1,X2,X3,X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
+    def propagate[X1,@sp X2,X3,@sp X4,A <: PVAL,S1 <: Seq[X1,S1],S2 <: ASEQ[X2,A,S2],S3 <: Seq[X3,S3],S4 <: ASEQ[X4,A,S4]]
     (sel1: ASEL[X1,X2,A,S1,S2],sel2: ASEL[X3,X4,A,S3,S4],cc: Prop[A]): DSolver = {
       val a1 = doms(sel1)
       val a2 = doms(sel2)
@@ -361,29 +348,16 @@ object Solve {
     }
 
     def selectBestSplitCandidate: ANYSEQ = {
-      // Select sequence that has the most valid annotations and then consistently randomized
-      // TODO: optimize with mutable maps?
-      var candidates = seqs.map(x => (x._1,(0,x._2.size))).toMap[ANYSEQ,(Int,Long)]
-      for (dom <- doms) {
-        val annSeq = dom._1
-        val ann = dom._2
-        if (ann.isValid) {
-          val seq = annSeq.asSeq
-          val v = candidates(seq)
-          candidates = candidates + (seq -> (v._1 - 1,v._2))
+      val iterator = seqs.iterator
+      var bestCandidate = seqs.last
+      
+      while (iterator.hasNext) {
+        val item = iterator.next
+        if (bestCandidate._2.size < item._2.size) {
+          bestCandidate = item
         }
       }
-      // sort by -#valid annotations and least size
-      val candidates2 = candidates.map(x => (x._2,x._1)).toSeq.sortBy(_._1).map(x => x._2)
-
-      var bestCandidate = candidates2(0)
-      for (seq <- candidates2) {
-        val s = seqs(seq).size
-        val cs = seqs(bestCandidate).size
-        if ((cs <= 1) || ((s > 1) && (s < cs))) { bestCandidate = seq }
-      }
-
-      bestCandidate
+      bestCandidate._1
     }
 
     def cartesianProduct = {
@@ -415,7 +389,9 @@ object Solve {
       else {
         // propagate until fixpoint
         var s = e.propagate(self.asFixPoint)
-        while (!s.fixPoint) {s = e.propagate(s.asFixPoint)}
+        while (!s.fixPoint) {
+          s = e.propagate(s.asFixPoint)
+        }
         s.solve3(e)
       }
     }
@@ -430,7 +406,7 @@ object Solve {
     }
   }
 
-  implicit def toConstantSel[@sp X: ClassTag](x: X)(implicit o1: Order[X], ann: StatisticsAnnotator[X])= {
+  implicit def toConstantSel[X: ClassTag](x: X)(implicit o1: Order[X], ann: StatisticsAnnotator[X])= {
     import Selector._
     createSeq(Array(x)).selectSame
   }
@@ -441,43 +417,31 @@ object Solve {
     import Selector._
     import Combiner._
 
+    val c1 = createSeq((0 until 100000).map(x => x.toLong).toArray)
+    val c2 = createSeq((0 until 100000).map(x => x.toLong).reverse.toArray)
+
+    
+    // table with pairwise columns
+    val t1 = c1
+    val t2 = c2
+
+    val T1_C1 = t1.selectSame
+    val T2_C1 = t2.selectSame
+
+    val p = (T1_C1 === T2_C1) AND (T2_C1 > 10000L) AND (T2_C1 <= 10010L)
+
+    println("START: ")
+
+    val solver = defaultSolver
+    
     for (k <- 1 to 10) {
-
-      val c1 = createSeq((1 to 1001).map(x => x).toArray)
-      val c2 = createSeq((1 to 1001).map(x => x).reverse.toArray)
-
-      // table with pairwise columns
-      val t1 = (c1 && c2).sort
-      val t2 = (c2 && c1).sort
-
-      val T1_C1 = t1.select(_.L)
-      val T1_C2 = t1.select(_.R)
-      val T2_C1 = t2.select(_.L)
-      val T2_C2 = t2.select(_.R)
-      // predicate to solve
-      val p1 = (T1_C1 >= 10000 AND T1_C1 <= 60000) AND (T1_C2 >= 10000 AND T1_C2 <= 10020)
-      val p2 = (T2_C2 >= 10000 AND T2_C2 <= 60000) AND (T2_C1 >= 10000 AND T2_C1 <= 10020)
-      val p3 = (T1_C1 === T2_C2) AND (T2_C1 === T1_C2)
-      val p4 = (T1_C1 === T2_C1)
-
-      val p = p4
-      
-      println("START")
-     /* ss = 0
-      val solution1 = defaultSolver.solve(p1)
-      println("number of solvers: " + ss)
       ss = 0
-      val solution2 = defaultSolver.solve(p2)
-      println("number of solvers: " + ss)    */
-      ss = 0
-      val solution3 = defaultSolver.solve(p)
+      val solution = defaultSolver.solve(p)
       println("number of solvers: " + ss)
-      println("p t1: " + solution3(t1))
-      println("p t2: " + solution3(t2))
-
-      println("END")
-      println
+      println("solution(t1): " + solution(t1))
+      println("solution(t2): " + solution(t2))
     }
+    
 
   }
 }
