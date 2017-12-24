@@ -184,7 +184,6 @@ object AnnotatedTreeSequence {
         }
       }
     }
-    override def iterator: SequenceIterator[X] = TreeSeqIterator[X,A]()(self)
   }
 
   trait BSeqTr[@sp X,A] extends AnnSeqRepr[X,A,AnnTreeSeq[X,A]]
@@ -272,7 +271,11 @@ object AnnotatedTreeSequence {
         }
       }
     }
-    
+
+    def annotationsForRange(start: Long, end: Long, a: Array[A])(implicit c: SS): Unit = {
+      
+    }
+
     def equalTo(o: SAS)(implicit c: SS): Boolean = c.equalTo(this,o)
     def first(implicit c: SS) = childs(0).first
     def last(implicit c: SS) = childs(childs.length-1).last
@@ -304,6 +307,7 @@ object AnnotatedTreeSequence {
     def append[AAS <: SAS](o: AAS)(implicit c: SS): SAS = o
     def annotationRange(start: Long,end: Long)(implicit c: SS) = c.annotator.none
     def approxAnnotationRange(start: Long, end: Long)(implicit c: SS) = c.annotator.none
+    def annotationsForRange(start: Long, end: Long, a: Array[A])(implicit c: SS): Unit = { }
     def equalToTree[AAS <: SAS](o: AAS)(implicit c: SS): Boolean = (o.size == 0)
     def first(implicit c: SS) = error
     def last(implicit c: SS) = error
@@ -344,6 +348,7 @@ object AnnotatedTreeSequence {
       else if (start < 0) annotationRange(0,end)
       else c.annotator.manyX(start.toInt,end.toInt+1,array)
     }
+    def annotationsForRange(start: Long, end: Long, a: Array[A])(implicit c: SS): Unit = { }
     def equalToTree[AAS <: SAS](o: AAS)(implicit c: SS): Boolean = c.equalTo(this,o)
     def first(implicit c: SS) = array(0)
     def last(implicit c: SS) = array(array.length - 1)
@@ -408,46 +413,6 @@ object AnnotatedTreeSequence {
     val ca = implicitly[ClassTag[NoAnnotation]]
     val eq = EqualNoAnn
     new EmptyAnnotatedTreeSeq()(new RangedAnnOrdContextImpl(ann,eq,ord,ct,ca))
-  }
-
-
-  private case class TreeSeqIterator[@sp X,@sp A](implicit seq: AnnTreeSeq[X,A]) extends SequenceIterator[X] {
-    var pos: Long = 0
-    var li: Int = seq.repr.getLeaf(0)._2
-    var leaf: BSeqLeaf[X,A] = seq.repr.getLeaf(0)._1
-
-    val size = seq.size
-    var lsize: Long = seq.repr.getLeaf(0)._1.size
-
-    def next: X = {
-      if (li < lsize) {
-        val v = leaf(li) ; li = li + 1
-        v
-      }
-      else {
-        pos = pos + lsize
-        if (pos < size) {
-          val (newleaf,newli) = seq.repr.getLeaf(pos)
-          leaf = newleaf
-          li = newli
-          lsize = leaf.size
-          next
-        }
-        else sys.error("no more elements")
-      }
-    }
-    def position = pos
-    def hasNext = {
-      if (li < lsize) true
-      else (pos+lsize) < size
-    }
-    def goto(i: Long) = {
-      val (newleaf,newli) = seq.repr.getLeaf(pos)
-      leaf = newleaf
-      li = newli
-      lsize = leaf.size
-      pos = i
-    }
   }
 
   def insertionSort[@sp X](input: Array[X], ordering: Order[X]): Array[X] = {

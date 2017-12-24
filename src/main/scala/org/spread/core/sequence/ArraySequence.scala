@@ -52,17 +52,5 @@ object ArraySequence {
     def apply(i: Long) = x(i.toInt)
     def first = x(0)
     def last = x(x.length-1)
-
-
-    override def iterator: SequenceIterator[X] = SeqArrayIterator(x,x.length)
-  }
-
-  private case class SeqArrayIterator[@sp X](x: Array[X], size: Long) extends SequenceIterator[X] {
-    private var pos = 0
-    
-    def next: X = { val v = x(pos) ; pos = pos + 1 ; v }
-    def hasNext = pos < size
-    def position = pos
-    def goto(i: Long) = (pos = i.toInt)
   }
 }

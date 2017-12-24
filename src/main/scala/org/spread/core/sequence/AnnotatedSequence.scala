@@ -17,6 +17,7 @@ object AnnotatedSequence {
   trait AnnotatedSeq[@sp X,A,S <: AnnotatedSeq[X,A,S]] extends SeqImpl[X,S] with Annotated[A] {
     def annotationRange(start: Long, end: Long): A
     def approxAnnotationRange(start: Long, end: Long): A
+    def annotationsForRange(start: Long, end: Long, a: Array[A])
     def equal: EqualProp[A]
   }
 
@@ -35,6 +36,7 @@ object AnnotatedSequence {
     def annotation = repr.annotation
     def annotationRange(start: Long, end: Long) = repr.annotationRange(start,end)(self)
     def approxAnnotationRange(start: Long, end: Long) = repr.approxAnnotationRange(start,end)(self)
+    def annotationsForRange(start: Long, end: Long, a: Array[A]) = repr.annotationsForRange(start,end,a)(self)
     def size = repr.size
     def height = repr.height+1
     def first = repr.first(self)
@@ -53,6 +55,7 @@ object AnnotatedSequence {
     def equalToTree[AS <: S#AS](o: AS)(implicit s: S): Boolean
     def annotationRange(start: Long, end: Long)(implicit c: S): A
     def approxAnnotationRange(start: Long, end: Long)(implicit c: S): A
+    def annotationsForRange(start: Long, end: Long, a: Array[A])(implicit c: S)
     def first(implicit c: S): X
     def last(implicit c: S): X
     def apply(i: Long)(implicit c: S): X

@@ -98,7 +98,7 @@ object RangedSequence {
         (l,r)
       }
     }
-    
+
     def annotationRange(start: Long,end: Long)(implicit c: SS): A = {
       if (end >= size) annotationRange(start,size - 1)
       else if (start < 0) annotationRange(0,end)
@@ -110,6 +110,8 @@ object RangedSequence {
       else if (start < 0) approxAnnotationRange(0,end)
       else c.annotator.range(lowerBound + start,lowerBound + end)
     }
+
+    def annotationsForRange(start: Long, end: Long, a: Array[A])(implicit c: SS): Unit = { }
 
     def intoArray(dest: Array[Long], i: Int) = {
       var ri = i

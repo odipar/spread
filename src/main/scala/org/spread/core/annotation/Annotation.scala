@@ -6,6 +6,8 @@ import scala.language.{existentials, implicitConversions}
 import org.spread.core.language.Annotation.sp
 import org.spread.core.sequence.OrderingSequence.Order
 
+import scala.reflect.ClassTag
+
 //
 // Sequence Annotators, most notably StatisticsAnnotator
 //
@@ -22,10 +24,14 @@ object Annotation {
     def one(x: X): A
     def manyX(start: Int, end: Int, d: Array[X]): A
     def manyA(start: Int, end: Int, d: Array[Annotated[A]]): A
+    def manyXA(start: Int, end: Int, d: Array[X])(implicit c: ClassTag[A]): Array[A]
+
     def append(r1: A, r2: A): A
 
     def manyX(d: Array[X]): A = manyX(0,d.length,d)
     def manyA(d: Array[Annotated[A]]): A = manyA(0,d.length,d)
+    def manyXA(d: Array[X])(implicit c: ClassTag[A]): Array[A] = manyXA(0,d.length,d)
+
   }
 
   trait RangeAnnotator[@sp X, @sp A] extends Annotator[X,A] {
@@ -44,6 +50,15 @@ object Annotation {
     def one(x: X): NoAnnotation = NoAnnotation
     def manyX(start: Int, end: Int, d: Array[X]) = NoAnnotation
     def manyA(start: Int, end: Int, d: Array[Annotated[NoAnnotation]]) = NoAnnotation
+    def manyXA(start: Int, end: Int, d: Array[X])(implicit c: ClassTag[NoAnnotation]) = {
+      val a = new Array[NoAnnotation](end-start+1)
+      var i = start
+      while(i < end) {
+        a(i) = NoAnnotation
+        i = i + 1
+      }
+      a
+    }
     def append(a1: NoAnnotation, a2: NoAnnotation): NoAnnotation = NoAnnotation
     def isNone(a: NoAnnotation) = true
     def range(start: X, end: X) = NoAnnotation
@@ -163,6 +178,16 @@ object Annotation {
       }
       createStats(lower,upper,s.first,a(end-1).annotation.last,msorted)
     }
+    def manyXA(start: Int, end: Int, d: Array[X])(implicit c: ClassTag[Statistics[X]]): Array[Statistics[X]] = {
+      val a = new Array[Statistics[X]](end-start+1)
+      var i = start
+      while(i < end) {
+        a(i) = StatisticsImpl3(d(i))
+        i = i + 1
+      }
+      a
+    }
+
     def append(s1: Statistics[X],s2: Statistics[X]): Statistics[X] ={
       StatisticsImpl(
         min(s1.lowerBound,s2.lowerBound,ord),

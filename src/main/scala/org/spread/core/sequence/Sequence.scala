@@ -24,9 +24,7 @@ object Sequence {
     def apply(i: Long): X
     def first: X
     def last: X
-
-    def iterator: SequenceIterator[X] = ???
-
+    
     def tag: ClassTag[X]
     def createSeq(a: Array[X]): S
     def toArray: Array[X]

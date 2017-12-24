@@ -95,6 +95,7 @@ object PairedSequence {
     extends PairedSeq[X1,X2,S1,S2,S] with AnnotatedSeq[(X1,X2),(A1,A2),S] {
     def annotationRange(start: Long, end: Long) = (left.annotationRange(start,end),right.annotationRange(start,end))
     def approxAnnotationRange(start: Long, end: Long) = (left.annotationRange(start,end),right.annotationRange(start,end))
+    def annotationsForRange(start: Long, end: Long, a: Array[(A1,A2)]): Unit = { ??? }
     def equal = ???
   }
 

@@ -296,6 +296,11 @@ object Solve {
     }
 
     def selectBestSplitCandidate: ANYSEQ = {
+      var bestCandidates = seqs.filter(x => x._2.size > 1).toIndexedSeq
+      bestCandidates(((Math.random() * (bestCandidates.size-1).toDouble)+0.5).toInt)._1
+    }                                                                     
+    
+    def selectBestSplitCandidate2: ANYSEQ = {
       val iterator = seqs.iterator
       var bestCandidate = seqs.last
 
@@ -313,6 +318,22 @@ object Solve {
       bestCandidate._1
     }
 
+    def totalSize = {
+      var psize: Long = 1
+      val iter = seqs.iterator
+      while (iter.hasNext) {
+        psize = psize * iter.next._2.size
+      }
+      psize
+    }
+
+    def cartesianProduct[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
+      /*for (dom <- doms) {
+        val c = dom._1
+        val d = c
+      } */
+      ???
+    }
     def cartesianProduct = {
       var psize: Long = 1
       for (x <- seqs.values) { psize = psize * x.size }
@@ -339,6 +360,9 @@ object Solve {
     def solve2[E <: CExpr[E]](e: E): Map[ANYSEQ,LSEQ[NoAnnotation]] = {
       if (!e.isValid(self)) seqs.mapValues(x => defaultLongSeqFactory)
       else if (e.isSolved(self)) cartesianProduct
+      /*else if (totalSize < (64*1024)) {
+        cartesianProduct(e)
+      } */
       else {
         e.propagate(self).solve3(e)
       }
@@ -366,31 +390,44 @@ object Solve {
     import Selector._
     import Combiner._
 
-    val c1 = createSeq((0 until 100000).map(x => x.toLong).toArray)
-    val c2 = createSeq((0 until 100000).map(x => x.toLong).reverse.toArray)
+    val c1 = createSeq((0 until 50000).map(x => x).toArray)
+    val c2 = createSeq((0 until 50000).map(x => x).toArray)
 
-    
+
     // table with pairwise columns
-    val t1 = c1
-    val t2 = c2
+    val t1 = (c1 && c2)
+    val t2 = (c2 && c1)
 
-    val T1_C1 = t1.selectSame
-    val T2_C1 = t2.selectSame
+    val T1_C1 = t1.select(_.L)
+    val T1_C2 = t1.select(_.R)
 
-    val p = (T1_C1 === T2_C1) AND (T2_C1 > 10000L) AND (T2_C1 <= 10010L)
+    val T2_C1 = t2.select(_.L)
+    val T2_C2 = t2.select(_.R)
+
+    val p = (T1_C2 < 10000) AND (T2_C1 > 10000) AND (T2_C1 < 11000)
 
     println("START: ")
 
     val solver = defaultSolver
     
-    for (k <- 1 to 10) {
+    timer(for (k <- 1 to 10) {
       ss = 0
       val solution = defaultSolver.solve(p)
       println("number of solvers: " + ss)
-      println("solution(t1): " + solution(t1))
-      println("solution(t2): " + solution(t2))
-    }
-    
+      println("solution(t1): " + solution(t1).size)
+      //println("solution(t2): " + solution(t2).size)
+    })
+  }
+  
+  def timer[R](block: => R): R = {
+    val t0 = System.currentTimeMillis()
 
+    val result = block
+
+    val t1 = System.currentTimeMillis()
+
+    println("Elapsed time: " + (t1 - t0) + " ms")
+
+    result
   }
 }
