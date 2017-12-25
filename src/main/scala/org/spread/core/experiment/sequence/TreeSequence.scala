@@ -3,6 +3,7 @@ package org.spread.core.experiment.sequence
 import org.spread.core.language.Annotation.sp
 
 object TreeSequence {
+
   import org.spread.core.experiment.sequence.Sequence.Seq
   import scala.reflect.ClassTag
 
@@ -36,12 +37,12 @@ object TreeSequence {
     def height: Int = n.height
 
     def tag: ClassTag[X] = t
-    def toArray: Array[X] = ???
+    def toArray: Array[X] = n.toArray
 
     def createSeq(a: Array[X]): TreeSeq[X] = createSeq(a, 0, a.length)
 
     def createSeq(a: Array[X], start: Int, size: Int): TreeSeq[X] = {
-      if (size <= maxWidth) {
+      if (size <= ((maxWidth / 3) * 4)) {
         val b = new Array[X](size.toInt)
         val end = start + size
         var i = start
@@ -55,7 +56,7 @@ object TreeSequence {
       }
       else {
         val ms = size / 2
-        createSeq(a,start,ms).append(createSeq(a, start + ms, size - ms))
+        createSeq(a, start, ms).append(createSeq(a, start + ms, size - ms))
       }
     }
 
@@ -64,7 +65,12 @@ object TreeSequence {
     def last: X = n.last
   }
 
+  var nodes: Long = 0
+
   trait TreeNode[@sp X] {
+    {
+      nodes = nodes + 1
+    }
     type N = TreeNode[X]
 
     def asLeaf(s: N): Leaf[X] = s.asInstanceOf[Leaf[X]]
@@ -82,7 +88,7 @@ object TreeSequence {
       var i = 0
       var s = a.length
 
-      while (i < s) { ts = ts + a(i).size; sz(i) = ts ; i = i + 1 }
+      while (i < s) {ts = ts + a(i).size; sz(i) = ts; i = i + 1}
 
       Branch(a, sz)
     }
@@ -93,32 +99,34 @@ object TreeSequence {
     def split(i: Long)(implicit t: ClassTag[X]): (TreeNode[X], TreeNode[X])
     def append(o: TreeNode[X])(implicit t: ClassTag[X]): TreeNode[X]
 
+    def toArray(implicit t: ClassTag[X]): Array[X]
+
     def appendBranches(s1: Branch[X], s2: Branch[X]): N = {
       assert(s1.height == s2.height) // only append trees with same height
 
-      if (s1.childCount >= minWidth && s2.childCount >= minWidth) createPair(s1,s2)
+      if (s1.childCount >= minWidth && s2.childCount >= minWidth) createPair(s1, s2)
       else {
         val merged = s1.children ++ s2.children
         if (merged.length <= maxWidth) createTree(merged)
-        else {val (l,r) = merged.splitAt((merged.length + 1) >> 1); createPair(createTree(l),createTree(r))}
+        else {val (l, r) = merged.splitAt((merged.length + 1) >> 1); createPair(createTree(l), createTree(r))}
       }
     }
 
     def appendLeafs(s1: Leaf[X], s2: Leaf[X])(implicit t: ClassTag[X]): N = {
       assert((s1.height == 0) && (s2.height == 0))
 
-      if (s1.size >= minWidth && s2.size >= minWidth) createPair(s1,s2)
+      if (s1.size >= minWidth && s2.size >= minWidth) createPair(s1, s2)
       else {
         val tsize = s1.size + s2.size
         if (tsize <= maxWidth) createLeaf(s1.values ++ s2.values)
         else {
           if (s1.size > s2.size) {
-            val (l,r) = s1.split(s1.size / 2)
-            createPair(l,r.append(s2))
+            val (l, r) = s1.split(s1.size / 2)
+            createPair(l, r.append(s2))
           }
           else {
-            val (l,r) = s2.split(s2.size / 2)
-            createPair(s1.append(l),r)
+            val (l, r) = s2.split(s2.size / 2)
+            createPair(s1.append(l), r)
           }
         }
       }
@@ -156,6 +164,7 @@ object TreeSequence {
 
     def split(i: Long)(implicit t: ClassTag[X]) = (this, this)
     def append(o: TreeNode[X])(implicit t: ClassTag[X]): TreeNode[X] = o
+    def toArray(implicit t: ClassTag[X]): Array[X] = Array()
 
     def apply(i: Long): X = error
     def first: X = error
@@ -176,11 +185,13 @@ object TreeSequence {
         (createLeaf(left), createLeaf(right))
       }
     }
+    def toArray(implicit t: ClassTag[X]): Array[X] = values
     def apply(i: Long): X = values(i.toInt)
     def first: X = values(0)
     def last: X = values(values.length - 1)
 
-    override def toString = values.foldLeft("<")((x,y) => x + " " + y) + " >"
+    override lazy val hashCode = values.hashCode
+    override def toString = values.foldLeft("<")((x, y) => x + " " + y) + " >"
   }
 
   case class Branch[@sp X](children: Array[TreeNode[X]], sizes: Array[Long]) extends TreeNode[X] {
@@ -192,7 +203,7 @@ object TreeSequence {
     def firstChild = children(0)
     def lastChild = children(childCount - 1)
     def childAt(i: Int): N = children(i)
-    def setChild(i: Int,s: N): N = { val nc = children.clone; nc(i) = s; createTree(nc) }
+    def setChild(i: Int, s: N): N = {val nc = children.clone; nc(i) = s; createTree(nc)}
     def replaceFirstChild(first: N): N = setChild(0, first)
     def replaceLastChild(last: N): N = setChild(childCount - 1, last)
     def withoutFirstChild: N = createTree(children.slice(1, childCount))
@@ -202,14 +213,17 @@ object TreeSequence {
       else sizes(index - 1)
     }
     def childAtIndex(index: Long): Int = {
+      // TODO: binary search
       if (index < size && index >= 0) {var i = 0; while (sizes(i) <= index) {i = i + 1}; i}
       else sys.error("index out of bounds")
     }
 
+    def toArray(implicit t: ClassTag[X]): Array[X] = ???
+
     def append(o: TreeNode[X])(implicit t: ClassTag[X]): TreeNode[X] = append2(this, o)
     def split(i: Long)(implicit t: ClassTag[X]): (N, N) = {
       if (i >= size) (this, empty)
-      else if (i < 0) (empty,this)
+      else if (i < 0) (empty, this)
       else {
         val sIndex = childAtIndex(i)
         val offset = offsetForChild(sIndex)
@@ -230,7 +244,8 @@ object TreeSequence {
     def first: X = children(0).first
     def last: X = children(children.length - 1).last
 
-    override def toString = children.foldLeft("<")((x,y) => x + " " + y) + " >"
+    override lazy val hashCode = children.hashCode
+    override def toString = children.foldLeft("<")((x, y) => x + " " + y) + " >"
 
   }
 }
