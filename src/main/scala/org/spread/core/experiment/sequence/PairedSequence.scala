@@ -7,7 +7,7 @@ object PairedSequence {
   import org.spread.core.experiment.sequence.Sequence.Seq
   import scala.reflect.ClassTag
 
-  trait PairedSeq[@sp X1, @sp X2, S1 <: Seq[X1, S1], S2 <: Seq[X2, S2], S <: PairedSeq[X1, X2, S1, S2, S]]
+  /*trait PairedSeq[@sp X1, @sp X2, S1 <: Seq[X1, S1], S2 <: Seq[X2, S2], S <: PairedSeq[X1, X2, S1, S2, S]]
     extends Seq[(X1, X2), S] {
 
     {assert(left.size == right.size)}
@@ -74,5 +74,5 @@ object PairedSequence {
   def pair[@sp X1, @sp X2, S1 <: Seq[X1, S1], S2 <: Seq[X2, S2]]
   (left: Seq[X1, S1], right: Seq[X2, S2])(implicit t: ClassTag[(X1, X2)]) = {
     PairSeqImpl[X1, X2, S1, S2](left.asInstanceOf[S1], right.asInstanceOf[S2])
-  }
+  }   */
 }
