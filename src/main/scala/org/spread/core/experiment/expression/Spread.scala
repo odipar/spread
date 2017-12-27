@@ -22,7 +22,7 @@ object Spread {
     def eval[V](e: Expr[V]): Expr[V] = e.evalImpl(this)
   }
 
-  trait Operator { override def toString: String  = this.getClass().getSimpleName().replace("$", "")}
+  trait Operator { override def toString: String  = this.getClass().getName().replace("$", "")}
   trait InfixOperator extends Operator
   trait PostfixOperator extends Operator
 

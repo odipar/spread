@@ -5,8 +5,6 @@ import org.spread.core.experiment.sequence.Sequence.Seq
 import org.spread.core.experiment.expression.Spread._
 import org.spread.core.language.Annotation.sp
 import spire.algebra.Order
-import spire.implicits._
-import spire.math.Interval
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
@@ -14,7 +12,6 @@ import scala.collection.mutable
 
 object Test {
   import TreeSequence._
-  import PairedSequence._
 
   final def main(args: Array[String]): Unit = {
     val longFactory = emptyTree[Long]
@@ -34,7 +31,7 @@ object Test {
     val c1 = cartesianProduct()((s1, 0L), (s2, 0L))
     val e1 = c1.eval(ct)
 
-    println("start 2")
+    println("start 3")
     val c2 = cartesianProduct()((s1, 0L), (s3, 0L))
     val e2 = c2.eval(ct)
     
@@ -43,12 +40,15 @@ object Test {
 
   }
 
+  case class Range(start: Long, end: Long) {
+    def union(o: Range): Range = Range(start min o.start, end max o.end)
+    def intersect(o: Range): Range = Range(start max o.start, end min o.end)
+    def isEmpty: Boolean = start > end
+  }
+  
   type ASeq = Seq[X, S] forSome { type X; type S <: Seq[X, S] }
 
   trait Constraint[X, S1 <: Seq[X, S1], S2 <: Seq[X, S2]]
-
-
-  type LInterval = Interval[Long]
 
   trait Index {
     def size: Long
@@ -80,6 +80,7 @@ object Test {
     }
 
     val s = result.size
+
     if (s == 0) EmptyIndex
     else if (s == 1) result.head
     else BranchIndex(result.reverse.toArray)
@@ -102,8 +103,8 @@ object Test {
 
   var ct: Long = 0
   
-  case class cartesianProduct2[S1 <: Seq[Long, S1], S2 <: Seq[Long, S2]]() extends FA2[(S1, LInterval, Long), (S2, LInterval, Long), (Index, Index)] {
-    def apply(ss1: (S1, LInterval, Long), ss2: (S2, LInterval, Long)): Expr[(Index, Index)] = {
+  case class cartesianProduct2[S1 <: Seq[Long, S1], S2 <: Seq[Long, S2]]() extends FA2[(S1, Range, Long), (S2, Range, Long), (Index, Index)] {
+    def apply(ss1: (S1, Range, Long), ss2: (S2, Range, Long)): Expr[(Index, Index)] = {
       val s1 = ss1._1
       val s2 = ss2._1
 
@@ -149,7 +150,7 @@ object Test {
     }
   }
 
-  case class swap[A, B]() extends FA1[(A, B), (B, A)] {
+  case class swap[@sp A, @sp B]() extends FA1[(A, B), (B, A)] {
     def apply(i: (A, B)): Expr[(B, A)] = (i._2, i._1)
   }
 
@@ -159,7 +160,7 @@ object Test {
     }
   }
 
-  case class flatten[X]() extends FA1[List[Expr[X]], List[X]] {
+  case class flatten[@sp X]() extends FA1[List[Expr[X]], List[X]] {
     val el: element[X] = element[X]()
     def apply(a: List[Expr[X]]): Expr[List[X]] = {
       if (a.isEmpty) List()
@@ -167,38 +168,38 @@ object Test {
     }
   }
 
-  case class concat[X]() extends FA2[List[X], List[X], List[X]] {
+  case class concat[@sp X]() extends FA2[List[X], List[X], List[X]] {
     def apply(x1: List[X], x2: List[X]): Expr[List[X]] = x1 ++ x2
   }
 
-  case class element[X]() extends FA1[X, List[X]] {
+  case class element[@sp X]() extends FA1[X, List[X]] {
     def apply(x: X): Expr[List[X]] = List(x)
   }
 
-  case class combine[S <: Seq[Long, S]]() extends FA3[S, LInterval, Long, (S, LInterval, Long)] {
-    def apply(s: S, i: LInterval, o: Long): Expr[(S, LInterval, Long)] = (s, i, o)
+  case class combine[S <: Seq[Long, S]]() extends FA3[S, Range, Long, (S, Range, Long)] {
+    def apply(s: S, i: Range, o: Long): Expr[(S, Range, Long)] = (s, i, o)
   }
 
-  case class rangeOfSeq[S <: Seq[Long, S]]() extends FA1[S, LInterval] {
-    def apply(x: S): Expr[LInterval] = {
+  case class rangeOfSeq[S <: Seq[Long, S]]() extends FA1[S, Range] {
+    def apply(x: S): Expr[Range] = {
 
       if (x.parts.length == 1) {
         val values = x.toArray
-        Interval(values.min, values.max)
+        Range(values.min, values.max)
       }
       else %(rangeOfRanges, x.parts.map(p => %(this, p)).toList)
     }
   }
 
-  object rangeOfRanges extends FA1[List[Expr[LInterval]], LInterval] {
-    def apply(x: List[Expr[LInterval]]): Expr[LInterval] = {
+  object rangeOfRanges extends FA1[List[Expr[Range]], Range] {
+    def apply(x: List[Expr[Range]]): Expr[Range] = {
 
       if (x.lengthCompare(1) == 0) x.head
       else %(mergeRanges, x.head, %(rangeOfRanges, x.tail))
     }
   }
 
-  object mergeRanges extends FA2[LInterval, LInterval, LInterval] {
-    def apply(r1: LInterval, r2: LInterval): Expr[LInterval] = r1.union(r2)
+  object mergeRanges extends FA2[Range, Range, Range] {
+    def apply(r1: Range, r2: Range): Expr[Range] = r1.union(r2)
   }
 }
