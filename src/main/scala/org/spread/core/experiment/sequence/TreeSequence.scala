@@ -1,6 +1,7 @@
 package org.spread.core.experiment.sequence
 
 import org.spread.core.language.Annotation.sp
+import org.spread.core.splithash.Hashing
 
 object TreeSequence {
 
@@ -10,19 +11,20 @@ object TreeSequence {
   @inline final def minWidth: Int = 16
   @inline final def maxWidth: Int= minWidth * 4
 
-  def emptyTree[@sp X](implicit t: ClassTag[X], c: DefaultTreeContext[X]): TreeSeq[X] = c.empty
+  def emptyTree[@sp X](implicit t: ClassTag[X], c: DefaultTreeContext[X]): TreeSeq[X, ArraySeqImpl[X]] = c.empty
 
-  case class DefaultTreeContext[@sp X]()(implicit t: ClassTag[X]) extends SeqContext[X, TreeSeq[X]] {
-    val emptyNode: TreeNode[X] = Empty()
-    val empty: TreeSeq[X] = TreeSeq[X](emptyNode)(this)
-    def tag: ClassTag[X] = t
-    
-    def createLeaf(a: Array[X]): TreeNode[X] = {
-      if (a.length == 0) emptyNode
-      else Leaf[X](a)
+  trait TreeContext[@sp X, AS <: ArraySeq[X, AS]] extends SeqContext[X, TreeSeq[X, AS]] {
+
+    lazy val emptyNode: TreeNode[X, AS] = Empty()
+    lazy val empty: TreeSeq[X, AS] = TreeSeq[X, AS](emptyNode)(this)
+    def tag: ClassTag[X]
+
+    def createLeaf(a: AS): TreeNode[X, AS] = {
+      if (a.size == 0) emptyNode
+      else Leaf[X, AS](a)
     }
-    
-    def createTree(a: Array[TreeNode[X]]): TreeNode[X] = {
+
+    def createTree(a: Array[TreeNode[X, AS]]): TreeNode[X, AS] = {
       val sz = new Array[Long](a.length)
       var ts: Long = 0
       var i = 0
@@ -30,18 +32,28 @@ object TreeSequence {
 
       while (i < s) {ts = ts + a(i).size; sz(i) = ts; i = i + 1}
 
-      Branch[X](a, sz)
+      Branch[X, AS](a, sz)
     }
+
+    val emptyArraySeq: AS
+    def createArraySeq(a: Array[X]): AS
+  }
+
+  case class DefaultTreeContext[@sp X](implicit t: ClassTag[X]) extends TreeContext[X, ArraySeqImpl[X]] {
+    def tag: ClassTag[X] = t
+    val emptyArraySeq: ArraySeqImpl[X] = ArraySeqImpl[X](Array())
+    def createArraySeq(a: Array[X]): ArraySeqImpl[X] = ArraySeqImpl[X](a)
   }
 
   implicit def defaultTreeContext[@sp X](implicit t: ClassTag[X]): DefaultTreeContext[X] = DefaultTreeContext[X]()
 
-  case class TreeSeq[@sp X](n: TreeNode[X])(implicit c: DefaultTreeContext[X]) extends Seq[X, TreeSeq[X]] {
-    type S = TreeSeq[X]
-    type C = DefaultTreeContext[X]
-    
+  case class TreeSeq[X, AS <: ArraySeq[X, AS]](n: TreeNode[X, AS])(implicit c: TreeContext[X, AS]) extends Seq[X, TreeSeq[X, AS]] {
+    type S = TreeSeq[X, AS]
+    type C = TreeContext[X, AS]
+    type SS = AS
+
     def self: S = this
-    def emptySeq(implicit c: C): S = c.empty
+    def emptySeq: S = c.empty
     def parts: Array[S] = {
       n match {
         case Empty() => Array()
@@ -50,8 +62,8 @@ object TreeSequence {
       }
     }
 
-    def append[S2 <: S](o: S2)(implicit c: C): S = TreeSeq(n append o.n)
-    def split(i: Long)(implicit c: C): (S, S) = {
+    def append[S2 <: S](o: S2): S = TreeSeq(n append o.n)
+    def split(i: Long): (S, S) = {
       val (l, r) = n.split(i)
       (TreeSeq(l), TreeSeq(r))
     }
@@ -61,10 +73,10 @@ object TreeSequence {
     def size: Long = n.size
     def height: Int = n.height
 
-    def toArray: Array[X] = n.toArray(c)
+    def whole: AS = n.toArray(c)
 
-    def createSeq(a: Array[X])(implicit c: C): TreeSeq[X] = createSeq(a, 0, a.length)
-    def createSeq(a: Array[X], start: Int, size: Int)(implicit c: C): TreeSeq[X] = {
+    def createSeq(a: Array[X]): TreeSeq[X, AS] = createSeq(a, 0, a.length)
+    def createSeq(a: Array[X], start: Int, size: Int): TreeSeq[X, AS] = {
       implicit def t: ClassTag[X] = c.tag
 
       if (size <= ((maxWidth / 3) * 4)) {
@@ -77,7 +89,7 @@ object TreeSequence {
           i = i + 1
           ii = ii + 1
         }
-        TreeSeq(c.createLeaf(b))
+        TreeSeq(c.createLeaf(c.createArraySeq(b)))
       }
       else {
         val ms = size / 2
@@ -90,29 +102,36 @@ object TreeSequence {
     def apply(i: Long): X = n(i)
     def first: X = n.first
     def last: X = n.last
+
+    override lazy val hashCode: Int = Hashing.siphash24(n.hashCode, -c.hashCode)
   }
 
-  trait TreeNode[@sp X] {
-    type C = DefaultTreeContext[X]
-    type N = TreeNode[X]
+  var nodes: Long = 0
 
-    def asLeaf(s: N): Leaf[X] = s.asInstanceOf[Leaf[X]]
-    def asBranch(s: N): Branch[X] = s.asInstanceOf[Branch[X]]
+  trait TreeNode[X, AS <: ArraySeq[X, AS]] {
+    {
+      nodes += 1
+    }
+    type C = TreeContext[X, AS]
+    type N = TreeNode[X, AS]
 
-    def empty: N = Empty[X]()
+    def asLeaf(s: N): Leaf[X, AS] = s.asInstanceOf[Leaf[X, AS]]
+    def asBranch(s: N): Branch[X, AS] = s.asInstanceOf[Branch[X, AS]]
+
+    def empty: N = Empty[X, AS]()
     def createPair(n1: N, n2: N)(implicit c: C): N = createTree(Array(n1, n2))
-    def createLeaf(a: Array[X])(implicit c: C): N = c.createLeaf(a)
-    def createTree(a: Array[TreeNode[X]])(implicit c: C): N = c.createTree(a)
+    def createLeaf(a: AS)(implicit c: C): N = c.createLeaf(a)
+    def createTree(a: Array[TreeNode[X, AS]])(implicit c: C): N = c.createTree(a)
 
     def size: Long
     def height: Int
 
-    def split(i: Long)(implicit c: C): (TreeNode[X], TreeNode[X])
-    def append(o: TreeNode[X])(implicit c: C): TreeNode[X]
+    def split(i: Long)(implicit c: C): (TreeNode[X, AS], TreeNode[X, AS])
+    def append(o: TreeNode[X, AS])(implicit c: C): TreeNode[X, AS]
 
-    def toArray(implicit c: C): Array[X]
+    def toArray(implicit c: C): AS
 
-    def appendBranches(s1: Branch[X], s2: Branch[X])(implicit c: C): N = {
+    def appendBranches(s1: Branch[X, AS], s2: Branch[X, AS])(implicit c: C): N = {
       assert(s1.height == s2.height) // only append trees with same height
 
       if (s1.childCount >= minWidth && s2.childCount >= minWidth) createPair(s1, s2)
@@ -123,7 +142,7 @@ object TreeSequence {
       }
     }
 
-    def appendLeafs(s1: Leaf[X], s2: Leaf[X])(implicit c: C): N = {
+    def appendLeafs(s1: Leaf[X, AS], s2: Leaf[X, AS])(implicit c: C): N = {
       assert((s1.height == 0) && (s2.height == 0))
 
       implicit def t: ClassTag[X] = c.tag
@@ -169,47 +188,45 @@ object TreeSequence {
     def last: X
   }
 
-  case class Empty[@sp X]() extends TreeNode[X] {
+  case class Empty[X, AS <: ArraySeq[X, AS]]() extends TreeNode[X, AS] {
     def error: Nothing = sys.error("empty sequence")
 
     def size: Long = 0
     def height: Int = -1
 
-    def split(i: Long)(implicit c: C): (TreeNode[X], TreeNode[X]) = (this, this)
-    def append(o: TreeNode[X])(implicit c: C): TreeNode[X] = o
-    def toArray(implicit c: C): Array[X] = {
-      implicit def t: ClassTag[X] = c.tag
-      Array[X]()
-    }
+    def split(i: Long)(implicit c: C): (TreeNode[X, AS], TreeNode[X, AS]) = (this, this)
+    def append(o: TreeNode[X, AS])(implicit c: C): TreeNode[X, AS] = o
+    def toArray(implicit c: C): AS = c.emptyArraySeq
 
     def apply(i: Long): X = error
     def first: X = error
     def last: X = error
+    override lazy val hashCode: Int = Hashing.siphash24(-1, -2)
   }
 
-  case class Leaf[@sp X](values: Array[X]) extends TreeNode[X] {
-    def size: Long = values.length
+  case class Leaf[@sp X, AS <: ArraySeq[X, AS]](values: AS) extends TreeNode[X, AS] {
+    def size: Long = values.size
     def height = 0
 
-    def append(o: TreeNode[X])(implicit c: C): TreeNode[X] = append2(this, o)
+    def append(o: TreeNode[X, AS])(implicit c: C): TreeNode[X, AS] = append2(this, o)
     def split(i: Long)(implicit c: C): (N, N) = {
       if (i >= size) (this, empty)
       else if (i < 0) (empty, this)
       else {
-        val (left: Array[X], right: Array[X]) = values.splitAt(i.toInt)
+        val (left, right) = values.splitAt(i.toInt)
         (createLeaf(left), createLeaf(right))
       }
     }
-    def toArray(implicit c: C): Array[X] = values
+    def toArray(implicit c: C): AS = values
     def apply(i: Long): X = values(i.toInt)
     def first: X = values(0)
-    def last: X = values(values.length - 1)
+    def last: X = values(values.size - 1)
 
-    override lazy val hashCode: Int = values.hashCode
-    override def toString: String = values.foldLeft("<")((x, y) => x + " " + y) + " >"
+    override def toString: String = values.toArray.foldLeft("<")((x, y) => x + " " + y) + " >"
+    override lazy val hashCode: Int = Hashing.siphash24(values.hashCode, -values.hashCode)
   }
 
-  case class Branch[@sp X](children: Array[TreeNode[X]], sizes: Array[Long]) extends TreeNode[X] {
+  case class Branch[X, AS <: ArraySeq[X, AS]](children: Array[TreeNode[X, AS]], sizes: Array[Long]) extends TreeNode[X, AS] {
     lazy val height: Int = children(0).height + 1
     def size: Long = sizes(sizes.length - 1)
 
@@ -232,9 +249,9 @@ object TreeSequence {
       else sys.error("index out of bounds")
     }
 
-    def toArray(implicit c: C): Array[X] = ???
+    def toArray(implicit c: C): AS = ???
 
-    def append(o: TreeNode[X])(implicit c: C): TreeNode[X] = append2(this, o)
+    def append(o: TreeNode[X, AS])(implicit c: C): TreeNode[X, AS] = append2(this, o)
     def split(i: Long)(implicit c: C): (N, N) = {
       if (i >= size) (this, empty)
       else if (i < 0) (empty, this)
@@ -258,7 +275,16 @@ object TreeSequence {
     def first: X = children(0).first
     def last: X = children(children.length - 1).last
 
-    override lazy val hashCode: Int = children.hashCode
+    override lazy val hashCode: Int = {
+      var hash: Int = -1
+      var s = children.length
+      var i = 0
+      while (i < s) {
+        hash = Hashing.siphash24(hash, -children(i).hashCode)
+        i += 1
+      }
+      hash
+    }
     override def toString: String = children.foldLeft("<")((x, y) => x + " " + y) + " >"
 
   }
