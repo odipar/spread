@@ -10,5 +10,7 @@ libraryDependencies +=  "org.scala-lang" % "scala-compiler" % "2.12.4"
 
 libraryDependencies +=  "org.scala-lang" % "scala-reflect" % "2.12.4"
 
+libraryDependencies +=  "com.twitter" % "chill_2.12" % "0.9.2"
+
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 
