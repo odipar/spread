@@ -7,61 +7,39 @@ import java.util
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.spread.core.splithash.Hashing
 import com.twitter.chill.{KryoBase, ScalaKryoInstantiator}
+import org.spread.core.experiment.eav.EAV._
+import org.spread.core.experiment.expression.Spread
+import org.spread.core.experiment.expression.Spread.Cons
+import org.spread.core.experiment.sequence.Sequence.ArraySeqImpl
 
 import scala.collection.mutable
+import scala.util.DynamicVariable
 
 object Storage {
 
+  val storage: DynamicVariable[Storage] = new DynamicVariable(InMemoryStorage())
+
   final def main(args: Array[String]): Unit = {
 
-    for (i <- 1 to 1000) {
-      implicit val s = InMemoryStorage()
+    for (i <- 1 to 1) {
+      Storage.storage.withValue(InMemoryStorage()) {
 
-      val leaf: Leaf[Long] = Leaf((12345667904395542L until (12345667904395542L + 32)).toArray)
-      val branch1: Branch[Long] = Branch((0 until 32).map(x => leaf).toArray)
-      val branch2: Branch[Long] = Branch((0 until 32).map(x => branch1).toArray)
-      val branch3: Branch[Long] = Branch((0 until 32).map(x => branch2).toArray)
-      val branch4: Branch[Long] = Branch((0 until 16).map(x => branch3).toArray)
+        var tree: Tree[Long] = Leaf(ArraySeqImpl((0L until 32L).toArray))
 
-      println("size: " + branch4.size)
+        for (i <- 1 to 5) {
+          tree = Branch(ArraySeqImpl((0 until 32).map(x => tree).toArray))
+        }
 
-      val stored = branch4.store(s)
-
-      println("stored: " + s.m.values.map(x => x.b.length).sum)
-
-      println("i: " + i)
+        val s = tree.store
+        
+        println("sizes: " + Storage.storage.value.asInstanceOf[InMemoryStorage].m.values.map(x => x.size))
+      }
     }
   }
 
   trait Ref {
     def size: Int
     def apply(i: Int): Int
-
-    override def equals(o: Any): Boolean = o match {
-      case r: Ref => {
-        val s = size
-        var i = 0
-        var eq = true
-        
-        while ((i < s) && eq) {
-          eq = this(i) == r(i)
-          i += 1
-        }
-        eq
-      }
-      case _ => false
-    }
-
-    override def hashCode: Int = {
-      var hash = 1234567
-      var s = size
-      var i = 0
-      while (i < s) {
-        hash = Hashing.siphash24(hash, hash | this(i))
-        i += 1
-      }
-      hash
-    }
   }
 
   case class LongRef(l: Long) extends Ref {
@@ -71,33 +49,29 @@ object Storage {
       else if (i == 1) (l >>> 32).toInt
       else sys.error("index out of bounds")
     }
-    override def hashCode: Int = {
-      Hashing.siphash24(l.toInt, (l >>> 32).toInt)
-    }
   }
 
   trait Storage {
-    def get[S <: Storable[S]](id: Ref): S
-    def put[S <: Storable[S]](s: S): Ref
+    def get[X](id: Ref): X
+    def put[X](t: X, s: X => X, r: Ref => X): X
   }
 
   case class ByteArrayWrapper(b: Array[Byte]) {
-    override def equals(o: Any) = o match {
-      case ba: ByteArrayWrapper => {
-        util.Arrays.equals(b, ba.b)
-      }
+    def size: Int = b.length
+    override def equals(o: Any): Boolean = o match {
+      case ba: ByteArrayWrapper => util.Arrays.equals(b, ba.b)
       case _ => false
     }
 
-    override val hashCode: Int = util.Arrays.hashCode(b)
+    override def hashCode: Int = util.Arrays.hashCode(b)
   }
-
+  
   case class InMemoryStorage() extends Storage() {
+    val c: mutable.HashMap[Any, Any] = mutable.HashMap()
     val m: mutable.HashMap[Ref, ByteArrayWrapper] = mutable.HashMap()
     val m2: mutable.HashMap[ByteArrayWrapper, Ref] = mutable.HashMap()
-    var i: Long = 12345667904395542L
-    val oBuffer = new ByteArrayOutputStream(2048)
-    val rOutput = new Output(oBuffer)
+    val buffer = new Array[Byte](16384)
+    var i: Long = 0L
 
     lazy val instantiator: ScalaKryoInstantiator = {
       val i = new ScalaKryoInstantiator
@@ -105,65 +79,119 @@ object Storage {
       i
     }
 
+
     lazy val kryo: KryoBase = {
       val kryo = instantiator.newKryo()
+      
       kryo.register(classOf[Tree[_]], 1000)
       kryo.register(classOf[Leaf[_]], 1001)
       kryo.register(classOf[Branch[_]], 1002)
       kryo.register(classOf[RefTree[_]], 1003)
       kryo.register(classOf[LongRef], 1004)
       kryo.register(classOf[Array[Tree[_]]], 1005)
+
+      kryo.register(classOf[Array[TreeSequence.TreeNode[_,_ ]]], 1006)
+      kryo.register(classOf[TreeSequence.TreeNode[_,_ ]], 1007)
+      kryo.register(classOf[TreeSequence.Empty[_,_ ]], 1008)
+      kryo.register(classOf[TreeSequence.Leaf[_,_ ]], 1009)
+      kryo.register(classOf[TreeSequence.Branch[_,_ ]], 1010)
+      kryo.register(classOf[TreeSequence.RefNode[_,_ ]], 1011)
+
+      kryo.register(classOf[EAV], 1012)
+      kryo.register(classOf[LongEAV], 1013)
+      kryo.register(classOf[AttributeEAV], 1014)
+      kryo.register(classOf[AttributeValueEAV], 1015)
+      kryo.register(classOf[LongAttribute], 1016)
+      kryo.register(classOf[StringAttribute], 1017)
+      kryo.register(classOf[DoubleAttribute], 1018)
+      kryo.register(classOf[Entity], 1019)
+      kryo.register(classOf[LongValueImpl], 1020)
+
+
+      kryo.register(classOf[Spread.Cons[_]], 1022)
+      kryo.register(classOf[Spread.RefExpr[_]], 1023)
+      kryo.register(classOf[Spread.FA0[_]], 1024)
+      kryo.register(classOf[Spread.FA1[_,_]], 1025)
+      kryo.register(classOf[Spread.FA2[_,_,_]], 1026)
+      kryo.register(classOf[Spread.FA3[_,_,_,_]], 1027)
+      kryo.register(classOf[Spread.add2], 1028)
+      kryo.register(classOf[Spread.mul2], 1029)
+      kryo.register(classOf[Spread.AnExpr[_]], 1030)
+      kryo.register(classOf[Spread.IExpr], 1031)
+      kryo.register(classOf[Spread.F1[_,_]], 1032)
+      kryo.register(classOf[Spread.F2[_,_,_]], 1033)
+      kryo.register(classOf[Spread.F3[_,_,_,_]], 1034)
+      kryo.register(classOf[Spread.Empty[_]], 1035)
+      kryo.register(classOf[Spread.Trace[_]], 1036)
+      kryo.register(classOf[Spread.fib2], 1037)
+      kryo.register(classOf[Spread.fac2], 1038)
+      kryo.register(classOf[Spread.RefHashList[_]], 1039)
+      kryo.register(classOf[ArraySeqImpl[_]], 1040)
+
       kryo.setReferences(false)
       kryo
     }
 
-    def get[S <: Storable[S]](id: Ref): S = {
-      kryo.readClassAndObject(new Input(m(id).b)).asInstanceOf[S]
-    }
-    def put[S <: Storable[S]](s: S): Ref = {
-      rOutput.clear
-      kryo.writeClassAndObject(rOutput, s)
-      val ba = ByteArrayWrapper(rOutput.toBytes)
+    def get[X](id: Ref): X = kryo.readClassAndObject(new Input(m(id).b)).asInstanceOf[X]
 
-      if (m2.contains(ba)) m2(ba)
+    def put[X](t: X, s: X => X, r: Ref => X): X = {
+      if (c.contains(t)) c(t).asInstanceOf[X]
       else {
-        val ref = LongRef(i)
+        val st = s(t)
+        
+        val rOutput = new Output(buffer)
+        kryo.writeClassAndObject(rOutput, st)
+        val ba = ByteArrayWrapper(rOutput.toBytes)
 
-        m.update(ref, ba)
-        m2.update(ba, ref)
+        if (ba.size > 64) {
+          if (m2.contains(ba)) r(m2(ba))
+          else {
+            val ref = LongRef(i)
 
-        i += 1
-        ref
+            c.update(t, r(ref))
+            m.update(ref, ba)
+            m2.update(ba, ref)
+
+            i += 1
+            r(ref)
+          }
+        }
+        else {
+          c.update(t, st)
+          st
+        }
       }
     }
   }
 
   trait Storable[+S <: Storable[S]] {
-    def store(s: Storage): S
+    def storage: Storage = Storage.storage.value
+    def store: S
   }
 
   trait Tree[X] extends Storable[Tree[X]] {
     def size: Int
-    def store(s: Storage): Tree[X] = this
-    def first(implicit s: Storage): X
+    def store: Tree[X] = this
+    def first: X
   }
 
   case class EmptyTree[X]() extends Tree[X] {
     def size: Int = 0
-    def first(implicit s: Storage): X = sys.error("no")
+    def first: X = sys.error("no")
   }
 
-  case class Leaf[X](x: Array[X]) extends Tree[X]     {
-    def size: Int = x.length
-    def first(implicit s: Storage) = x(0)
+  case class Leaf[X](x: ArraySeqImpl[X]) extends Tree[X] {
+    def size: Int = x.size
+    def first = x(0)
+    def ref1(x: Tree[X]): Tree[X] = this
+    def ref2(x: Ref): Tree[X] = RefTree(x, size)
+    override def store: Tree[X] = storage.put(this, ref1, ref2)
   }
 
-  def storeTree[X](t: Tree[X], s: Storage): Ref = s.put(t.store(s))
-
-  case class Branch[X](children: Array[Tree[X]]) extends Tree[X]
+  case class Branch[X](children: ArraySeqImpl[Tree[X]]) extends Tree[X]
   {
     val size: Int = {
-      var s = children.length
+      var s = children.size
       var i = 0
       var sum = 0
       while (i < s) {
@@ -173,44 +201,34 @@ object Storage {
       sum
     }
 
-    override def store(s: Storage): Tree[X] = {
-      var cc = children.clone()
+    def ref1(x: Tree[X]): Tree[X] = Branch(children.map(x => x.store))
+    def ref2(x: Ref): Tree[X] = RefTree(x, size)
+    override def store: Tree[X] = storage.put(this, ref1, ref2)
 
-      var sz = children.size
-      var i = 0
-
-      while (i < sz) {
-        var child = children(i)
-
-        if (child.isInstanceOf[RefTree[X]]) {
-          cc(i) = child
-        }
-        else {
-          var ref = storeTree(children(i), s)
-          cc(i) = RefTree(ref, children(i).size)
-        }
-
-        i += 1
-      }
-
-      val n: Tree[X] = Branch(cc)
-      RefTree(s.put(n), size)
-    }
-    def first(implicit s: Storage): X = children(0).first
+    def first: X = children(0).first
   }
 
-  case class RefTree[X](ref: Ref, size: Int) extends Tree[X] {
-    @transient var cache: WeakReference[Tree[X]] = new WeakReference(null)
+  trait RefObject[S <: Storable[S]] extends Storable[S] {
+    @transient var cache: WeakReference[S] = _
 
-    def resolve(implicit s: Storage): Tree[X] = {
-      val t: Tree[X] = cache.get
-      if (t == null) {
-        val t: Tree[X] = s.get(ref)
-        cache = new WeakReference[Tree[X]](t)
-        t
+    def ref: Ref
+
+    def resolve: S = {
+      if (cache == null) {
+        cache = new WeakReference[S](storage.get(ref))
+        resolve
       }
-      else t
+      val n = cache.get
+      if (n == null) {
+        val z: AnyRef = storage.get(ref)
+        cache = new WeakReference(z.asInstanceOf[S])
+        z.asInstanceOf[S]
+      }
+      else n
     }
-    def first(implicit s: Storage): X = resolve.first(s)
+
+  }
+  case class RefTree[X](ref: Ref, size: Int) extends Tree[X] with RefObject[Tree[X]] {
+    def first: X = resolve.first
   }
 }

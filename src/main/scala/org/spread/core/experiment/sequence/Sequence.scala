@@ -45,6 +45,7 @@ object Sequence {
   }
 
   case class ArraySeqImpl[@sp X](x: Array[X]) extends ArraySeq[X, ArraySeqImpl[X]] {
+    def map[@sp Y](f: X => Y)(implicit c: ClassTag[Y]): ArraySeqImpl[Y] = ArraySeqImpl(x.map(f).toArray)
     def size: Int = x.length
     def apply(i: Int): X = x(i)
     def append(o: ArraySeqImpl[X])(implicit c: ClassTag[X]): ArraySeqImpl[X] = ArraySeqImpl(x ++ o.x)

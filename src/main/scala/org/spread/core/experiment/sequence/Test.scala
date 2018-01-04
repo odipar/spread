@@ -1,8 +1,5 @@
 package org.spread.core.experiment.sequence
 
-import java.util.Base64
-import javax.management.StringValueExp
-
 import org.spread.core.experiment.expression.Spread.FA1
 import org.spread.core.experiment.sequence.Sequence.{ArraySeqImpl, Seq}
 import org.spread.core.experiment.expression.Spread._
@@ -13,6 +10,7 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import org.spread.core.experiment.eav.EAV.{EAVRange, _}
 import org.spread.core.experiment.sequence.Container.Container
+import org.spread.core.experiment.sequence.Storage.InMemoryStorage
 import org.spread.core.splithash.Hashing
 
 import scala.language.{existentials, implicitConversions}
@@ -21,7 +19,7 @@ import scala.language.{existentials, implicitConversions}
 object Test {
   import TreeSequence._
 
-  object A1 extends LongAttribute {
+  /* object A1 extends LongAttribute {
     override def toString = "a1"
   }
   object A2 extends LongAttribute {
@@ -32,74 +30,85 @@ object Test {
 
     val eavFactory = emptyTree[EAV]
 
-    val l1 = (0 until 50000).map(x => LongEAV(Entity(Array(x.toLong)), A1, LongValueImpl(x.toLong)))
+    val l1 = (0L until 100000L).map(x => LongEAV(Entity(Array(x)), A1, LongValueImpl(x.toLong)))
     val l2 = (-50 until 50).map(x => LongEAV(Entity(Array(x.toLong)), A1, LongValueImpl(x.toLong)))
     val l3 = (10000000 until 10000005).map(x => LongEAV(Entity(Array(x.toLong)), A1, LongValueImpl(x.toLong)))
 
     val s1 = eavFactory.createSeq(l1.toArray)
-    println("nodes: " + nodes)
     val s2 = eavFactory.createSeq(l2.toArray)
-    println("nodes: " + nodes)
     val s3 = eavFactory.createSeq(l3.toArray)
-    println("nodes: " + nodes)
     val s4 = s1 ++ s3
-    println("nodes: " + nodes)
 
+    for (i <- 1 to 10) {
+      Storage.storage.withValue(InMemoryStorage()) {
+        val ss1 = s1.store
+        val ss2 = s1.store
+        val ss3 = s3.store
+        val ss4 = s4.store
 
-    val ct = new StrongMemoizationContext(mutable.HashMap())
+        println("ss1: " + ss1)
+        println("ss2: " + ss2)
+        println("ss3: " + ss3)
+        println("ss4: " + ss4)
 
-    println("start 0")
+        println("ss4 " + Storage.storage.value.asInstanceOf[InMemoryStorage].m.values.map(x => x.b.length).max)
 
-    val r1 = %(rangeOfSeq, s1).eval(ct)
-    println("ranges: " + ranges)
-    val r2 = %(rangeOfSeq, s2).eval(ct)
-    println("ranges: " + ranges)
-    val r3 = %(rangeOfSeq, s3).eval(ct)
-    println("ranges: " + ranges)
-    val r4 = %(rangeOfSeq, s4).eval(ct)
-    println("ranges: " + ranges)
+        val ct = new StrongMemoizationContext(mutable.HashMap())
 
-    println("start 1")
+        println("start 0")
 
-    println("start 2")
-    val t1 = Table("t1", s1)
-    val t2 = Table("t2", s1)
-    val t3 = Table("t3", s3)
-    val t4 = Table("t1", s4)
-    val t5 = Table("t2", s4)
+        val r1 = %(rangeOfSeq, ss1).eval(ct)
+        println("ranges: " + ranges)
+        val r2 = %(rangeOfSeq, ss2).eval(ct)
+        println("ranges: " + ranges)
+        val r3 = %(rangeOfSeq, ss3).eval(ct)
+        println("ranges: " + ranges)
+        val r4 = %(rangeOfSeq, ss4).eval(ct)
+        println("ranges: " + ranges)
 
-    val cc1: Constraint = (t1(A1) === t2(A1))
+        println("start 1")
 
-    val tt1 = cc1.tableMap
-    val c1 = %(cartesianProduct, tt1, cc1)
-    val e1 = c1.eval(ct)
+        println("start 2")
+        val t1 = Table("t1", ss1)
+        val t2 = Table("t2", ss1)
+        val t3 = Table("t3", ss3)
+        val t4 = Table("t1", ss4)
+        val t5 = Table("t2", ss4)
 
-    println("e1: " + e1.head)
+        val cc1: Constraint = (t1(A1) === t2(A1))
 
-    println("start 3")
-    val cc2: Constraint = (t4(A1) === t5(A1))
+        val tt1 = cc1.tableMap
+        val c1 = %(cartesianProduct, tt1, cc1)
+        val e1 = c1.eval(ct)
 
-    println("prds: " + prds)
-    println("ranges: " + ranges)
-    println("flt: " + flt)
-    println("reav: " + reav)
-    println("valid: " + valid)
-    println("cp: " + cp)
-    println("product: " + product)
-    val tt2 = cc2.tableMap
-    
-    val c2 = %(cartesianProduct, tt2, cc2)
-    val e2 = c2.eval(ct)
+        println("e1: " + e1.head)
 
-    println("prds: " + prds)
-    println("ranges: " + ranges)
-    println("flt: " + flt)
-    println("reav: " + reav)
-    println("valid: " + valid)
-    println("cp: " + cp)
-    println("product: " + product)
+        println("start 3")
+        val cc2: Constraint = (t4(A1) === t5(A1))
 
-    println("e2: " + e2.head)
+        /*println("prds: " + prds)
+        println("ranges: " + ranges)
+        println("flt: " + flt)
+        println("reav: " + reav)
+        println("valid: " + valid)
+        println("cp: " + cp)
+        println("product: " + product)  */
+        val tt2 = cc2.tableMap
+
+        val c2 = %(cartesianProduct, tt2, cc2)
+        val e2 = c2.eval(ct)
+
+        /*println("prds: " + prds)
+        println("ranges: " + ranges)
+        println("flt: " + flt)
+        println("reav: " + reav)
+        println("valid: " + valid)
+        println("cp: " + cp)
+        println("product: " + product)  */
+
+        println("e2: " + e2.head)
+      }
+    }
   }
   
   type CEAV = Container[EAV, S] forSome { type S <: Container[EAV, S] }
@@ -502,5 +511,5 @@ object Test {
 
   object mergeRanges extends FA2[EAVRange, EAVRange, EAVRange] {
     def apply(r1: EAVRange, r2: EAVRange): Expr[EAVRange] = r1.union(r2)
-  }
+  }        */
 }
