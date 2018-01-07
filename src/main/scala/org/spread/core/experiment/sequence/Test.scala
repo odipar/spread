@@ -1,117 +1,118 @@
 package org.spread.core.experiment.sequence
 
-import org.spread.core.experiment.expression.Spread.FA1
-import org.spread.core.experiment.sequence.Sequence.{ArraySeqImpl, Seq}
+import com.esotericsoftware.kryo.io.Output
+import org.spread.core.experiment.eav.EAV
 import org.spread.core.experiment.expression.Spread._
+import org.spread.core.experiment.sequence.Sequence._
 import org.spread.core.language.Annotation.sp
 import spire.algebra.Order
 
 import scala.collection.immutable.HashMap
-import scala.collection.mutable
-import org.spread.core.experiment.eav.EAV.{EAVRange, _}
+import org.spread.core.experiment.eav.EAV._
 import org.spread.core.experiment.sequence.Container.Container
-import org.spread.core.experiment.sequence.Storage.InMemoryStorage
+import org.spread.core.experiment.sequence.Storage._
 import org.spread.core.splithash.Hashing
 
 import scala.language.{existentials, implicitConversions}
 
-
 object Test {
+
   import TreeSequence._
 
-  /* object A1 extends LongAttribute {
-    override def toString = "a1"
+  case class AA2() extends LongAttribute {
+    override def toString = "aa2"
   }
-  object A2 extends LongAttribute {
-    override def toString = "a2"
+
+  case class AA1() extends LongAttribute {
+    override def toString = "aa1"
   }
+
+  val a1 = AA1()
+  val a2 = AA2()
 
   final def main(args: Array[String]): Unit = {
 
     val eavFactory = emptyTree[EAV]
 
-    val l1 = (0L until 100000L).map(x => LongEAV(Entity(Array(x)), A1, LongValueImpl(x.toLong)))
-    val l2 = (-50 until 50).map(x => LongEAV(Entity(Array(x.toLong)), A1, LongValueImpl(x.toLong)))
-    val l3 = (10000000 until 10000005).map(x => LongEAV(Entity(Array(x.toLong)), A1, LongValueImpl(x.toLong)))
+    val l1 = (0L until 1000000L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
+    val l2 = (-6000L until -5000L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
+    val l3 = (-5000L until 100L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
 
+    println("START 0")
+    
     val s1 = eavFactory.createSeq(l1.toArray)
     val s2 = eavFactory.createSeq(l2.toArray)
     val s3 = eavFactory.createSeq(l3.toArray)
-    val s4 = s1 ++ s3
+    val s4 = s2 ++ s3
 
-    for (i <- 1 to 10) {
-      Storage.storage.withValue(InMemoryStorage()) {
+    for (i <- 1 to 1) {
+      val mem = InMemoryStorage()
+
+      Storage.withStorage(mem) {
+
         val ss1 = s1.store
-        val ss2 = s1.store
+        val ss2 = s2.store
         val ss3 = s3.store
         val ss4 = s4.store
 
-        println("ss1: " + ss1)
-        println("ss2: " + ss2)
-        println("ss3: " + ss3)
-        println("ss4: " + ss4)
+        println("START 1")
+        withContext(StrongStoringMemoizationContext()) {
 
-        println("ss4 " + Storage.storage.value.asInstanceOf[InMemoryStorage].m.values.map(x => x.b.length).max)
+          val r1 = %(rangeOfSeq, ss1).eval
+          println("ranges: " + ranges)
+          val r2 = %(rangeOfSeq, ss2).eval
+          println("ranges: " + ranges)
+          val r3 = %(rangeOfSeq, ss3).eval
+          println("ranges: " + ranges)
+          val r4 = %(rangeOfSeq, ss4).eval
+          println("ranges: " + ranges)
+          
+          val t1 = Table("t2", ss1)
+          val t2_1 = Table("t1", ss3)
+          val t2_2 = Table("t1", ss4)
 
-        val ct = new StrongMemoizationContext(mutable.HashMap())
+          /*withStorage(StackedStorage(Storage.storage, NullStorage()))*/
+          {
+            /*withContext(StackedContext(Spread.context, StrongStoringMemoizationContext()))*/
+            {
+              val cc1: Constraint = (t1(a1) === t2_1(a1))
 
-        println("start 0")
+              val tt1 = cc1.tableMap
 
-        val r1 = %(rangeOfSeq, ss1).eval(ct)
-        println("ranges: " + ranges)
-        val r2 = %(rangeOfSeq, ss2).eval(ct)
-        println("ranges: " + ranges)
-        val r3 = %(rangeOfSeq, ss3).eval(ct)
-        println("ranges: " + ranges)
-        val r4 = %(rangeOfSeq, ss4).eval(ct)
-        println("ranges: " + ranges)
+              val c1 = cartesianProduct(tt1, cc1.store)
+              val e1 = c1.eval
+              println("e1: " + e1.head)
+              println("cp: " + cp)
+              println("prds: " + prds)
 
-        println("start 1")
+              val cc2: Constraint = (t1(a1) === t2_2(a1))
+              val tt2 = cc2.tableMap
+              val c2 = cartesianProduct(tt2, cc2.store)
+              val e2 = c2.eval
 
-        println("start 2")
-        val t1 = Table("t1", ss1)
-        val t2 = Table("t2", ss1)
-        val t3 = Table("t3", ss3)
-        val t4 = Table("t1", ss4)
-        val t5 = Table("t2", ss4)
+              println("e2: " + e2.head)
+              println("cp: " + cp)
+              println("prds: " + prds)
 
-        val cc1: Constraint = (t1(A1) === t2(A1))
+              val st = mem
+              val vals = st.m.toSeq
+              val max = vals.map(x => x._2.size).max
+              val sum = vals.map(x => x._2.size).sum
+              val maxval = vals.filter(x => x._2.size == max)
+              
+              println("ranges: " + ranges)
 
-        val tt1 = cc1.tableMap
-        val c1 = %(cartesianProduct, tt1, cc1)
-        val e1 = c1.eval(ct)
-
-        println("e1: " + e1.head)
-
-        println("start 3")
-        val cc2: Constraint = (t4(A1) === t5(A1))
-
-        /*println("prds: " + prds)
-        println("ranges: " + ranges)
-        println("flt: " + flt)
-        println("reav: " + reav)
-        println("valid: " + valid)
-        println("cp: " + cp)
-        println("product: " + product)  */
-        val tt2 = cc2.tableMap
-
-        val c2 = %(cartesianProduct, tt2, cc2)
-        val e2 = c2.eval(ct)
-
-        /*println("prds: " + prds)
-        println("ranges: " + ranges)
-        println("flt: " + flt)
-        println("reav: " + reav)
-        println("valid: " + valid)
-        println("cp: " + cp)
-        println("product: " + product)  */
-
-        println("e2: " + e2.head)
+              println("max: " + max)
+              println("sum: " + sum)
+              println("max_node: " + st.get(maxval(0)._1))
+            }
+          }
+        }
       }
     }
   }
-  
-  type CEAV = Container[EAV, S] forSome { type S <: Container[EAV, S] }
+
+  type CEAV = Container[EAV, S] forSome {type S <: Container[EAV, S]}
 
   var reav: Long = 0
 
@@ -144,7 +145,7 @@ object Test {
       ord.lteqv(s3, e3)
     }
     def isSolution(s1: X, e1: X, s2: X, e2: X): Boolean = {
-     (ord.compare(s1, e1) == 0) && (ord.compare(s2, e2) == 0) && (ord.compare(s1, s2) == 0)
+      (ord.compare(s1, e1) == 0) && (ord.compare(s2, e2) == 0) && (ord.compare(s1, s2) == 0)
     }
   }
 
@@ -170,21 +171,21 @@ object Test {
     TableAttribute(tb, ConstantLong)
   }
 
-  case class EqualEntityPropagator(implicit o: Order[Entity]) extends EqualPropagator[Entity] {
-    def ord: Order[Entity] = o
+  case class EqualEntityPropagator() extends EqualPropagator[Entity] {
+    def ord: Order[Entity] = EntityOrdering
   }
 
-  case class EqualAttributePropagator(implicit o: Order[Attribute]) extends EqualPropagator[Attribute] {
-    def ord: Order[Attribute] = o
+  case class EqualAttributePropagator() extends EqualPropagator[Attribute] {
+    def ord: Order[Attribute] = AttributeOrdering
   }
 
-  case class EqualValuePropagator(implicit o: Order[Value]) extends EqualPropagator[Value] {
-    def ord: Order[Value] = o
+  case class EqualValuePropagator() extends EqualPropagator[Value] {
+    def ord: Order[Value] = ValueOrdering
   }
 
   case class Table[S <: Container[EAV, S]](name: String, s: S) {
     def apply(a: Attribute): TableAttribute[S] = TableAttribute(this, a)
-    def ===[S2 <: Container[EAV, S2]](o: Table[S2]): Constraint ={
+    def ===[S2 <: Container[EAV, S2]](o: Table[S2]): Constraint = {
       EntityConstraint(this, o, EqualEntityPropagator())
     }
     override def hashCode: Int = name.hashCode
@@ -199,17 +200,18 @@ object Test {
     val eavFactory = emptyTree[EAV]
     def attrTable = Table(s.toString + "(" + a.toString + ")", eavFactory.createSeq(Array(AttributeEAV(a))))
     def attrConstraint: Constraint = AttributeConstraint(s, attrTable, EqualAttributePropagator())
-    def ===[S2 <: Container[EAV, S2]](o: TableAttribute[S2]): Constraint ={
+    def ===[S2 <: Container[EAV, S2]](o: TableAttribute[S2]): Constraint = {
       attrConstraint AND o.attrConstraint AND ValueConstraint(s, o.s, EqualValuePropagator())
     }
   }
 
-  trait Constraint {
+  trait Constraint extends Storable[Constraint] {
     def tableMap: Map[String, (Long, CEAV)]
     def AND(o: Constraint): Constraint = AndConstraint(this, o)
     def OR(o: Constraint): Constraint = OrConstraint(this, o)
     def isValid(m: Map[String, EAVRange]): Boolean
     def isSolution(m: Map[String, EAVRange]): Boolean
+    def store: Constraint = this
   }
 
   trait LeafConstraint[@sp X, S1 <: Container[EAV, S1], S2 <: Container[EAV, S2]] extends Constraint {
@@ -225,12 +227,14 @@ object Test {
     def select(eav: EAV): X
 
     def isValid(m: Map[String, EAVRange]): Boolean = {
-      val r1 = m(left) ; val r2 = m(right)
+      val r1 = m(left);
+      val r2 = m(right)
       propagator.isValid(select(r1.start), select(r1.end), select(r2.start), select(r2.end))
     }
 
     def isSolution(m: Map[String, EAVRange]): Boolean = {
-      val r1 = m(left) ; val r2 = m(right)
+      val r1 = m(left);
+      val r2 = m(right)
       propagator.isSolution(select(r1.start), select(r1.end), select(r2.start), select(r2.end))
     }
   }
@@ -239,7 +243,18 @@ object Test {
     def tableMap: Map[String, (Long, CEAV)] = l.tableMap ++ r.tableMap
     def isValid(m: Map[String, EAVRange]): Boolean = l.isValid(m) && r.isValid(m)
     def isSolution(m: Map[String, EAVRange]): Boolean = l.isSolution(m) && r.isSolution(m)
+
+    def ref1(ref: Constraint): Constraint = AndConstraint(l.store, r.store)
+    def ref2(r: Ref): Constraint = RefConstraint(r)
+    override def store: Constraint = storage.put(this, ref1, ref2)
+
     override val hashCode: Int = Hashing.siphash24(l.hashCode + 100, r.hashCode - 100)
+  }
+
+  case class RefConstraint(ref: Ref) extends Constraint with RefObject[Constraint] {
+    def tableMap = resolve.tableMap
+    def isValid(m: Map[String, EAVRange]): Boolean = resolve.isValid(m)
+    def isSolution(m: Map[String, EAVRange]): Boolean = resolve.isSolution(m)
   }
 
   case class OrConstraint(l: Constraint, r: Constraint) extends Constraint {
@@ -264,18 +279,29 @@ object Test {
     def select(eav: EAV): Value = eav.v
   }
 
-  trait Index {
+  trait Index extends Storable[Index] {
     def size: Long
     def parts: Array[Index]
+    def store: Index = this
   }
 
-  object EmptyIndex extends Index {
+  val emptyIndex = EmptyIndex()
+
+  case class EmptyIndex() extends Index {
     def size: Long = 0
     def parts: Array[Index] = Array()
     override def toString: String = "~"
   }
 
+  def createLeafIndex(indices: Array[Long]): Index = {
+    if (indices.length == 0) EmptyIndex()
+    else LeafIndex(indices)
+  }
+
   case class LeafIndex(indices: Array[Long]) extends Index {
+    {
+      require(indices.length > 0)
+    }
     def size: Long = indices.length
     def parts: Array[Index] = Array(this)
     override def toString: String = indices.foldLeft("<")((x, y) => x + " " + y) + ">"
@@ -293,45 +319,64 @@ object Test {
       }
       hash
     }
+    def ref1(r: Index): Index = this
+    def ref2(r: Ref): Index = RefIndex(r, size)
+    override def store: Index = storage.put(this, ref1, ref2)
   }
 
   case class RangeIndex(from: Long, to: Long) extends Index {
     def size: Long = to - from
     def parts: Array[Index] = Array(this)
+
+    def ref1(r: Index): Index = this
+    def ref2(r: Ref): Index = RefIndex(r, size)
+    override def store: Index = storage.put(this, ref1, ref2)
+  }
+
+  case class RefIndex(ref: Ref, size: Long) extends Index with RefObject[Index] {
+    def parts = resolve.parts
   }
 
   def branchIndex(parts: List[Index]): Index = {
     var result: List[Index] = List()
     for (p <- parts) p match {
-      case EmptyIndex =>
-      case _ => result = p +: result
+      case e: EmptyIndex =>
+      case _ => result = p.store +: result
     }
 
     val s = result.size
 
-    if (s == 0) EmptyIndex
+    if (s == 0) emptyIndex
     else if (s == 1) result.head
-    else BranchIndex(result.reverse.toArray)
+    else BranchIndex(result.reverse.toArray).store
   }
 
   case class BranchIndex(parts: Array[Index]) extends Index {
     val size: Long = parts.map(x => x.size).sum
     override def toString: String = parts.foldLeft("|")((x, y) => x + " " + y) + "|"
+
+    def ref1(r: Index): Index = BranchIndex(parts.map(x => x.store))
+    def ref2(r: Ref): Index = RefIndex(r, size)
+    override def store: Index = storage.put(this, ref1, ref2)
   }
 
   var product: Long = 0
 
-  object cartesianProduct extends FA2[Map[String, (Long, CEAV)], Constraint, Map[String, Index]] {
+  val cartesianProduct = cartesianProduct2()
+
+  case class cartesianProduct2() extends FA2[Map[String, (Long, CEAV)], Constraint, Map[String, Index]] {
     def apply(t: Map[String, (Long, CEAV)], c: Constraint): Expr[Map[String, Index]] = {
       product += 1
       val m = t.map(x => (x._1, %(rangeOfSeq, x._2._2)))
       val m2 = flattenValues()(m)
       val tt = combine(t, m2)
-      %(cartesianProduct2, tt, c)
+      cartesianProduct_2(tt, c)
     }
   }
 
-  object combine extends FA2[Map[String, (Long, CEAV)], Map[String, EAVRange], Map[String, REAV]] {
+  val combine = combine2()
+
+  case class combine2() extends FA2[Map[String, (Long, CEAV)], Map[String, EAVRange], Map[String, REAV]] {
     def apply(l: Map[String, (Long, CEAV)], r: Map[String, EAVRange]): Expr[Map[String, REAV]] = {
       l.map(x => (x._1, REAV(x._2._1, x._2._2, r(x._1))))
     }
@@ -340,10 +385,15 @@ object Test {
   var cp: Long = 0
   var prds: Long = 0
 
-  object cartesianProduct2 extends FA2[Map[String, REAV], Constraint, Map[String, Index]] {
+  val cartesianProduct_2 = cartesianProduct2_2()
+
+  case class cartesianProduct2_2() extends FA2[Map[String, REAV], Constraint, Map[String, Index]] {
     def apply(t: Map[String, REAV], c: Constraint): Expr[Map[String, Index]] = {
 
-      if (c.isSolution(t)) ???
+      if (c.isSolution(t)) {
+        println("t: " + t)
+        ???
+      }
       else if (c.isValid(t)) {
         val m = t.map(x => (x._1, x._2.eav.parts.length)).toSeq.sorted.reverse
         val f = m.filter(x => x._2 > 1)
@@ -363,7 +413,7 @@ object Test {
 
           var i = 0
 
-          /*while (i < prod) {
+          while (i < prod) {
             cp += 1
             var ss = tables.length
             var ii = 0
@@ -388,9 +438,9 @@ object Test {
               }
             }
             i += 1
-          }    */
+          }
 
-          result.map(x => (x._1, LeafIndex(x._2.toArray.reverse)))
+          result.map(x => (x._1, createLeafIndex(x._2.toArray.reverse).store))
         }
         else {
           val key: String = f.head._1
@@ -408,20 +458,22 @@ object Test {
               println   */
               prds += 1
               rm = rm + (key -> (offset, x.asInstanceOf[CEAV]))
-              val prod = %(cartesianProduct, rm, c)
+              val prod = cartesianProduct(rm, c)
               offset += x.size
               prod
             }
           )
 
-          %(branchIndexMap, flatten()(products))
+          branchIndexMap(flatten()(products))
         }
       }
-      else t.map(x => (x._1, EmptyIndex))
+      else t.map(x => (x._1, emptyIndex))
     }
   }
 
-  object branchIndexMap extends FA1[List[Map[String, Index]], Map[String, Index]] {
+  val branchIndexMap = branchIndexMap2()
+
+  case class branchIndexMap2() extends FA1[List[Map[String, Index]], Map[String, Index]] {
     def apply(a: List[Map[String, Index]]): Expr[Map[String, Index]] = {
       var s: Map[String, List[Index]] = Map()
 
@@ -445,7 +497,7 @@ object Test {
     val el: element[X] = element[X]()
     def apply(a: List[Expr[X]]): Expr[List[X]] = {
       if (a.isEmpty) List()
-      else concat()(el(a.head), this(a.tail))
+      else concat()(el(a.head), this (a.tail))
     }
   }
 
@@ -455,7 +507,7 @@ object Test {
     val el: elementValue[X, Y] = elementValue[X, Y]()
     def apply(a: Map[X, Expr[Y]]): Expr[Map[X, Y]] = {
       if (a.isEmpty) Map[X, Y]()
-      else concatMap()(el(a.head._1, a.head._2), this(a.tail))
+      else concatMap()(el(a.head._1, a.head._2), this (a.tail))
     }
   }
 
@@ -478,7 +530,9 @@ object Test {
 
   var ranges: Long = 0
 
-  object rangeOfSeq extends FA1[CEAV, EAVRange] {
+  val rangeOfSeq = rangeOfSeq2()
+
+  case class rangeOfSeq2() extends FA1[CEAV, EAVRange] {
     def ord: Order[EAV] = Order[EAV]
 
     def apply(x: CEAV): Expr[EAVRange] = {
@@ -497,19 +551,26 @@ object Test {
         }
         EAVRangeImpl(min, max)
       }
-      else %(rangeOfRanges, x.parts.map(p => %(this, p.asInstanceOf[CEAV])).toList)
+      else {
+        if (x.parts.length == 0) sys.error("0")
+        rangeOfRanges(x.parts.map(p => %(this, p.asInstanceOf[CEAV])).toList)
+      }
     }
   }
 
-  object rangeOfRanges extends FA1[List[Expr[EAVRange]], EAVRange] {
+  val rangeOfRanges = rangeOfRanges2()
+
+  case class rangeOfRanges2() extends FA1[List[Expr[EAVRange]], EAVRange] {
     def apply(x: List[Expr[EAVRange]]): Expr[EAVRange] = {
       if (x.lengthCompare(0) == 0) sys.error("no")
       else if (x.lengthCompare(1) == 0) x.head
-      else %(mergeRanges, x.head, %(rangeOfRanges, x.tail))
+      else mergeRanges(x.head, rangeOfRanges(x.tail))
     }
   }
 
-  object mergeRanges extends FA2[EAVRange, EAVRange, EAVRange] {
+  val mergeRanges = mergeRanges2()
+
+  case class mergeRanges2() extends FA2[EAVRange, EAVRange, EAVRange] {
     def apply(r1: EAVRange, r2: EAVRange): Expr[EAVRange] = r1.union(r2)
-  }        */
+  }
 }

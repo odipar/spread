@@ -2,31 +2,42 @@ package org.spread.core.experiment.expression
 
 import java.lang.ref.WeakReference
 
-import org.spread.core.experiment.sequence.Storage
+import org.spread.core.experiment.sequence.{Storage, Test}
 import org.spread.core.experiment.sequence.Storage._
 import org.spread.core.splithash.Hashing.siphash24
 
 import scala.collection.mutable
+import scala.util.DynamicVariable
 
 object Spread {
 
   import scala.language.implicitConversions
 
+  val dynamicContext: DynamicVariable[Context] = new DynamicVariable(new StrongStoringMemoizationContext())
+
+  def withContext[S](c: Context)(thunk: => S): S = dynamicContext.withValue(c)(thunk)
+  def context: Context = dynamicContext.value
+  
   trait Expr[+V] extends Storable[Expr[V]] {
-    def eval(c: Context): Expr[V] = c.eval(this)
-    def evalImpl(c: Context): Expr[V] = this
+    def eval: Expr[V] = {
+      mcontext.eval(this)
+    }
+    def evalImpl: Expr[V] = this
 
     def isFailure: Boolean
     def isValue: Boolean
 
-    def rest: HashList[V] = Empty()
+    def rest: HashList[V] = empty.asInstanceOf[Empty[V]]
     def head: Expr[V] = this
 
     def store: Expr[V]
+    def mcontext: Context = context
   }
 
+  val empty: Empty[_] = Empty()
+
   case class RefExpr[V](ref: Ref, isFailure: Boolean, isValue: Boolean) extends Expr[V] with RefObject[Expr[V]] {
-    override def evalImpl(c: Context): Expr[V] = resolve.evalImpl(c)
+    override def evalImpl: Expr[V] = resolve.evalImpl
 
     override def rest: HashList[V] = resolve.rest
     override def head: Expr[V] = resolve.head
@@ -34,7 +45,8 @@ object Spread {
   }
   
   trait Context {
-    def eval[V](e: Expr[V]): Expr[V] = e.evalImpl(this)
+    def eval[V](e: Expr[V]): Expr[V] = e.evalImpl
+    def contains[V](e: Expr[V]): Boolean = false
   }
 
   trait Operator {
@@ -49,6 +61,7 @@ object Spread {
   def %[A, B, C, X](f: FA3[A, B, C, X], a: Expr[A], b: Expr[B], c: Expr[C]): Expr[X] = F3(f, a, b, c)
 
   trait HashList[+E] extends Storable[HashList[E]] {
+    def size: Int
     def head: Expr[E]
     def tail: HashList[E]
 
@@ -57,7 +70,14 @@ object Spread {
     def store: HashList[E] = this
   }
 
+  case class RefHashList[E](ref: Ref, size: Int) extends HashList[E] with RefObject[HashList[E]] {
+    def head: Expr[E] = resolve.head
+    def tail: HashList[E] = resolve.tail
+    def toList: List[Expr[E]] = resolve.toList
+  }
+
   case class Empty[E]() extends HashList[E] {
+    def size = 0
     def error: Nothing= sys.error("empty list")
     def head: Expr[E] = error
     def tail: HashList[E] = error
@@ -65,22 +85,19 @@ object Spread {
   }
 
   case class Cons[E](head: Expr[E], tail: HashList[E]) extends HashList[E] {
+    def size: Int = tail.size + 1
     def toList: List[Expr[E]] = head +: tail.toList
     override val hashCode: Int = siphash24(head.hashCode, -tail.hashCode)
-    override def store: HashList[E] = Cons(head.store, tail.store)
-  }
-
-  case class RefHashList[E](ref: Ref) extends HashList[E] with RefObject[HashList[E]] {
-    def head: Expr[E] = resolve.head
-    def tail: HashList[E] = resolve.tail
-    def toList: List[Expr[E]] = resolve.toList
+    def ref1(r: HashList[E]): HashList[E] = Cons(head.store, tail.store)
+    def ref2(r: Ref): HashList[E] = RefHashList(r, size)
+    override def store: HashList[E] = storage.put(this, ref1, ref2)
   }
 
   val defaultRest: HashList[Expr[_]] = Empty()
 
   case class Trace[V](override val head: Expr[V], override val rest: HashList[V]) extends Expr[V] {
-    override def evalImpl(c: Context): Expr[V] = {
-      val e2 = head.eval(c)
+    override def evalImpl: Expr[V] = {
+      val e2 = head.eval
       if (e2 != head) combine(e2, this)
       else this
     }
@@ -107,11 +124,10 @@ object Spread {
   trait FA0[V] extends Expr[V] {
     def value: V
     def unary_! : V = value
-    override def evalImpl(c: Context): Expr[V] = this
+    override def evalImpl: Expr[V] = this
 
     def isFailure: Boolean = false
     def isValue: Boolean = true
-
   }
 
   case class AnExpr[V](value: V) extends FA0[V] {
@@ -160,8 +176,8 @@ object Spread {
   }
   
   trait ExprImpl[V] extends Expr[V] with Product {
-    def eval2(e: Expr[V], c: Context): Expr[V] = {
-      val ee = e.eval(c)
+    def eval2(e: Expr[V]): Expr[V] = {
+      val ee = e.eval
       combine(ee, this)
     }
 
@@ -170,13 +186,13 @@ object Spread {
   }
 
   case class F1[A, X](f: FA1[A, X], v1: Expr[A]) extends ExprImpl[X] {
-    override def evalImpl(c: Context): Expr[X] = {
-      val e1 = v1.head.eval(c)
+    override def evalImpl: Expr[X] = {
+      val e1 = v1.head.eval
       val ff = F1(f, e1)
-      if (ff != this) eval2(ff, c)
+      if (ff != this) eval2(ff)
       else {
         val ff = f(e1)
-        if (ff != this) eval2(ff, c)
+        if (ff != this) eval2(ff)
         else this
       }
     }
@@ -194,14 +210,14 @@ object Spread {
   }
 
   case class F2[A, B, X](f: FA2[A, B, X], v1: Expr[A], v2: Expr[B]) extends ExprImpl[X] {
-    override def evalImpl(c: Context): Expr[X] = {
-      val e1 = v1.head.eval(c)
-      val e2 = v2.head.eval(c)
+    override def evalImpl: Expr[X] = {
+      val e1 = v1.head.eval
+      val e2 = v2.head.eval
       val ff = F2(f, e1, e2)
-      if (ff != this) eval2(ff, c)
+      if (ff != this) eval2(ff)
       else {
         val ff = f(e1, e2)
-        if (ff != this) eval2(ff, c)
+        if (ff != this) eval2(ff)
         else this
       }
     }
@@ -218,15 +234,15 @@ object Spread {
   }
 
   case class F3[A, B, C, X](f: FA3[A, B, C, X], v1: Expr[A], v2: Expr[B], v3: Expr[C]) extends ExprImpl[X] {
-    override def evalImpl(c: Context): Expr[X] = {
-      val e1 = v1.head.eval(c)
-      val e2 = v2.head.eval(c)
-      val e3 = v3.head.eval(c)
+    override def evalImpl: Expr[X] = {
+      val e1 = v1.head.eval
+      val e2 = v2.head.eval
+      val e3 = v3.head.eval
       val ff = F3(f, e1, e2, e3)
-      if (ff != this) eval2(ff, c)
+      if (ff != this) eval2(ff)
       else {
         val ff = f(e1, e2, e3)
-        if (ff != this) eval2(ff, c)
+        if (ff != this) eval2(ff)
         else this
       }
     }
@@ -238,26 +254,68 @@ object Spread {
     override def toString: String = f + "(" + v1 + "," + v2 + "," + v3 + ")"
   }
 
-  object NullContext extends Context
+  object NullContext extends Context {}
 
-  class StrongMemoizationContext(var m: mutable.HashMap[Expr[_], Expr[_]]) extends Context {
+  class StoringMemoizationContext() extends Context {
+    var m: mutable.HashMap[Expr[_], Expr[_]] = mutable.HashMap()
+
     override def eval[V](e: Expr[V]): Expr[V] = {
-      m.get(e) match {
+      val es = e.store
+
+      m.get(es) match {
         case None => {
-          val ee = e.evalImpl(this)
-          m += (e -> ee)
-          ee
+          val ee = e.evalImpl
+          val ees = ee.store
+          //if ((e.rest.size == 0) && (ee.rest.size > 3)) {
+            m += (es -> ees)
+          //}
+          ees
         }
-        case Some(x) => x.asInstanceOf[Expr[V]]
+        case Some(x) => {
+          x.asInstanceOf[Expr[V]]
+        }
       }
     }
   }
 
-  class WeakMemoizationContext(var m: mutable.WeakHashMap[Expr[_], WeakReference[Expr[_]]]) extends Context {
+  case class StackedContext(o1: Context, o2: Context) extends Context() {
+    override def eval[V](e: Expr[V]): Expr[V] = {
+      if (o1.contains(e)) o1.eval(e)
+      else o2.eval(e)
+    }
+    override def contains[V](e: Expr[V]): Boolean = o1.contains(e) || o2.contains(e)
+  }
+  
+  case class StrongStoringMemoizationContext() extends Context {
+    var m: mutable.HashMap[Expr[_], Expr[_]] = mutable.HashMap()
+    
+    override def eval[V](e: Expr[V]): Expr[V] = {
+      val es = e.store
+      //val es = e
+      m.get(es) match {
+        case None => {
+          val ee = e.evalImpl
+          //val ees = ee
+          val ees = ee.store
+          m += (es -> ees)
+          ees
+      }
+        case Some(x) =>  {
+          x.asInstanceOf[Expr[V]]
+        }
+      }
+    }
+
+    override def contains[V](e: Expr[V]): Boolean = m.contains(e)
+  }
+
+  case class WeakMemoizationContext() extends Context {
+    var m: mutable.WeakHashMap[Expr[_], WeakReference[Expr[_]]] = mutable.WeakHashMap()
+    
     override def eval[V](e: Expr[V]): Expr[V] = {
       m.get(e) match {
         case None => {
-          val ee = e.evalImpl(this)
+          val ee = e.evalImpl
           m += (e -> new WeakReference(ee))
           ee
         }
@@ -335,7 +393,7 @@ object Spread {
 
   implicit def toIntExpr(i: Int): IntExpr = IExpr(i)
   implicit def toIntExpr2(i: _Int): IntExpr = wrap(i)
-  //implicit def toExpr[X](x: X): Expr[X] = AnExpr[X](x)
+  implicit def toExpr[X](x: X): Expr[X] = AnExpr[X](x)
 
   case class fac2() extends FA1[Int, Int] {
     def apply(x: Int): _Int = {
@@ -357,26 +415,20 @@ object Spread {
 
   final def main(args: Array[String]): Unit = {
     val f = %(fib, 30)
-    //val f = %(fac, 5)
-    
-    val c = new StrongMemoizationContext(mutable.HashMap())
+    //val f = %(fac, 10)
 
-    Storage.storage.withValue(InMemoryStorage()) {
-      var k = f.eval(c)
-      val ks = k.store
-      
-      println("sizes: " + Storage.storage.value.asInstanceOf[InMemoryStorage].m.toSeq.map(x => x._2.size))
+    Storage.withStorage(NullStorage()) {
+      withContext(new StrongStoringMemoizationContext()) {
+        var k = f.eval
 
-      val r = Storage.storage.value.asInstanceOf[InMemoryStorage].m.map(x => (x._1, Storage.storage.value.get(x._1)))
+        val m = context.asInstanceOf[StrongStoringMemoizationContext].m
+        for (k <- m.keySet) {
+          println("key: " + k)
+          //println("value: " + m(k))
+        }
 
-      /*for (k <- r.keys) {
-        println("key: " + k)
-        println("value: " + r(k))
-        println
-      } */
-
-      println("ks: " + ks.head)
-      println("k: " + k.head) 
+        println("k: " + k.head)
+      }
     }
   }
 }

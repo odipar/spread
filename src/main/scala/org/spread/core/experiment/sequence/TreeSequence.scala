@@ -10,14 +10,14 @@ object TreeSequence {
   import scala.reflect.ClassTag
 
   @inline final def minWidth: Int = 16
-  @inline final def maxWidth: Int= minWidth * 4
+  @inline final def maxWidth: Int = minWidth * 4
 
   def emptyTree[@sp X](implicit t: ClassTag[X], c: DefaultTreeContext[X]): TreeSeq[X, ArraySeqImpl[X]] = c.empty
 
   trait TreeContext[@sp X, AS <: ArraySeq[X, AS]] extends SeqContext[X, TreeSeq[X, AS]] {
 
-    lazy val emptyNode: TreeNode[X, AS] = Empty()
-    lazy val empty: TreeSeq[X, AS] = TreeSeq[X, AS](emptyNode)(this)
+    def emptyNode: TreeNode[X, AS] = Empty()
+    def empty: TreeSeq[X, AS] = TreeSeq[X, AS](emptyNode)(this)
     def tag: ClassTag[X]
 
     def createLeaf(a: AS): TreeNode[X, AS] = {
@@ -36,13 +36,13 @@ object TreeSequence {
       Branch[X, AS](a, sz)
     }
 
-    val emptyArraySeq: AS
+    def emptyArraySeq: AS
     def createArraySeq(a: Array[X]): AS
   }
 
   case class DefaultTreeContext[@sp X](implicit t: ClassTag[X]) extends TreeContext[X, ArraySeqImpl[X]] {
     def tag: ClassTag[X] = t
-    val emptyArraySeq: ArraySeqImpl[X] = ArraySeqImpl[X](Array())
+    def emptyArraySeq: ArraySeqImpl[X] = ArraySeqImpl[X](Array())
     def createArraySeq(a: Array[X]): ArraySeqImpl[X] = ArraySeqImpl[X](a)
   }
 
@@ -104,7 +104,7 @@ object TreeSequence {
 
   var nodes: Long = 0
 
-  trait TreeNode[X, AS <: ArraySeq[X, AS]] extends Storable[TreeNode[X, AS]]{
+  trait TreeNode[X, AS <: ArraySeq[X, AS]] extends Storable[TreeNode[X, AS]] {
     {
       nodes += 1
     }
@@ -127,7 +127,7 @@ object TreeSequence {
 
     def toArray(implicit c: C): AS
     def parts: Array[N]
-    
+
     def appendBranches(s1: Branch[X, AS], s2: Branch[X, AS])(implicit c: C): N = {
       assert(s1.height == s2.height) // only append trees with same height
 
@@ -143,7 +143,7 @@ object TreeSequence {
       assert((s1.height == 0) && (s2.height == 0))
 
       implicit def t: ClassTag[X] = c.tag
-      
+
       if (s1.size >= minWidth && s2.size >= minWidth) createPair(s1, s2)
       else {
         val tsize = s1.size + s2.size

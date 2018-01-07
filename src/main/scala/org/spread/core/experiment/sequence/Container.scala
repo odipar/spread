@@ -8,7 +8,7 @@ object Container {
 
   trait Container[@sp X, C <: Container[X, C]] extends Storable[C] {
     type SS <: ArrayContainer[X, SS]
-    
+
     def size: Long
     def height: Int
     def parts: Array[C]

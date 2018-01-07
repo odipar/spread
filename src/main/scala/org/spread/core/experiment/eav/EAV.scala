@@ -8,11 +8,11 @@ object EAV {
   }
 
   trait Attribute {
-    val name: String = getClass.getName
-    override def toString: String = name
+    def attributeName: String = getClass.getName
+    override def toString: String = attributeName
     def compare(a1: Value, a2: Value): Int
   }
-  
+
   trait StringAttribute extends Attribute {
     def compare(a1: Value, a2: Value): Int = {
       a1.asInstanceOf[StringValue].compareTo(a2.asInstanceOf[StringValue])
@@ -38,7 +38,7 @@ object EAV {
   trait NullValue extends Value {
     override def toString: String = "NULL"
   }
-  
+
   trait ErrorValue extends Value {
     override def toString: String = "ERROR"
   }
@@ -127,7 +127,7 @@ object EAV {
   }
 
   case class EAVRangeImpl(start: EAV, end: EAV) extends EAVRange
-  
+
   case class StringEAV(e: Entity, a: StringAttribute, v: StringValue) extends EAV
   case class LongEAV(e: Entity, a: LongAttribute, v: LongValue) extends EAV
   case class DoubleEAV(e: Entity, a: DoubleAttribute, v: DoubleValue) extends EAV
@@ -169,7 +169,7 @@ object EAV {
   }
 
   object AttributeOrdering extends Order[Attribute] {
-    def compare(a1: Attribute, a2: Attribute): Int = a1.name.compareTo(a2.name)
+    def compare(a1: Attribute, a2: Attribute): Int = a1.attributeName.compareTo(a2.attributeName)
   }
 
   object ValueOrdering extends Order[Value] {

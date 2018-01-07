@@ -1,12 +1,11 @@
 package org.spread.core.splithash
 
 object Hashing {
-  import Reference._
 
   // A Hashable object
-  trait Hashable extends Ref[Hashable] {
+  trait Hashable {
     def hash: Hash
-    def parts: Array[Hashable]
+    def hashParts: Array[Hashable]
   }
 
   // An 'infinitely' indexable and expandable Hash that *must* obey the following property:
@@ -78,7 +77,7 @@ object Hashing {
       v2 = rotl(v2, 32)
     }
 
-    val m = rotl(x1,32) + x2   // combine the input ints into one long
+    val m = rotl(x1, 32) + x2 // combine the input ints into one long
 
     v3 ^= m
     sipround
@@ -93,6 +92,6 @@ object Hashing {
 
     val r = v0 ^ v1 ^ v2 ^ v3
 
-    (rotl(r,32) ^ r).toInt  // munch the long into an int
+    (rotl(r, 32) ^ r).toInt // munch the long into an int
   }
 }

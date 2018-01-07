@@ -5,8 +5,9 @@ import org.spread.core.language.Annotation.sp
 import org.spread.core.splithash.Hashing
 
 object Sequence {
+
   import scala.reflect.ClassTag
-  
+
   trait Seq[@sp X, S <: Seq[X, S]] extends Container[X, S] {
     type SS <: ArraySeq[X, SS]
 
@@ -66,7 +67,7 @@ object Sequence {
           var i = 0
           var result = true
 
-          while((i < s) && result) {
+          while ((i < s) && result) {
             result = a1(i) == a2(i)
             i += 1
           }

@@ -7,11 +7,11 @@ object ClassLoader {
   val instance = AuthenticatedClassLoader(AuthenticatedClassLoader.getClass.getClassLoader)
 
   case class AuthenticatedClassLoader(parent: java.lang.ClassLoader) extends java.lang.ClassLoader(parent) {
-    var bytecode: Map[Class[_],Array[Byte]] = Map()
+    var bytecode: Map[Class[_], Array[Byte]] = Map()
 
     override def loadClass(name: String) = {
       if (!name.startsWith("java") && !name.startsWith("sun")) {
-        val file = name.replace('.',File.separatorChar) + ".class"
+        val file = name.replace('.', File.separatorChar) + ".class"
         var is = getClass().getClassLoader().getResourceAsStream(file)
 
         if (is != null) {
@@ -19,19 +19,19 @@ object ClassLoader {
           var data: Array[Byte] = new Array(128)
           var n = 0
 
-          n = is.read(data,0,data.length)
+          n = is.read(data, 0, data.length)
 
           while (n != -1) {
-            buffer.write(data,0,n)
-            n = is.read(data,0,data.length)
+            buffer.write(data, 0, n)
+            n = is.read(data, 0, data.length)
           }
 
           buffer.flush()
           var b: Array[Byte] = buffer.toByteArray
 
-          val c: Class[_] = defineClass(name,b,0,b.length)
+          val c: Class[_] = defineClass(name, b, 0, b.length)
           resolveClass(c)
-          bytecode = bytecode + (c->b)
+          bytecode = bytecode + (c -> b)
           c
         }
         else super.loadClass(name)
