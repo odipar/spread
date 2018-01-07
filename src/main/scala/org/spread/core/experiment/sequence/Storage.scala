@@ -204,7 +204,7 @@ object Storage {
         kryo.writeClassAndObject(rOutput, st)
         val ba = ByteArrayWrapper(rOutput.toBytes)
 
-        if (ba.size > 128) {
+        if (ba.size > 64) {
           if (m2.contains(ba)) r(m2(ba))
           else {
             val ref = LongRef(i)

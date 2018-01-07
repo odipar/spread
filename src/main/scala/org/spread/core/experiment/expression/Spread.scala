@@ -297,7 +297,9 @@ object Spread {
           val ee = e.evalImpl
           //val ees = ee
           val ees = ee.store
-          m += (es -> ees)
+
+          if (ees.rest.size > 0) m += (es -> ees)
+          
           ees
       }
         case Some(x) =>  {
@@ -417,14 +419,15 @@ object Spread {
     val f = %(fib, 30)
     //val f = %(fac, 10)
 
-    Storage.withStorage(NullStorage()) {
-      withContext(new StrongStoringMemoizationContext()) {
+    Storage.withStorage(InMemoryStorage()) {
+      withContext(StrongStoringMemoizationContext()) {
         var k = f.eval
 
         val m = context.asInstanceOf[StrongStoringMemoizationContext].m
         for (k <- m.keySet) {
           println("key: " + k)
-          //println("value: " + m(k))
+          println("value: " + m(k))
+          println
         }
 
         println("k: " + k.head)

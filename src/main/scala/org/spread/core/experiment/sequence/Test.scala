@@ -34,9 +34,9 @@ object Test {
 
     val eavFactory = emptyTree[EAV]
 
-    val l1 = (0L until 1000000L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
-    val l2 = (-6000L until -5000L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
-    val l3 = (-5000L until 100L).map(x => LongEAV(Entity(Array(x)), a1, LongValueImpl(x)))
+    val l1 = (0L until 1000000L).map(x => LongEAV(Entity(Array(x+1)), a1, LongValueImpl(x)))
+    val l2 = (-6000L until -5000L).map(x => LongEAV(Entity(Array(x+1)), a1, LongValueImpl(x)))
+    val l3 = (-5000L until 100L).map(x => LongEAV(Entity(Array(x+1)), a1, LongValueImpl(x)))
 
     println("START 0")
     
@@ -227,7 +227,7 @@ object Test {
     def select(eav: EAV): X
 
     def isValid(m: Map[String, EAVRange]): Boolean = {
-      val r1 = m(left);
+      val r1 = m(left)
       val r2 = m(right)
       propagator.isValid(select(r1.start), select(r1.end), select(r2.start), select(r2.end))
     }
@@ -305,7 +305,6 @@ object Test {
     def size: Long = indices.length
     def parts: Array[Index] = Array(this)
     override def toString: String = indices.foldLeft("<")((x, y) => x + " " + y) + ">"
-    //override val hashCode = indices.hashCode
     override lazy val hashCode: Int = {
       var hash: Int = Hashing.siphash24(indices.length, indices.length)
       var s = indices.length
