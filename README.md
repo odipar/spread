@@ -36,7 +36,7 @@ However, the spreadsheet spirit is there. In fact, SPREAD can be considered the 
 
 SPREAD is currently in extreme ALPHA stage. For the impatient, there is already some novelty to be found in the repository:
 
-#### [SplitHash](https://github.com/odipar/spread/blob/master/src/spread/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
+#### [SplitHash](https://github.com/odipar/spread/blob/master/src/main/scala/org/spread/core/splithash/SplitHash.scala): an immutable, uniquely represented Sequence Authenticated Data Structure.
 
 ### Implementation
 
